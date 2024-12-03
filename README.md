@@ -1,16 +1,16 @@
-# buffer-terminator.el
+# buffer-terminator.el - Automatically Terminate Inactive Buffers
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-`buffer-terminator` is an Emacs package that automatically terminates inactive buffers to help maintain a clean and efficient workspace.
+The `buffer-terminator` Emacs package automatically terminates inactive buffers to help maintain a clean and efficient workspace.
 
 It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el](#buffer-terminatorel)
+- [buffer-terminator.el - Automatically Terminate Inactive Buffers](#buffer-terminatorel---automatically-terminate-inactive-buffers)
   - [Features](#features)
   - [Installation](#installation)
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
@@ -73,13 +73,13 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
 Exclude specific buffers from being killed by name:
 
 ```elisp
-(setopt buffer-terminator-ignore-buffer-names '("*scratch*" "*Messages*"))
+(setq buffer-terminator-ignore-buffer-names '("*scratch*" "*Messages*"))
 ```
 
 Or by regular expression:
 
 ```elisp
-(setopt buffer-terminator-ignore-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'" "\\` \\*Echo Area "))
+(setq buffer-terminator-ignore-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'" "\\` \\*Echo Area "))
 ```
 
 ### Timeout for Inactivity
@@ -87,7 +87,7 @@ Or by regular expression:
 Set the inactivity timeout (in seconds) after which buffers are considered inactive (default is 60 minutes):
 
 ```elisp
-(setopt buffer-terminator-inactivity-timeout (* 60 60)) ; 60 minutes
+(setq buffer-terminator-inactivity-timeout (* 60 60)) ; 60 minutes
 ```
 
 ### Cleanup Interval
@@ -103,7 +103,7 @@ Define how frequently the cleanup process should run (default is every 5 minutes
 Enable verbose mode to log buffer cleanup events:
 
 ```elisp
-(setopt buffer-terminator-verbose t)
+(setq buffer-terminator-verbose t)
 ```
 
 ### Preserve Special Buffers
@@ -111,7 +111,7 @@ Enable verbose mode to log buffer cleanup events:
 Keep all special buffers by setting the following option to `t`:
 
 ```elisp
-(setopt buffer-terminator-ignore-special-buffers t)
+(setq buffer-terminator-ignore-special-buffers t)
 ```
 
 ## Author and License
