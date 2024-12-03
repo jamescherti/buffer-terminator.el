@@ -1,4 +1,4 @@
-# buffer-terminator.el - Automatically Terminate Inactive Buffers
+# buffer-terminator.el - Automatically Terminate Inactive Emacs Buffers
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
@@ -9,12 +9,15 @@ Only buffers that are saved and inactive for a certain amount of time are termin
 
 It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
 
-By default, `buffer-terminator-mode` terminates all file-visiting and dired buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout`. Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option provided below.
+By default:
+- `buffer-terminator-mode` terminates all file-visiting and dired buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 60 minutes).
+- It checks every `buffer-terminator-kill-buffers-interval` (Default: 10 minutes) to determine if a buffer should be terminated.
+- Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option below.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el - Automatically Terminate Inactive Buffers](#buffer-terminatorel---automatically-terminate-inactive-buffers)
+- [buffer-terminator.el - Automatically Terminate Inactive Emacs Buffers](#buffer-terminatorel---automatically-terminate-inactive-emacs-buffers)
   - [Features](#features)
   - [Installation](#installation)
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
@@ -74,19 +77,19 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
 
 ### Timeout for Inactivity
 
-Set the inactivity timeout (in seconds) after which buffers are considered inactive (default is 60 minutes):
+Set the inactivity timeout (in seconds) after which buffers are considered inactive (default is 30 minutes):
 
 ```elisp
-(setq buffer-terminator-inactivity-timeout (* 60 60)) ; 60 minutes
+(setq buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
 ```
 
 ### Cleanup Interval
 
-Define how frequently the cleanup process should run (default is every 5 minutes):
+Define how frequently the cleanup process should run (default is every 10 minutes):
 
 ```elisp
 (customize-set-variable
- 'buffer-terminator-kill-buffers-interval (* 5 60)) ; 5 minutes
+ 'buffer-terminator-kill-buffers-interval (* 10 60)) ; 10 minutes
 ```
 
 (Using `customize-set-variable` allows `buffer-terminator-kill-buffers-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)

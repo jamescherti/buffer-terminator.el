@@ -85,9 +85,9 @@ are added to `buffer-terminator-keep-buffer-names' and
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-inactivity-timeout (* 60 60)
+(defcustom buffer-terminator-inactivity-timeout (* 30 60)
   "Time in seconds before a buffer is considered inactive.
-Default: 60 minutes."
+Default: 30 minutes."
   :type 'integer
   :group 'buffer-terminator)
 
@@ -105,8 +105,9 @@ Default: 60 minutes."
     (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
     (setq buffer-terminator--kill-inactive-buffers-timer nil)))
 
-(defcustom buffer-terminator-kill-buffers-interval (* 5 60)
-  "Frequency in seconds to repeat the buffer cleanup process."
+(defcustom buffer-terminator-kill-buffers-interval (* 10 60)
+  "Frequency in seconds to repeat the buffer cleanup process.
+Default: 10 minutes."
   :type 'integer
   :group 'buffer-terminator
   :set (lambda (symbol value)
