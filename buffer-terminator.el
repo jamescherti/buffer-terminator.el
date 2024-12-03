@@ -49,12 +49,16 @@
           "https://github.com/jamescherti/buffer-terminator.el"))
 
 (defcustom buffer-terminator-ignore-buffer-names
-  '("*scratch*" "*Messages*")
+  '("*scratch*"
+    "*Messages*"
+    "*Async-native-compile-log*"
+    "*Compile-Log*")
   "List of buffer names which will never be killed."
   :type '(repeat (string :tag "Buffer Name")))
 
 (defcustom buffer-terminator-ignore-buffer-regexps
-  '("\\` \\*Minibuf-.*\\*\\'" "\\` \\*Echo Area ")
+  '("\\` \\*Minibuf-.*\\*\\'"
+    "\\` \\*Echo Area ")
   "List of regexp saying which buffers will never be killed."
   :type '(repeat
           (choice (regexp :tag "Regexp matching Buffer Name")

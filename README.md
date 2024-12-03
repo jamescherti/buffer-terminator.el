@@ -73,7 +73,10 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
 Exclude specific buffers from being killed by name:
 
 ```elisp
-(setq buffer-terminator-ignore-buffer-names '("*scratch*" "*Messages*"))
+(setq buffer-terminator-ignore-buffer-names '("*scratch*"
+                                              "*Messages*"
+                                              "*Async-native-compile-log*"
+                                              "*Compile-Log*"))
 ```
 
 Or by regular expression:
