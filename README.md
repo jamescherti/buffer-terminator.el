@@ -5,6 +5,8 @@
 
 The `buffer-terminator` Emacs package automatically terminates inactive buffers to help maintain a clean and efficient workspace. It also helps improve Emacs performance by reducing the number of open buffers.
 
+Only buffers that are saved and inactive for a certain amount of time are terminated.
+
 It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
 
 By default, `buffer-terminator-mode` terminates all file-visiting and dired buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout`. Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option provided below.
@@ -30,7 +32,7 @@ By default, `buffer-terminator-mode` terminates all file-visiting and dired buff
 
 ## Features
 
-- Automatically kills inactive buffers based on a configurable timeout.
+- Automatically terminates/kills inactive buffers based on a configurable timeout.
 - Excludes specific buffers using buffer names, regular expressions, or special buffer types.
 - Verbose mode for logging terminated buffers.
 - Supports customizable intervals for periodic cleanup.
