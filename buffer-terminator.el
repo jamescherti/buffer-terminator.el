@@ -48,12 +48,17 @@
           :tag "Github"
           "https://github.com/jamescherti/buffer-terminator.el"))
 
-(defcustom buffer-terminator-keep-special-buffers t
-  "If non-nil, `buffer-terminator' will never kill special buffers.
-It is generally NOT recommended to set this to nil.
-If you choose to set it to nil, ensure that the special buffers you want to keep
-are added to `buffer-terminator-keep-buffer-names' and
-`buffer-terminator-keep-buffer-regexps'."
+(defcustom buffer-terminator-inactivity-timeout (* 30 60)
+  "Time in seconds before a buffer is considered inactive.
+Default: 30 minutes."
+  :type 'integer
+  :group 'buffer-terminator)
+
+(defcustom buffer-terminator-keep-buffers-with-process nil
+  "When non-nil, do not kill buffers associated with running processes.
+Process buffers are buffers where an active process is running. It is generally
+discouraged to set this to nil, as doing so may result in the termination of
+such buffers, potentially disrupting active processes."
   :type 'boolean
   :group 'buffer-terminator)
 
@@ -66,22 +71,22 @@ buffer in the selected window."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-keep-buffers-with-process nil
-  "When non-nil, do not kill buffers associated with running processes.
-Process buffers are buffers where an active process is running. It is generally
-discouraged to set this to nil, as doing so may result in the termination of
-such buffers, potentially disrupting active processes."
+(defcustom buffer-terminator-verbose nil
+  "Enable verbose mode to log when a buffer is automatically killed."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-inactivity-timeout (* 30 60)
-  "Time in seconds before a buffer is considered inactive.
-Default: 30 minutes."
-  :type 'integer
-  :group 'buffer-terminator)
-
-(defcustom buffer-terminator-verbose nil
-  "Enable verbose mode to log when a buffer is automatically killed."
+;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
+;; you are doing. If you decide to set it to nil, make sure to update
+;; `buffer-terminator-keep-buffer-names' or
+;; `buffer-terminator-keep-buffer-regexps' to preserve important special
+;; buffers.
+(defcustom buffer-terminator-keep-special-buffers t
+  "If non-nil, `buffer-terminator' will never kill special buffers.
+It is generally NOT recommended to set this to nil.
+If you choose to set it to nil, ensure that the special buffers you want to keep
+are added to `buffer-terminator-keep-buffer-names' and
+`buffer-terminator-keep-buffer-regexps'."
   :type 'boolean
   :group 'buffer-terminator)
 
@@ -94,7 +99,6 @@ Default: 30 minutes."
     " *eldoc*"
     " *code-conversion-work*"
     "*compile-angel:debug*"
-    " *markdown-code-fontification:emacs-lisp-mode*"  ; markdown-mode
     " *Compiler Input*"
     " *jka-compr-wr-temp*"
     " *consult-async*"
@@ -109,12 +113,22 @@ Default: 30 minutes."
   '("\\` \\*Minibuf-[0-9]+\\*\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
+    "\\` \\?\\*EGLOT .*\\*\\'"
+    "\\` \\*markdown-code-fontification:.*\\*\\'"
     "\\` \\*org-src-fontification:.*\\*\\'"
     "\\` \\*Echo Area [0-9]+\\*\\'")
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat
           (choice (regexp :tag "Regexp matching Buffer Name")
                   (function :tag "Predicate function"))))
+
+(defcustom buffer-terminator-keep-file-visiting-buffers nil
+  "When non-nil, `buffer-terminator' will not kill buffers visiting files.
+File-visiting buffers are those associated with files, whether the file is
+modified or not. It is generally recommended to keep this variable set to t to
+avoid terminating buffers that are associated with files you are working on."
+  :type 'boolean
+  :group 'buffer-terminator)
 
 (defvar buffer-terminator--kill-inactive-buffers-timer nil
   "Timer object for killing inactive buffers.")
@@ -181,7 +195,8 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                     (and file-name
                          (buffer-file-name (or (buffer-base-buffer buffer)
                                                buffer))
-                         (buffer-modified-p))
+                         (or buffer-terminator-keep-file-visiting-buffers
+                             (buffer-modified-p)))
 
                     ;; Special buffers
                     (and (not file-name)
