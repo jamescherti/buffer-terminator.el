@@ -57,6 +57,15 @@ are added to `buffer-terminator-keep-buffer-names' and
   :type 'boolean
   :group 'buffer-terminator)
 
+(defcustom buffer-terminator-keep-visible-buffers t
+  "When non-nil, `buffer-terminator' will not kill visible buffers.
+Visible buffers are those currently displayed in any window.
+It is generally discouraged to set this to nil, as doing so may result
+in the termination of visible buffers, except for the currently active
+buffer in the selected window."
+  :type 'boolean
+  :group 'buffer-terminator)
+
 (defcustom buffer-terminator-inactivity-timeout (* 30 60)
   "Time in seconds before a buffer is considered inactive.
 Default: 30 minutes."
@@ -92,6 +101,7 @@ Default: 30 minutes."
   '("\\` \\*Minibuf-[0-9]+\\*\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
+    "\\` \\*org-src-fontification:.*\\*\\'"
     "\\` \\*Echo Area [0-9]+\\*\\'")
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat
@@ -175,7 +185,8 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                          (memq buffer ignore-buffers))
 
                     ;; Keep visible buffers
-                    (buffer-terminator--buffer-visible-p buffer)
+                    (and buffer-terminator-keep-visible-buffers
+                         (buffer-terminator--buffer-visible-p buffer))
 
                     ;; Keep buffers that contain processes
                     (get-buffer-process buffer)
