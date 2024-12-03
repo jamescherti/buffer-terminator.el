@@ -90,7 +90,7 @@ are added to `buffer-terminator-keep-buffer-names' and
   :type 'boolean
   :group 'buffer-terminator)
 
-;; This list is ignored by default. It is only useful when
+;; THIS LIST IS IGNORED BY DEFAULT. It is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-keep-buffer-names
   '("*scratch*"
@@ -107,7 +107,7 @@ are added to `buffer-terminator-keep-buffer-names' and
   "List of buffer names that will never be killed."
   :type '(repeat (string :tag "Buffer Name")))
 
-;; This list of regexp is ignored by default. It is only useful when
+;; THIS LIST OF REGEXP IS IGNORED BY DEFAULT. It is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-keep-buffer-regexps
   '("\\` \\*Minibuf-[0-9]+\\*\\'"
@@ -193,14 +193,12 @@ IGNORE-BUFFERS is a list of buffers to ignore."
           (when (or (not buffer-name)
                     ;; Keep unsaved buffers
                     (and file-name
-                         (buffer-file-name (or (buffer-base-buffer buffer)
-                                               buffer))
                          (or buffer-terminator-keep-file-visiting-buffers
                              (buffer-modified-p)))
 
                     ;; Special buffers
-                    (and (not file-name)
-                         buffer-terminator-keep-special-buffers
+                    (and buffer-terminator-keep-special-buffers
+                         (not file-name)
                          (buffer-terminator--special-buffer-p buffer))
 
                     ;; Keep ignored buffers
