@@ -11,7 +11,7 @@ It provides configurable options to determine which buffers to keep, a timeout f
 
 By default:
 - `buffer-terminator-mode` terminates all file-visiting and dired buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 60 minutes).
-- It checks every `buffer-terminator-kill-buffers-interval` (Default: 10 minutes) to determine if a buffer should be terminated.
+- It checks every `buffer-terminator-interval` (Default: 10 minutes) to determine if a buffer should be terminated.
 - Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option below.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
@@ -89,10 +89,10 @@ Define how frequently the cleanup process should run (default is every 10 minute
 
 ```elisp
 (customize-set-variable
- 'buffer-terminator-kill-buffers-interval (* 10 60)) ; 10 minutes
+ 'buffer-terminator-interval (* 10 60)) ; 10 minutes
 ```
 
-(Using `customize-set-variable` allows `buffer-terminator-kill-buffers-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
+(Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
 
 ### Verbose Mode
 

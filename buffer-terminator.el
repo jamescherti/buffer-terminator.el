@@ -68,7 +68,7 @@
 ;; This list of regexp is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-keep-buffer-regexps
-  '("\\` \\*Minibuf-.*\\*\\'"
+  '("\\` \\*Minibuf-[0-9]+\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*Echo Area [0-9]+\\*\\'")
   "List of regexps that match buffer names that will never be killed."
@@ -105,7 +105,7 @@ Default: 30 minutes."
     (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
     (setq buffer-terminator--kill-inactive-buffers-timer nil)))
 
-(defcustom buffer-terminator-kill-buffers-interval (* 10 60)
+(defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
 Default: 10 minutes."
   :type 'integer
@@ -347,8 +347,8 @@ and not visible based on a defined timeout."
                   #'buffer-terminator--update-buffer-last-view-time)
 
         (buffer-terminator--cancel-timer)
-        (customize-set-variable 'buffer-terminator-kill-buffers-interval
-                                buffer-terminator-kill-buffers-interval))
+        (customize-set-variable 'buffer-terminator-interval
+                                buffer-terminator-interval))
     (remove-hook 'window-state-change-hook
                  #'buffer-terminator--update-buffer-last-view-time)
     (buffer-terminator--cancel-timer)))
