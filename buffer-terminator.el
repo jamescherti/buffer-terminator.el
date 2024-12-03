@@ -106,6 +106,14 @@ Default: 30 minutes."
     (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
     (setq buffer-terminator--kill-inactive-buffers-timer nil)))
 
+(defun buffer-terminator--start-timer (seconds)
+  "Start the `buffer-terminator' timer every SECONDS."
+  (setq buffer-terminator--kill-inactive-buffers-timer
+        (run-with-timer
+         seconds
+         seconds
+         'buffer-terminator--kill-all-non-visible-timed-out-buffers)))
+
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
 Default: 10 minutes."
@@ -114,11 +122,7 @@ Default: 10 minutes."
   :set (lambda (symbol value)
          (buffer-terminator--cancel-timer)
          (set-default symbol value)
-         (setq buffer-terminator--kill-inactive-buffers-timer
-               (run-with-timer
-                value
-                value
-                'buffer-terminator--kill-all-non-visible-timed-out-buffers))))
+         (buffer-terminator--start-timer value)))
 
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
@@ -346,10 +350,8 @@ and not visible based on a defined timeout."
         ;;   activity.
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)
-
         (buffer-terminator--cancel-timer)
-        (customize-set-variable 'buffer-terminator-interval
-                                buffer-terminator-interval))
+        (buffer-terminator--start-timer buffer-terminator-interval))
     (remove-hook 'window-state-change-hook
                  #'buffer-terminator--update-buffer-last-view-time)
     (buffer-terminator--cancel-timer)))
