@@ -102,9 +102,10 @@ Enable verbose mode to log buffer cleanup events:
 Keep all special buffers by setting the following option to `t`:
 
 ```elisp
-(setq buffer-terminator-ignore-special-buffers t)
+(setq buffer-terminator-keep-special-buffers t)
 ```
 
+**IMPORTANT:** It is generally NOT recommended to set this to nil. If you choose to set it to nil, ensure that the special buffers you want to keep are added to `buffer-terminator-ignore-buffer-names` and `buffer-terminator-ignore-buffer-regexps`.
 
 ### Ignore Specific Buffers
 
@@ -124,7 +125,7 @@ Or by regular expression:
                                                 "\\` \\*Echo Area "))
 ```
 
-Keep in mind that when `buffer-terminator-ignore-special-buffers` is set to `t`, special buffers that start and end with `*` are automatically ignored and will not be killed, even if they are not explicitly listed in `buffer-terminator-ignore-buffer-regexps` or `buffer-terminator-ignore-buffer-names`.
+Keep in mind that when `buffer-terminator-keep-special-buffers` is set to `t`, special buffers that start and end with `*` are automatically ignored and will not be killed, even if they are not explicitly listed in `buffer-terminator-ignore-buffer-regexps` or `buffer-terminator-ignore-buffer-names`.
 
 ## Author and License
 

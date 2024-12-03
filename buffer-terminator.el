@@ -51,21 +51,24 @@
 (defcustom buffer-terminator-ignore-buffer-names
   '("*scratch*"
     "*Messages*"
-    "*Async-native-compile-log*"
-    "*Compile-Log*")
+    "*Async-native-compile-log*")
   "List of buffer names that will never be killed."
   :type '(repeat (string :tag "Buffer Name")))
 
 (defcustom buffer-terminator-ignore-buffer-regexps
   '("\\` \\*Minibuf-.*\\*\\'"
-    "\\` \\*Echo Area ")
+    "\\` \\*Echo Area '")
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat
           (choice (regexp :tag "Regexp matching Buffer Name")
                   (function :tag "Predicate function"))))
 
-(defcustom buffer-terminator-ignore-special-buffers t
-  "Non-nil to make buffer-terminator always keep special buffers."
+(defcustom buffer-terminator-keep-special-buffers t
+  "If non-nil, `buffer-terminator' will never kill special buffers.
+It is generally NOT recommended to set this to nil.
+If you choose to set it to nil, ensure that the special buffers you want to keep
+are added to `buffer-terminator-ignore-buffer-names' and
+`buffer-terminator-ignore-buffer-regexps'."
   :type 'boolean
   :group 'buffer-terminator)
 
@@ -122,10 +125,10 @@ The message is formatted with the provided arguments ARGS."
     (setq buffer (current-buffer)))
   (with-current-buffer buffer
     (let ((buffer-name (buffer-name)))
-      (and (or (and (or (string-prefix-p "*" buffer-name)
-                        (string-prefix-p " *" buffer-name))
-                    (string-suffix-p "*" buffer-name))
-               (derived-mode-p 'special-mode))))))
+      (or (and (or (string-prefix-p "*" buffer-name)
+                   (string-prefix-p " *" buffer-name))
+               (string-suffix-p "*" buffer-name))
+          (derived-mode-p 'special-mode)))))
 
 (defun buffer-terminator--keep-buffer-p (buffer &optional ignore-buffers)
   "Check if BUFFER should be excluded from being automatically killed.
@@ -141,7 +144,7 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                      (buffer-modified-p))
 
                     ;; Keep special buffers
-                    (and buffer-terminator-ignore-special-buffers
+                    (and buffer-terminator-keep-special-buffers
                          (buffer-terminator--special-buffer-p))
 
                     ;; Keep ignored buffers
