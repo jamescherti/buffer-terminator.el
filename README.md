@@ -79,7 +79,8 @@ Exclude specific buffers from being killed by name:
 Or by regular expression:
 
 ```elisp
-(setq buffer-terminator-ignore-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'" "\\` \\*Echo Area "))
+(setq buffer-terminator-ignore-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'"
+                                                "\\` \\*Echo Area "))
 ```
 
 ### Timeout for Inactivity
@@ -95,7 +96,8 @@ Set the inactivity timeout (in seconds) after which buffers are considered inact
 Define how frequently the cleanup process should run (default is every 5 minutes):
 
 ```elisp
-(setopt buffer-terminator-kill-buffers-interval (* 5 60)) ; 5 minutes
+(customize-set-variable
+ 'buffer-terminator-kill-buffers-interval (* 5 60)) ; 5 minutes
 ```
 
 ### Verbose Mode

@@ -23,7 +23,17 @@
 ;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; Terminate inactive buffers automatically
+;; The buffer-terminator Emacs package automatically terminates inactive buffers
+;; to help maintain a clean and efficient workspace.
+;;
+;; It provides configurable options to determine which buffers to keep, a
+;; timeout for inactivity, and periodic cleanup intervals.
+;;
+;;
+;; Links:
+;; ------
+;; - buffer-terminator.el @GitHub:
+;;   https://github.com/jamescherti/buffer-terminator.el
 
 ;;; Code:
 
@@ -74,9 +84,8 @@ Default: 60 minutes."
   :type 'integer
   :group 'buffer-terminator
   :set (lambda (symbol value)
+         (buffer-terminator--cancel-timer)
          (set-default symbol value)
-         (when buffer-terminator--kill-inactive-buffers-timer
-           (cancel-timer buffer-terminator--kill-inactive-buffers-timer))
          (setq buffer-terminator--kill-inactive-buffers-timer
                (run-with-timer
                 value
@@ -160,10 +169,10 @@ Return nil when if buffer has never been displayed."
             ;; on changes related to the state of the window, including buffer
             ;; changes and resizing.
             (buffer-last-view
-             (if (boundp 'buffer-terminator--last-view-time)
+             (if (boundp 'buffer-terminator--buffer-display-time)
                  (float-time (time-subtract
                               (current-time)
-                              buffer-terminator--last-view-time))))
+                              buffer-terminator--buffer-display-time))))
 
             ;; The above replaced buffer-display-time because it is not updated
             ;; when switching to the window or the tab where the buffer's window
@@ -183,7 +192,8 @@ Return nil when if buffer has never been displayed."
                  (> last-display-time buffer-terminator-inactivity-timeout))
         t))))
 
-(defun buffer-terminator--kill-all-non-visible-timed-out-buffers (&optional special)
+(defun buffer-terminator--kill-all-non-visible-timed-out-buffers
+    (&optional special)
   "Kill all buffers that are inactive and not visible.
 When SPECIAL is set to t, it also kills special buffers."
   (mapc #'(lambda(buffer)
@@ -191,9 +201,11 @@ When SPECIAL is set to t, it also kills special buffers."
               (buffer-terminator--kill-buffer-if-not-visible buffer special)))
         (buffer-list)))
 
+(defvar-local buffer-terminator--buffer-display-time nil)
+
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
-  (setq-local buffer-terminator--last-view-time (current-time)))
+  (setq-local buffer-terminator--buffer-display-time (current-time)))
 
 (defun buffer-terminator--kill-buffer-if-not-visible (buffer
                                                       &optional
@@ -250,6 +262,12 @@ The buffer is killed when KILL-BUFFER is set to t."
   (let ((kill-buffer t))
     (buffer-terminator-find-dired-parent kill-buffer)))
 
+(defun buffer-terminator--cancel-timer ()
+  "Cancel the `buffer-terminator' timer."
+  (when buffer-terminator--kill-inactive-buffers-timer
+    (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
+    (setq buffer-terminator--kill-inactive-buffers-timer nil)))
+
 ;;;###autoload
 (define-minor-mode buffer-terminator-mode
   "Toggle Buffer Terminator mode.
@@ -262,11 +280,10 @@ and not visible based on a defined timeout."
       (progn
         ;; window-selection-change-functions: Focuses specifically on when the
         ;; user changes the selected window, which is useful for tracking user
-        ;; interactions with window selection.
-        ;; For tracking when a user shows a buffer after switching tabs or
-        ;; windows, window-selection-change-functions is likely the most
-        ;; appropriate hook, as it directly captures changes in window
-        ;; selection.
+        ;; interactions with window selection. For tracking when a user shows a
+        ;; buffer after switching tabs or windows,
+        ;; window-selection-change-functions is likely the most appropriate
+        ;; hook, as it directly captures changes in window selection.
         ;; (add-hook 'window-selection-change-functions
         ;;           #'buffer-terminator--update-buffer-last-view-time)
         ;;
@@ -279,28 +296,22 @@ and not visible based on a defined timeout."
         ;; (add-hook 'window-configuration-change-hook
         ;;           #'buffer-terminator--update-buffer-last-view-time)
         ;;
-        ;; This one works better:
-        ;; window-state-change-hook: More focused on changes related to the
-        ;; state of the window, including buffer changes and resizing.
-        ;; window-configuration-change-hook might be used if you need to track
-        ;; more general configuration changes.
+        ;; This one works better: window-state-change-hook: More focused on
+        ;; changes related to the state of the window, including buffer changes
+        ;; and resizing. window-configuration-change-hook might be used if you
+        ;; need to track more general configuration changes.
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)
 
         ;; (add-hook 'after-change-functions
         ;;           #'buffer-terminator--update-buffer-last-view-time)
 
-        (unless buffer-terminator--kill-inactive-buffers-timer
-          (setq buffer-terminator--kill-inactive-buffers-timer
-                (run-with-timer
-                 buffer-terminator-kill-buffers-interval
-                 buffer-terminator-kill-buffers-interval
-                 'buffer-terminator--kill-all-non-visible-timed-out-buffers))))
-    (remove-hook 'window-selection-change-functions
+        (buffer-terminator--cancel-timer)
+        (customize-set-variable 'buffer-terminator-kill-buffers-interval
+                                buffer-terminator-kill-buffers-interval))
+    (remove-hook 'window-state-change-hook
                  #'buffer-terminator--update-buffer-last-view-time)
-    (when buffer-terminator--kill-inactive-buffers-timer
-      (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
-      (setq buffer-terminator--kill-inactive-buffers-timer nil))))
+    (buffer-terminator--cancel-timer)))
 
 (provide 'buffer-terminator)
 ;;; buffer-terminator.el ends here
