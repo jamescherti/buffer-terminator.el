@@ -66,6 +66,14 @@ buffer in the selected window."
   :type 'boolean
   :group 'buffer-terminator)
 
+(defcustom buffer-terminator-keep-buffers-with-process nil
+  "When non-nil, do not kill buffers associated with running processes.
+Process buffers are buffers where an active process is running. It is generally
+discouraged to set this to nil, as doing so may result in the termination of
+such buffers, potentially disrupting active processes."
+  :type 'boolean
+  :group 'buffer-terminator)
+
 (defcustom buffer-terminator-inactivity-timeout (* 30 60)
   "Time in seconds before a buffer is considered inactive.
 Default: 30 minutes."
@@ -189,7 +197,8 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                          (buffer-terminator--buffer-visible-p buffer))
 
                     ;; Keep buffers that contain processes
-                    (get-buffer-process buffer)
+                    (and buffer-terminator-keep-buffers-with-process
+                         (get-buffer-process buffer))
 
                     ;; Keep ignored buffer names
                     (cl-find buffer-name
