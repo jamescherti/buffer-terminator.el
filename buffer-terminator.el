@@ -68,8 +68,9 @@
 ;; This list of regexp is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-keep-buffer-regexps
-  '("\\` \\*Minibuf-[0-9]+\\'"
+  '("\\` \\*Minibuf-[0-9]+\\*\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
+    "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
     "\\` \\*Echo Area [0-9]+\\*\\'")
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat
