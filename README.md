@@ -7,6 +7,8 @@ The `buffer-terminator` Emacs package automatically terminates inactive buffers 
 
 It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
 
+By default, `buffer-terminator-mode` terminates all file-visiting and dired buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout`. Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option provided below.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
@@ -16,11 +18,11 @@ It provides configurable options to determine which buffers to keep, a timeout f
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
     - [Installing with use-package and :vc (Built-in feature in Emacs version >= 30)](#installing-with-use-package-and-vc-built-in-feature-in-emacs-version--30)
   - [Configuration](#configuration)
+    - [Preserve Special Buffers](#preserve-special-buffers)
     - [Ignore Specific Buffers](#ignore-specific-buffers)
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
     - [Verbose Mode](#verbose-mode)
-    - [Preserve Special Buffers](#preserve-special-buffers)
   - [Author and License](#author-and-license)
   - [Links](#links)
 
@@ -68,6 +70,15 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
 
 ## Configuration
 
+### Preserve Special Buffers
+
+Keep all special buffers by setting the following option to `t`:
+
+```elisp
+(setq buffer-terminator-ignore-special-buffers t)
+```
+
+
 ### Ignore Specific Buffers
 
 Exclude specific buffers from being killed by name:
@@ -85,6 +96,8 @@ Or by regular expression:
 (setq buffer-terminator-ignore-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'"
                                                 "\\` \\*Echo Area "))
 ```
+
+Keep in mind that when `buffer-terminator-ignore-special-buffers` is set to `t`, special buffers that start and end with `*` are automatically ignored and will not be killed, even if they are not explicitly listed in `buffer-terminator-ignore-buffer-regexps` or `buffer-terminator-ignore-buffer-names`.
 
 ### Timeout for Inactivity
 
@@ -109,14 +122,6 @@ Enable verbose mode to log buffer cleanup events:
 
 ```elisp
 (setq buffer-terminator-verbose t)
-```
-
-### Preserve Special Buffers
-
-Keep all special buffers by setting the following option to `t`:
-
-```elisp
-(setq buffer-terminator-ignore-special-buffers t)
 ```
 
 ## Author and License
