@@ -272,7 +272,6 @@ When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
                                                        kill-special-buffers)
   "Kill all buffers that are not visible.
 When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
-  (interactive)
   (let ((buffer-killed nil))
     (mapc #'(lambda(buffer)
               (when (buffer-terminator--kill-buffer-if-not-visible
@@ -285,7 +284,6 @@ When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
 (defun buffer-terminator-find-dired-parent (&optional kill-buffer)
   "Open the current directory in a `dired' buffer and select the current file.
 The buffer is killed when KILL-BUFFER is set to t."
-  (interactive)
   (let* ((buffer (or (buffer-base-buffer)
                      (current-buffer)))
          (file-name (buffer-file-name buffer)))
@@ -302,7 +300,6 @@ The buffer is killed when KILL-BUFFER is set to t."
 
 (defun buffer-terminator-find-dired-parent-kill-buffer ()
   "Open the current directory in a `dired' buffer and select the current file."
-  (interactive)
   (let ((kill-buffer t))
     (buffer-terminator-find-dired-parent kill-buffer)))
 
