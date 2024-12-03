@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-The `buffer-terminator` Emacs package automatically terminates inactive buffers to help maintain a clean and efficient workspace.
+The `buffer-terminator` Emacs package automatically terminates inactive buffers to help maintain a clean and efficient workspace. It also helps improve Emacs performance by reducing the number of open buffers.
 
 It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
 

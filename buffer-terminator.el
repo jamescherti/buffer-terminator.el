@@ -48,16 +48,27 @@
           :tag "Github"
           "https://github.com/jamescherti/buffer-terminator.el"))
 
+;; This list is only useful when `buffer-terminator-keep-special-buffers' is set
+;; to nil:
 (defcustom buffer-terminator-ignore-buffer-names
   '("*scratch*"
     "*Messages*"
+    " *eldoc*"
+    " *code-conversion-work*"
+    " *Compiler Input*"
+    " *jka-compr-wr-temp*"
+    " *consult-async*"
+    " *consult-async-stderr*"
     "*Async-native-compile-log*")
   "List of buffer names that will never be killed."
   :type '(repeat (string :tag "Buffer Name")))
 
+;; This list of regexp is only useful when
+;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-ignore-buffer-regexps
   '("\\` \\*Minibuf-.*\\*\\'"
-    "\\` \\*Echo Area '")
+    "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
+    "\\` \\*Echo Area [0-9]+\\*\\'")
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat
           (choice (regexp :tag "Regexp matching Buffer Name")
@@ -136,16 +147,19 @@ Returns non-nil if BUFFER should be kept.
 IGNORE-BUFFERS is a list of buffers to ignore."
   (if (buffer-live-p buffer)
       (with-current-buffer buffer
-        (let ((buffer-name (buffer-name)))
+        (let ((buffer-name (buffer-name))
+              (file-name (buffer-file-name (buffer-base-buffer))))
           (when (or (not buffer-name)
                     ;; Keep unsaved buffers
-                    (and
-                     (buffer-file-name (or (buffer-base-buffer buffer) buffer))
-                     (buffer-modified-p))
+                    (and file-name
+                         (buffer-file-name (or (buffer-base-buffer buffer)
+                                               buffer))
+                         (buffer-modified-p))
 
-                    ;; Keep special buffers
-                    (and buffer-terminator-keep-special-buffers
-                         (buffer-terminator--special-buffer-p))
+                    ;; Special buffers
+                    (and (not file-name)
+                         buffer-terminator-keep-special-buffers
+                         (buffer-terminator--special-buffer-p buffer))
 
                     ;; Keep ignored buffers
                     (and ignore-buffers
@@ -178,6 +192,12 @@ IGNORE-BUFFERS is a list of buffers to ignore."
             ;; t = Keep buffer
             t)))))
 
+(defvar-local buffer-terminator--buffer-display-time nil)
+
+(defun buffer-terminator--update-buffer-last-view-time ()
+  "Update the last view time for the current buffer."
+  (setq-local buffer-terminator--buffer-display-time (current-time)))
+
 (defun buffer-terminator--last-display-time (buffer)
   "Return the time in seconds since BUFFER was last displayed.
 Return nil when if buffer has never been displayed."
@@ -188,10 +208,15 @@ Return nil when if buffer has never been displayed."
             ;; on changes related to the state of the window, including buffer
             ;; changes and resizing.
             (buffer-last-view
-             (if (boundp 'buffer-terminator--buffer-display-time)
-                 (float-time (time-subtract
-                              (current-time)
-                              buffer-terminator--buffer-display-time))))
+             (cond ((bound-and-true-p buffer-terminator--buffer-display-time)
+                    (float-time (time-subtract
+                                 (current-time)
+                                 buffer-terminator--buffer-display-time)))
+
+                   ;; (buffer-display-time
+                   ;;  (float-time (time-subtract (current-time)
+                   ;;                             buffer-display-time)))
+                   ))
 
             ;; The above replaced buffer-display-time because it is not updated
             ;; when switching to the window or the tab where the buffer's window
@@ -207,9 +232,12 @@ Return nil when if buffer has never been displayed."
   "Return non-nil when BUFFER is inactive."
   (when buffer
     (let ((last-display-time (buffer-terminator--last-display-time buffer)))
-      (when (and last-display-time
-                 (> last-display-time buffer-terminator-inactivity-timeout))
-        t))))
+      (if (not last-display-time)
+          ;; Never displayed = inactive
+          t
+        (when (and last-display-time
+                   (> last-display-time buffer-terminator-inactivity-timeout))
+          t)))))
 
 (defun buffer-terminator--kill-all-non-visible-timed-out-buffers
     (&optional special)
@@ -219,12 +247,6 @@ When SPECIAL is set to t, it also kills special buffers."
             (when (buffer-terminator--buffer-inactive-p buffer)
               (buffer-terminator--kill-buffer-if-not-visible buffer special)))
         (buffer-list)))
-
-(defvar-local buffer-terminator--buffer-display-time nil)
-
-(defun buffer-terminator--update-buffer-last-view-time ()
-  "Update the last view time for the current buffer."
-  (setq-local buffer-terminator--buffer-display-time (current-time)))
 
 (defun buffer-terminator--kill-buffer-if-not-visible (buffer
                                                       &optional
