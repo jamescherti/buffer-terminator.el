@@ -53,8 +53,10 @@
 (defcustom buffer-terminator-keep-buffer-names
   '("*scratch*"
     "*Messages*"
+    "*Compile-Log*"
     " *eldoc*"
     " *code-conversion-work*"
+    "*compile-angel:debug*"
     " *Compiler Input*"
     " *jka-compr-wr-temp*"
     " *consult-async*"
