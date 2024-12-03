@@ -50,7 +50,7 @@
 
 ;; This list is only useful when `buffer-terminator-keep-special-buffers' is set
 ;; to nil:
-(defcustom buffer-terminator-ignore-buffer-names
+(defcustom buffer-terminator-keep-buffer-names
   '("*scratch*"
     "*Messages*"
     " *eldoc*"
@@ -65,7 +65,7 @@
 
 ;; This list of regexp is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-ignore-buffer-regexps
+(defcustom buffer-terminator-keep-buffer-regexps
   '("\\` \\*Minibuf-.*\\*\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*Echo Area [0-9]+\\*\\'")
@@ -78,8 +78,8 @@
   "If non-nil, `buffer-terminator' will never kill special buffers.
 It is generally NOT recommended to set this to nil.
 If you choose to set it to nil, ensure that the special buffers you want to keep
-are added to `buffer-terminator-ignore-buffer-names' and
-`buffer-terminator-ignore-buffer-regexps'."
+are added to `buffer-terminator-keep-buffer-names' and
+`buffer-terminator-keep-buffer-regexps'."
   :type 'boolean
   :group 'buffer-terminator)
 
@@ -173,18 +173,18 @@ IGNORE-BUFFERS is a list of buffers to ignore."
 
                     ;; Keep ignored buffer names
                     (cl-find buffer-name
-                             buffer-terminator-ignore-buffer-names
+                             buffer-terminator-keep-buffer-names
                              :test #'string-equal)
 
                     ;;(cl-some (lambda (regex)
                     ;;           (if (functionp regex)
                     ;;               (funcall regex buffer-name)
                     ;;             (string-match-p regex buffer-name)))
-                    ;;         buffer-terminator-ignore-buffer-regexps)
+                    ;;         buffer-terminator-keep-buffer-regexps)
 
                     ;; Keep ignored buffer regexp
                     (cl-find buffer-name
-                             buffer-terminator-ignore-buffer-regexps
+                             buffer-terminator-keep-buffer-regexps
                              :test (lambda (buffer-name regex)
                                      (if (functionp regex)
                                          (funcall regex buffer-name)

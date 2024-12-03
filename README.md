@@ -107,14 +107,14 @@ Keep all special buffers by setting the following option to `t`:
 (setq buffer-terminator-keep-special-buffers t)
 ```
 
-**IMPORTANT:** It is generally NOT recommended to set this to nil. If you choose to set it to nil, ensure that the special buffers you want to keep are added to `buffer-terminator-ignore-buffer-names` and `buffer-terminator-ignore-buffer-regexps`.
+**IMPORTANT:** It is generally NOT recommended to set this to nil. If you choose to set it to nil, ensure that the special buffers you want to keep are added to `buffer-terminator-keep-buffer-names` and `buffer-terminator-keep-buffer-regexps`.
 
 ### Ignore Specific Buffers
 
 Exclude specific buffers from being killed by name:
 
 ```elisp
-(setq buffer-terminator-ignore-buffer-names '("*scratch*"
+(setq buffer-terminator-keep-buffer-names '("*scratch*"
                                               "*Messages*"
                                               "*Async-native-compile-log*"
                                               "*Compile-Log*"))
@@ -123,11 +123,11 @@ Exclude specific buffers from being killed by name:
 Or by regular expression:
 
 ```elisp
-(setq buffer-terminator-ignore-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'"
+(setq buffer-terminator-keep-buffer-regexps '("\\` \\*Minibuf-.*\\*\\'"
                                                 "\\` \\*Echo Area "))
 ```
 
-Keep in mind that when `buffer-terminator-keep-special-buffers` is set to `t`, special buffers that start and end with `*` are automatically ignored and will not be killed, even if they are not explicitly listed in `buffer-terminator-ignore-buffer-regexps` or `buffer-terminator-ignore-buffer-names`.
+Keep in mind that when `buffer-terminator-keep-special-buffers` is set to `t`, special buffers that start and end with `*` are automatically ignored and will not be killed, even if they are not explicitly listed in `buffer-terminator-keep-buffer-regexps` or `buffer-terminator-keep-buffer-names`.
 
 ## Author and License
 
