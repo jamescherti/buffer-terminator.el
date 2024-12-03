@@ -86,8 +86,7 @@ Set the inactivity timeout (in seconds) after which buffers are considered inact
 Define how frequently the cleanup process should run (default is every 10 minutes):
 
 ```elisp
-(customize-set-variable
- 'buffer-terminator-interval (* 10 60)) ; 10 minutes
+(customize-set-variable 'buffer-terminator-interval (* 10 60)) ; 10 minutes
 ```
 
 (Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
