@@ -48,35 +48,6 @@
           :tag "Github"
           "https://github.com/jamescherti/buffer-terminator.el"))
 
-;; This list is only useful when `buffer-terminator-keep-special-buffers' is set
-;; to nil:
-(defcustom buffer-terminator-keep-buffer-names
-  '("*scratch*"
-    "*Messages*"
-    "*Compile-Log*"
-    " *eldoc*"
-    " *code-conversion-work*"
-    "*compile-angel:debug*"
-    " *Compiler Input*"
-    " *jka-compr-wr-temp*"
-    " *consult-async*"
-    " *consult-async-stderr*"
-    "*Async-native-compile-log*")
-  "List of buffer names that will never be killed."
-  :type '(repeat (string :tag "Buffer Name")))
-
-;; This list of regexp is only useful when
-;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-keep-buffer-regexps
-  '("\\` \\*Minibuf-[0-9]+\\*\\'"
-    "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
-    "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
-    "\\` \\*Echo Area [0-9]+\\*\\'")
-  "List of regexps that match buffer names that will never be killed."
-  :type '(repeat
-          (choice (regexp :tag "Regexp matching Buffer Name")
-                  (function :tag "Predicate function"))))
-
 (defcustom buffer-terminator-keep-special-buffers t
   "If non-nil, `buffer-terminator' will never kill special buffers.
 It is generally NOT recommended to set this to nil.
@@ -96,6 +67,36 @@ Default: 30 minutes."
   "Enable verbose mode to log when a buffer is automatically killed."
   :type 'boolean
   :group 'buffer-terminator)
+
+;; This list is ignored by default. It is only useful when
+;; `buffer-terminator-keep-special-buffers' is set to nil:
+(defcustom buffer-terminator-keep-buffer-names
+  '("*scratch*"
+    "*Messages*"
+    "*Compile-Log*"
+    " *eldoc*"
+    " *code-conversion-work*"
+    "*compile-angel:debug*"
+    " *markdown-code-fontification:emacs-lisp-mode*"  ; markdown-mode
+    " *Compiler Input*"
+    " *jka-compr-wr-temp*"
+    " *consult-async*"
+    " *consult-async-stderr*"
+    "*Async-native-compile-log*")
+  "List of buffer names that will never be killed."
+  :type '(repeat (string :tag "Buffer Name")))
+
+;; This list of regexp is ignored by default. It is only useful when
+;; `buffer-terminator-keep-special-buffers' is set to nil:
+(defcustom buffer-terminator-keep-buffer-regexps
+  '("\\` \\*Minibuf-[0-9]+\\*\\'"
+    "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
+    "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
+    "\\` \\*Echo Area [0-9]+\\*\\'")
+  "List of regexps that match buffer names that will never be killed."
+  :type '(repeat
+          (choice (regexp :tag "Regexp matching Buffer Name")
+                  (function :tag "Predicate function"))))
 
 (defvar buffer-terminator--kill-inactive-buffers-timer nil
   "Timer object for killing inactive buffers.")
