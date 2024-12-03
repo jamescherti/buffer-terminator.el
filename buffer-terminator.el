@@ -53,13 +53,13 @@
     "*Messages*"
     "*Async-native-compile-log*"
     "*Compile-Log*")
-  "List of buffer names which will never be killed."
+  "List of buffer names that will never be killed."
   :type '(repeat (string :tag "Buffer Name")))
 
 (defcustom buffer-terminator-ignore-buffer-regexps
   '("\\` \\*Minibuf-.*\\*\\'"
     "\\` \\*Echo Area ")
-  "List of regexp saying which buffers will never be killed."
+  "List of regexps that match buffer names that will never be killed."
   :type '(repeat
           (choice (regexp :tag "Regexp matching Buffer Name")
                   (function :tag "Predicate function"))))
@@ -82,6 +82,12 @@ Default: 60 minutes."
 
 (defvar buffer-terminator--kill-inactive-buffers-timer nil
   "Timer object for killing inactive buffers.")
+
+(defun buffer-terminator--cancel-timer ()
+  "Cancel the `buffer-terminator' timer."
+  (when buffer-terminator--kill-inactive-buffers-timer
+    (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
+    (setq buffer-terminator--kill-inactive-buffers-timer nil)))
 
 (defcustom buffer-terminator-kill-buffers-interval (* 5 60)
   "Frequency in seconds to repeat the buffer cleanup process."
@@ -152,6 +158,12 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                     (cl-find buffer-name
                              buffer-terminator-ignore-buffer-names
                              :test #'string-equal)
+
+                    ;;(cl-some (lambda (regex)
+                    ;;           (if (functionp regex)
+                    ;;               (funcall regex buffer-name)
+                    ;;             (string-match-p regex buffer-name)))
+                    ;;         buffer-terminator-ignore-buffer-regexps)
 
                     ;; Keep ignored buffer regexp
                     (cl-find buffer-name
@@ -266,12 +278,6 @@ The buffer is killed when KILL-BUFFER is set to t."
   (let ((kill-buffer t))
     (buffer-terminator-find-dired-parent kill-buffer)))
 
-(defun buffer-terminator--cancel-timer ()
-  "Cancel the `buffer-terminator' timer."
-  (when buffer-terminator--kill-inactive-buffers-timer
-    (cancel-timer buffer-terminator--kill-inactive-buffers-timer)
-    (setq buffer-terminator--kill-inactive-buffers-timer nil)))
-
 ;;;###autoload
 (define-minor-mode buffer-terminator-mode
   "Toggle Buffer Terminator mode.
@@ -304,11 +310,16 @@ and not visible based on a defined timeout."
         ;; changes related to the state of the window, including buffer changes
         ;; and resizing. window-configuration-change-hook might be used if you
         ;; need to track more general configuration changes.
+        ;; - Buffer Visibility Changes: It detects when a buffer becomes visible
+        ;;   or hidden as a result of changes in the window state.
+        ;; - Window Configuration Changes: It captures events like window
+        ;;   splits, deletions, and resizing that might affect buffer
+        ;;   visibility.
+        ;; - Buffer Switches in Windows: It triggers when the displayed buffer
+        ;;   in a window changes, which aligns with the goal of tracking buffer
+        ;;   activity.
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)
-
-        ;; (add-hook 'after-change-functions
-        ;;           #'buffer-terminator--update-buffer-last-view-time)
 
         (buffer-terminator--cancel-timer)
         (customize-set-variable 'buffer-terminator-kill-buffers-interval
