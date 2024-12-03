@@ -1,4 +1,4 @@
-# buffer-terminator.el - Automatically Terminate Inactive Emacs Buffers
+# buffer-terminator.el - Terminate Inactive Emacs Buffers Automatically
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
@@ -17,7 +17,7 @@ By default:
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el - Automatically Terminate Inactive Emacs Buffers](#buffer-terminatorel---automatically-terminate-inactive-emacs-buffers)
+- [buffer-terminator.el - Terminate Inactive Emacs Buffers Automatically](#buffer-terminatorel---terminate-inactive-emacs-buffers-automatically)
   - [Features](#features)
   - [Installation](#installation)
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)

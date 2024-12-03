@@ -1,4 +1,4 @@
-;;; buffer-terminator.el --- Terminate inactive buffers automatically  -*- lexical-binding: t; -*-
+;;; buffer-terminator.el --- Terminate/Kill Inactive Buffers Automatically  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 James Cherti | https://www.jamescherti.com/contact/
 
