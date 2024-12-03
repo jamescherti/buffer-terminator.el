@@ -64,7 +64,7 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
 
 ``` emacs-lisp
 (use-package buffer-terminator
-  :demand t
+  :ensure t
   :vc (:url "https://github.com/jamescherti/buffer-terminator.el"
        :rev :newest)
   :config
