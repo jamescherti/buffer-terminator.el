@@ -68,7 +68,7 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
   :vc (:url "https://github.com/jamescherti/buffer-terminator.el"
        :rev :newest)
   :config
-    (buffer-terminator-mode 1))
+  (buffer-terminator-mode 1))
 ```
 
 ## Configuration
