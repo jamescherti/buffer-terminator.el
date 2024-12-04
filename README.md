@@ -107,7 +107,7 @@ Define how frequently the cleanup process should run (default is every 10 minute
 ### Why? What problem is this aiming to solve?
 
 - Some users prefer terminating inactive buffers to improve Emacs' performance by reducing the number of open buffers. This, in turn, decreases the load from active modes, timers, and other processes associated with those buffers. Buffer-local modes and their timers consume both CPU and memory. Why keep them alive when they can be safely removed?
-- Some users prefer to keep only the buffers they actively need open, helping to declutter the buffer list.
+- Some users prefer to keep only the buffers they actively need open, helping to declutter the buffer list. Decluttering the buffer list can also improve the performance of other packages. For example, saving and loading an [easysession](https://github.com/jamescherti/easysession.el) or desktop.el is much faster when the buffer list is reduced.
 - Some users prefer that buffers not part of an active window be automatically closed, as they are not actively needed.
 
 ## Author and License
