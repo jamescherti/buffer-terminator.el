@@ -370,6 +370,15 @@ and not visible based on a defined timeout."
   :group 'buffer-terminator
   (if buffer-terminator-mode
       (progn
+        ;; Initialize the last view time for all buffers
+        (dolist (buffer (buffer-list))
+          ;; Update the last view time for the current buffer
+          (with-current-buffer buffer
+            (buffer-terminator--update-buffer-last-view-time)))
+
+        (add-hook 'after-change-major-mode-hook
+                  #'buffer-terminator--update-buffer-last-view-time)
+
         ;; window-selection-change-functions: Focuses specifically on when the
         ;; user changes the selected window, which is useful for tracking user
         ;; interactions with window selection. For tracking when a user shows a
