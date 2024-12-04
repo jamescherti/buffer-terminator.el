@@ -92,37 +92,15 @@ are added to `buffer-terminator-keep-buffer-names' and
 
 ;; THIS LIST IS IGNORED BY DEFAULT. It is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-keep-buffer-names
-  '("*scratch*"
-    "*Messages*"
-    "*Compile-Log*"
-    "*Warnings*"
-    " *eldoc*"
-    " *code-conversion-work*"
-    "*compile-angel:debug*"
-    " *Compiler Input*"
-    " *jka-compr-wr-temp*"
-    " *consult-async*"
-    " *consult-async-stderr*"
-    "*Async-native-compile-log*")
+(defcustom buffer-terminator-keep-buffer-names nil
   "List of buffer names that will never be killed."
   :type '(repeat (string :tag "Buffer Name")))
 
 ;; THIS LIST OF REGEXP IS IGNORED BY DEFAULT. It is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-keep-buffer-names-regexps
-  '("\\` \\*Minibuf-[0-9]+\\*\\'"
-    "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
-    "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
-    "\\` \\*flymake-.*\\*\\'"
-    "\\`\\(?: \\)?\\*EGLOT .*\\*\\'"
-    "\\` \\*markdown-code-fontification:.*\\*\\'"
-    "\\` \\*org-src-fontification:.*\\*\\'"
-    "\\` \\*Echo Area [0-9]+\\*\\'")
+(defcustom buffer-terminator-keep-buffer-names-regexps nil
   "List of regexps that match buffer names that will never be killed."
-  :type '(repeat
-          (choice (regexp :tag "Regexp matching Buffer Name")
-                  (function :tag "Predicate function"))))
+  :type '(repeat regexp))
 
 (defcustom buffer-terminator-keep-file-visiting-buffers nil
   "When non-nil, `buffer-terminator' will not kill buffers visiting files.
