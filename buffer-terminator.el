@@ -417,7 +417,8 @@ and not visible based on a defined timeout."
         (dolist (buffer (buffer-list))
           ;; Update the last view time for the current buffer
           (with-current-buffer buffer
-            (buffer-terminator--update-buffer-last-view-time)))
+            (unless buffer-terminator--buffer-display-time
+              (buffer-terminator--update-buffer-last-view-time))))
 
         (add-hook 'after-change-major-mode-hook
                   #'buffer-terminator--update-buffer-last-view-time)
