@@ -155,14 +155,14 @@ are added to `buffer-terminator-keep-buffer-names' and
 ;; This is only useful when 'buffer-terminator-keep-special-buffers' is set.
 (defcustom buffer-terminator-kill-special-buffer-names nil
   "List of special buffer names that can be killed.
-Allows to cancel effect of 'buffer-terminator-keep-special-buffers'
+Allows to cancel effect of `buffer-terminator-keep-special-buffers'
 for some buffers that you don't want to keep."
   :type '(repeat (string :tag "Buffer Name")))
 
 ;; This is only useful when 'buffer-terminator-keep-special-buffers' is set.
 (defcustom buffer-terminator-kill-special-buffer-names-regexps nil
   "List of regexps that match special buffer names that can be killed.
-Allows to cancel effect of 'buffer-terminator-keep-special-buffers'
+Allows to cancel effect of `buffer-terminator-keep-special-buffers'
 for some buffers that you don't want to keep."
   :type '(repeat regexp))
 
@@ -192,8 +192,10 @@ The message is formatted with the provided arguments ARGS."
           (derived-mode-p 'special-mode)))))
 
 (defun buffer-terminator--match-buffer-p (buffer match-names match-names-regexp)
-  "Check if BUFFER is matched by one of the names or name regexps."
-  (let ((buffer-name (buffer-name)))
+  "Check if BUFFER is matched by one of the names or name regexps.
+MATCH-NAMES is a list of names.
+MATCH-NAMES-REGEXP is a list of regular expressions."
+  (let ((buffer-name (buffer-name buffer)))
     (when buffer-name
       (or (and
            match-names
