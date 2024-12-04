@@ -54,6 +54,8 @@ To install `buffer-terminator` with `straight.el`:
              :type git
              :host github
              :repo "jamescherti/buffer-terminator.el")
+  :custom
+  (buffer-terminator-verbose nil)
   :config
   (buffer-terminator-mode 1))
 ```
@@ -67,6 +69,8 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
   :ensure t
   :vc (:url "https://github.com/jamescherti/buffer-terminator.el"
        :rev :newest)
+  :custom
+  (buffer-terminator-verbose nil)
   :config
   (buffer-terminator-mode 1))
 ```
