@@ -79,14 +79,14 @@ buffer in the selected window."
 ;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
 ;; you are doing. If you decide to set it to nil, make sure to update
 ;; `buffer-terminator-keep-buffer-names' or
-;; `buffer-terminator-keep-buffer-regexps' to preserve important special
+;; `buffer-terminator-keep-buffer-names-regexps' to preserve important special
 ;; buffers.
 (defcustom buffer-terminator-keep-special-buffers t
   "If non-nil, `buffer-terminator' will never kill special buffers.
 It is generally NOT recommended to set this to nil.
 If you choose to set it to nil, ensure that the special buffers you want to keep
 are added to `buffer-terminator-keep-buffer-names' and
-`buffer-terminator-keep-buffer-regexps'."
+`buffer-terminator-keep-buffer-names-regexps'."
   :type 'boolean
   :group 'buffer-terminator)
 
@@ -109,7 +109,7 @@ are added to `buffer-terminator-keep-buffer-names' and
 
 ;; THIS LIST OF REGEXP IS IGNORED BY DEFAULT. It is only useful when
 ;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-keep-buffer-regexps
+(defcustom buffer-terminator-keep-buffer-names-regexps
   '("\\` \\*Minibuf-[0-9]+\\*\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
@@ -243,11 +243,11 @@ IGNORE-BUFFERS is a list of buffers to ignore."
               ;;           (if (functionp regex)
               ;;               (funcall regex buffer-name)
               ;;             (string-match-p regex buffer-name)))
-              ;;         buffer-terminator-keep-buffer-regexps)
+              ;;         buffer-terminator-keep-buffer-names-regexps)
 
               ;; Keep ignored buffer regexp
               (cl-find buffer-name
-                       buffer-terminator-keep-buffer-regexps
+                       buffer-terminator-keep-buffer-names-regexps
                        :test (lambda (buffer-name regex)
                                (if (functionp regex)
                                    (funcall regex buffer-name)
