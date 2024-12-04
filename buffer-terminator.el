@@ -420,9 +420,6 @@ and not visible based on a defined timeout."
             (unless buffer-terminator--buffer-display-time
               (buffer-terminator--update-buffer-last-view-time))))
 
-        (add-hook 'after-change-major-mode-hook
-                  #'buffer-terminator--update-buffer-last-view-time)
-
         ;; window-selection-change-functions: Focuses specifically on when the
         ;; user changes the selected window, which is useful for tracking user
         ;; interactions with window selection. For tracking when a user shows a
