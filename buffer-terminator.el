@@ -76,32 +76,6 @@ buffer in the selected window."
   :type 'boolean
   :group 'buffer-terminator)
 
-;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
-;; you are doing. If you decide to set it to nil, make sure to update
-;; `buffer-terminator-keep-buffer-names' or
-;; `buffer-terminator-keep-buffer-names-regexps' to preserve important special
-;; buffers.
-(defcustom buffer-terminator-keep-special-buffers t
-  "If non-nil, `buffer-terminator' will never kill special buffers.
-It is generally NOT recommended to set this to nil.
-If you choose to set it to nil, ensure that the special buffers you want to keep
-are added to `buffer-terminator-keep-buffer-names' and
-`buffer-terminator-keep-buffer-names-regexps'."
-  :type 'boolean
-  :group 'buffer-terminator)
-
-;; THIS LIST IS IGNORED BY DEFAULT. It is only useful when
-;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-keep-buffer-names nil
-  "List of buffer names that will never be killed."
-  :type '(repeat (string :tag "Buffer Name")))
-
-;; THIS LIST OF REGEXP IS IGNORED BY DEFAULT. It is only useful when
-;; `buffer-terminator-keep-special-buffers' is set to nil:
-(defcustom buffer-terminator-keep-buffer-names-regexps nil
-  "List of regexps that match buffer names that will never be killed."
-  :type '(repeat regexp))
-
 (defcustom buffer-terminator-keep-file-visiting-buffers nil
   "When non-nil, `buffer-terminator' will not kill buffers visiting files.
 File-visiting buffers are those associated with files, whether the file is
@@ -151,6 +125,32 @@ Default: 10 minutes."
          (buffer-terminator--cancel-timer)
          (set-default symbol value)
          (buffer-terminator--start-timer value)))
+
+;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
+;; you are doing. If you decide to set it to nil, make sure to update
+;; `buffer-terminator-keep-buffer-names' or
+;; `buffer-terminator-keep-buffer-names-regexps' to preserve important special
+;; buffers.
+(defcustom buffer-terminator-keep-special-buffers t
+  "If non-nil, `buffer-terminator' will never kill special buffers.
+It is generally NOT recommended to set this to nil.
+If you choose to set it to nil, ensure that the special buffers you want to keep
+are added to `buffer-terminator-keep-buffer-names' and
+`buffer-terminator-keep-buffer-names-regexps'."
+  :type 'boolean
+  :group 'buffer-terminator)
+
+;; THIS LIST IS IGNORED BY DEFAULT. It is only useful when
+;; `buffer-terminator-keep-special-buffers' is set to nil:
+(defcustom buffer-terminator-keep-buffer-names nil
+  "List of buffer names that will never be killed."
+  :type '(repeat (string :tag "Buffer Name")))
+
+;; THIS LIST OF REGEXP IS IGNORED BY DEFAULT. It is only useful when
+;; `buffer-terminator-keep-special-buffers' is set to nil:
+(defcustom buffer-terminator-keep-buffer-names-regexps nil
+  "List of regexps that match buffer names that will never be killed."
+  :type '(repeat regexp))
 
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
