@@ -113,6 +113,7 @@ are added to `buffer-terminator-keep-buffer-names' and
   '("\\` \\*Minibuf-[0-9]+\\*\\'"
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
+    "\\` \\*flymake-.*\\*\\'"
     "\\` \\?\\*EGLOT .*\\*\\'"
     "\\` \\*markdown-code-fontification:.*\\*\\'"
     "\\` \\*org-src-fontification:.*\\*\\'"

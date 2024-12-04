@@ -23,9 +23,9 @@ By default:
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
     - [Installing with use-package and :vc (Built-in feature in Emacs version >= 30)](#installing-with-use-package-and-vc-built-in-feature-in-emacs-version--30)
   - [Configuration](#configuration)
+    - [Verbose Mode](#verbose-mode)
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
-    - [Verbose Mode](#verbose-mode)
   - [Author and License](#author-and-license)
   - [Links](#links)
 
@@ -73,6 +73,14 @@ To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
 
 ## Configuration
 
+### Verbose Mode
+
+Enable verbose mode to log buffer cleanup events:
+
+```elisp
+(setq buffer-terminator-verbose t)
+```
+
 ### Timeout for Inactivity
 
 Set the inactivity timeout (in seconds) after which buffers are considered inactive (default is 30 minutes):
@@ -90,14 +98,6 @@ Define how frequently the cleanup process should run (default is every 10 minute
 ```
 
 (Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
-
-### Verbose Mode
-
-Enable verbose mode to log buffer cleanup events:
-
-```elisp
-(setq buffer-terminator-verbose t)
-```
 
 ## Author and License
 
