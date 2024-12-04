@@ -152,6 +152,20 @@ are added to `buffer-terminator-keep-buffer-names' and
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat regexp))
 
+;; This is only useful when 'buffer-terminator-keep-special-buffers' is set.
+(defcustom buffer-terminator-kill-special-buffer-names nil
+  "List of special buffer names that can be killed.
+Allows to cancel effect of 'buffer-terminator-keep-special-buffers'
+for some buffers that you don't want to keep."
+  :type '(repeat (string :tag "Buffer Name")))
+
+;; This is only useful when 'buffer-terminator-keep-special-buffers' is set.
+(defcustom buffer-terminator-kill-special-buffer-names-regexps nil
+  "List of regexps that match special buffer names that can be killed.
+Allows to cancel effect of 'buffer-terminator-keep-special-buffers'
+for some buffers that you don't want to keep."
+  :type '(repeat regexp))
+
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
 The message is formatted with the provided arguments ARGS."
@@ -177,6 +191,29 @@ The message is formatted with the provided arguments ARGS."
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
+(defun buffer-terminator--match-buffer-p (buffer match-names match-names-regexp)
+  "Check if BUFFER is matched by one of the names or name regexps."
+  (let ((buffer-name (buffer-name)))
+    (when buffer-name
+      (or (and
+           match-names
+           (cl-find buffer-name
+                    match-names
+                    :test #'string-equal))
+
+          ;;(cl-some (lambda (regex)
+          ;;           (if (functionp regex)
+          ;;               (funcall regex buffer-name)
+          ;;             (string-match-p regex buffer-name)))
+          ;;         match-names-regexp)
+
+          (and
+           match-names-regexp
+           (cl-find buffer-name
+                    match-names-regexp
+                    :test (lambda (buffer-name regex)
+                            (string-match regex buffer-name))))))))
+
 (defun buffer-terminator--keep-buffer-p (buffer &optional ignore-buffers)
   "Check if BUFFER should be excluded from being automatically killed.
 Returns non-nil if BUFFER should be kept.
@@ -191,7 +228,11 @@ IGNORE-BUFFERS is a list of buffers to ignore."
 
          ;; Special buffers
          (and buffer-terminator-keep-special-buffers
-              (buffer-terminator--special-buffer-p buffer))
+              (buffer-terminator--special-buffer-p buffer)
+              (not (buffer-terminator--match-buffer-p
+                    buffer
+                    buffer-terminator-kill-special-buffer-names
+                    buffer-terminator-kill-special-buffer-names-regexps)))
 
          (and buffer-terminator-keep-major-modes
               (cl-find major-mode
@@ -211,28 +252,10 @@ IGNORE-BUFFERS is a list of buffers to ignore."
               (get-buffer-process buffer))
 
          ;; Keep buffer names or regular expressions
-         (let ((buffer-name (buffer-name)))
-           (when buffer-name
-             (or
-              (and
-               buffer-terminator-keep-buffer-names
-               (cl-find buffer-name
-                        buffer-terminator-keep-buffer-names
-                        :test #'string-equal))
-
-              ;;(cl-some (lambda (regex)
-              ;;           (if (functionp regex)
-              ;;               (funcall regex buffer-name)
-              ;;             (string-match-p regex buffer-name)))
-              ;;         buffer-terminator-keep-buffer-names-regexps)
-
-              ;; Keep ignored buffer regexp
-              (and
-               buffer-terminator-keep-buffer-names-regexps
-               (cl-find buffer-name
-                        buffer-terminator-keep-buffer-names-regexps
-                        :test (lambda (buffer-name regex)
-                                (string-match regex buffer-name)))))))))))
+         (buffer-terminator--match-buffer-p
+          buffer
+          buffer-terminator-keep-buffer-names
+          buffer-terminator-keep-buffer-names-regexps)))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
 
