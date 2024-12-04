@@ -23,6 +23,8 @@ When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), o
     - [Verbose Mode](#verbose-mode)
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
+  - [Frequently asked questions](#frequently-asked-questions)
+    - [Why? What problem is this aiming to solve?](#why-what-problem-is-this-aiming-to-solve)
   - [Author and License](#author-and-license)
   - [Links](#links)
 
@@ -99,6 +101,14 @@ Define how frequently the cleanup process should run (default is every 10 minute
 ```
 
 (Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
+
+## Frequently asked questions
+
+### Why? What problem is this aiming to solve?
+
+One reason to terminate inactive buffers is to improve Emacs' performance by reducing the number of open buffers, which in turn decreases the load of active modes, timers, and other processes associated with those buffers.
+
+Another reason is to ensure that only the buffers the user actively needs remain open, helping to declutter the buffer list.
 
 ## Author and License
 
