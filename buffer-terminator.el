@@ -381,8 +381,6 @@ The buffer is killed when KILL-BUFFER is set to t."
   (let* ((buffer (or (buffer-base-buffer)
                      (current-buffer)))
          (file-name (buffer-file-name buffer)))
-    (let ((save-silently t))
-      (save-buffer))
     (if file-name
         (progn
           (dired (file-name-directory file-name))
@@ -406,48 +404,19 @@ and not visible based on a defined timeout."
   :lighter " BufTermi"
   :group 'buffer-terminator
   (if buffer-terminator-mode
+      ;; Enable
       (progn
         ;; Initialize the last view time for all buffers
         (dolist (buffer (buffer-list))
-          ;; Update the last view time for the current buffer
           (with-current-buffer buffer
             (unless buffer-terminator--buffer-display-time
               (buffer-terminator--update-buffer-last-view-time))))
-
-        ;; window-selection-change-functions: Focuses specifically on when the
-        ;; user changes the selected window, which is useful for tracking user
-        ;; interactions with window selection. For tracking when a user shows a
-        ;; buffer after switching tabs or windows,
-        ;; window-selection-change-functions is likely the most appropriate
-        ;; hook, as it directly captures changes in window selection.
-        ;; (add-hook 'window-selection-change-functions
-        ;;           #'buffer-terminator--update-buffer-last-view-time)
-        ;;
-        ;; window-configuration-change-hook: Captures a broad range of changes
-        ;; in window configuration, including splits, resizing, and new windows.
-        ;; It’s generally used for layout changes rather than content changes.
-        ;; window-state-change-hook is also a good choice if you want to capture
-        ;; changes related to the buffer displayed in a window, along with other
-        ;; state changes.
-        ;; (add-hook 'window-configuration-change-hook
-        ;;           #'buffer-terminator--update-buffer-last-view-time)
-        ;;
-        ;; This one works better: window-state-change-hook: More focused on
-        ;; changes related to the state of the window, including buffer changes
-        ;; and resizing. window-configuration-change-hook might be used if you
-        ;; need to track more general configuration changes.
-        ;; - Buffer Visibility Changes: It detects when a buffer becomes visible
-        ;;   or hidden as a result of changes in the window state.
-        ;; - Window Configuration Changes: It captures events like window
-        ;;   splits, deletions, and resizing that might affect buffer
-        ;;   visibility.
-        ;; - Buffer Switches in Windows: It triggers when the displayed buffer
-        ;;   in a window changes, which aligns with the goal of tracking buffer
-        ;;   activity.
+        ;; Add hooks and timers
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)
         (buffer-terminator--cancel-timer)
         (buffer-terminator--start-timer buffer-terminator-interval))
+    ;; Disable
     (remove-hook 'window-state-change-hook
                  #'buffer-terminator--update-buffer-last-view-time)
     (buffer-terminator--cancel-timer)))
