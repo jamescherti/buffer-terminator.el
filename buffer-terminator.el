@@ -132,9 +132,9 @@ avoid terminating buffers that are associated with files you are working on."
 
 (defcustom buffer-terminator-keep-buffers-with-major-modes nil
   "When non-nil, buffers with these major mode are never killed.
-This is useful for keeping buffers associated with specific types of files
-(e.g., Dired buffers, source code, or configuration files) from being killed
-automatically.
+This is useful for keeping buffers associated with specific types of
+files (e.g., Dired buffers, source code, or configuration files) from being
+killed automatically.
 
 By default, this option is nil, which means that all major modes are considered
 for termination. To keep buffers for specific major modes, set this variable to
