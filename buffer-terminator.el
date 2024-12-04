@@ -54,33 +54,8 @@ Default: 30 minutes."
   :type 'integer
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-keep-buffers-with-process nil
-  "When non-nil, do not kill buffers associated with running processes.
-Process buffers are buffers where an active process is running. It is generally
-discouraged to set this to nil, as doing so may result in the termination of
-such buffers, potentially disrupting active processes."
-  :type 'boolean
-  :group 'buffer-terminator)
-
-(defcustom buffer-terminator-keep-visible-buffers t
-  "When non-nil, `buffer-terminator' will not kill visible buffers.
-Visible buffers are those currently displayed in any window.
-It is generally discouraged to set this to nil, as doing so may result
-in the termination of visible buffers, except for the currently active
-buffer in the selected window."
-  :type 'boolean
-  :group 'buffer-terminator)
-
 (defcustom buffer-terminator-verbose nil
   "Enable verbose mode to log when a buffer is automatically killed."
-  :type 'boolean
-  :group 'buffer-terminator)
-
-(defcustom buffer-terminator-keep-file-visiting-buffers nil
-  "When non-nil, `buffer-terminator' will not kill buffers visiting files.
-File-visiting buffers are those associated with files, whether the file is
-modified or not. It is generally recommended to keep this variable set to t to
-avoid terminating buffers that are associated with files you are working on."
   :type 'boolean
   :group 'buffer-terminator)
 
@@ -125,6 +100,31 @@ Default: 10 minutes."
          (buffer-terminator--cancel-timer)
          (set-default symbol value)
          (buffer-terminator--start-timer value)))
+
+(defcustom buffer-terminator-keep-buffers-with-process nil
+  "When non-nil, do not kill buffers associated with running processes.
+Process buffers are buffers where an active process is running. It is generally
+discouraged to set this to t, as doing so may result in the termination of
+such buffers, potentially disrupting active processes."
+  :type 'boolean
+  :group 'buffer-terminator)
+
+(defcustom buffer-terminator-keep-visible-buffers t
+  "When non-nil, `buffer-terminator' will not kill visible buffers.
+Visible buffers are those currently displayed in any window.
+It is generally discouraged to set this to nil, as doing so may result
+in the termination of visible buffers, except for the currently active
+buffer in the selected window."
+  :type 'boolean
+  :group 'buffer-terminator)
+
+(defcustom buffer-terminator-keep-file-visiting-buffers nil
+  "When non-nil, `buffer-terminator' will not kill buffers visiting files.
+File-visiting buffers are those associated with files, whether the file is
+modified or not. It is generally recommended to keep this variable set to t to
+avoid terminating buffers that are associated with files you are working on."
+  :type 'boolean
+  :group 'buffer-terminator)
 
 ;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
 ;; you are doing. If you decide to set it to nil, make sure to update
