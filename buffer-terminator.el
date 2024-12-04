@@ -188,7 +188,7 @@ The message is formatted with the provided arguments ARGS."
              (funcall 'tab-bar-get-buffer-tab buffer t nil)))))
 
 (defun buffer-terminator--special-buffer-p (&optional buffer)
-  "Check if BUFFER is a special buffer."
+  "Return non-nil if BUFFER is a special buffer."
   (unless buffer
     (setq buffer (current-buffer)))
   (with-current-buffer buffer
