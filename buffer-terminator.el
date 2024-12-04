@@ -336,43 +336,33 @@ Return nil when if buffer has never been displayed."
        ((>= last-display-time buffer-terminator-inactivity-timeout)
         t)))))
 
-(defun buffer-terminator--kill-inactive-buffers
-    (&optional special)
-  "Kill all buffers that are inactive and not visible.
-When SPECIAL is set to t, it also kills special buffers."
+(defun buffer-terminator--kill-inactive-buffers ()
+  "Kill all buffers that are inactive and not visible."
   (mapc #'(lambda(buffer)
             (when (buffer-terminator--buffer-inactive-p buffer)
-              (buffer-terminator--kill-buffer-maybe buffer special)))
+              (buffer-terminator--kill-buffer-maybe buffer)))
         (buffer-list)))
 
-(defun buffer-terminator--kill-buffer-maybe (buffer
-                                             &optional
-                                             kill-special-buffers)
-  "Kill BUFFER if it is not visible and not special.
-When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
-  ;; TODO improve (ignore-buffers (buffer-terminaltor--find-buffers-to-keep))
-  ;; unless (buffer-terminator--keep-buffer-p buffer ignore-buffers)
+(defun buffer-terminator--kill-buffer-maybe (buffer)
+  "Kill BUFFER if it is not visible and not special."
   (when (and (buffer-live-p buffer)
-             (or kill-special-buffers
-                 (not (buffer-terminator--keep-buffer-p buffer))))
+             (not (buffer-terminator--keep-buffer-p buffer)))
     (let ((buffer-name (buffer-name buffer)))
-      (ignore-errors (let ((kill-buffer-query-functions '()))
-                       (kill-buffer buffer)))
+      (ignore-errors
+        (let ((kill-buffer-query-functions '()))
+          (kill-buffer buffer)))
       (when buffer-terminator-verbose
         (buffer-terminator--message "Terminated the buffer: '%s'" buffer-name)))
     t))
 
-(defun buffer-terminator-kill-all-non-visible-buffers (&optional
-                                                       kill-special-buffers)
-  "Kill all buffers that are not visible.
-When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
+(defun buffer-terminator-kill-all-non-visible-buffers ()
+  "Kill all buffers that are not visible."
   (let ((buffer-killed nil))
     (mapc #'(lambda(buffer)
-              (when (buffer-terminator--kill-buffer-maybe
-                     buffer kill-special-buffers)
-                (setq buffer-killed t)))
+              (when (buffer-terminator--kill-buffer-maybe buffer)
+                (push (buffer-name) buffer-killed)))
           (buffer-list))
-    ;; Return non-nil if at least one buffer was killed.
+    ;; Return the list of killed buffer names
     buffer-killed))
 
 (defun buffer-terminator-find-dired-parent (&optional kill-buffer)
