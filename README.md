@@ -24,6 +24,7 @@ When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), o
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
   - [Frequently asked questions](#frequently-asked-questions)
+    - [How to restore buffer display time when loading a session (e.g., with EasySession, desktop.el, etc.)](#how-to-restore-buffer-display-time-when-loading-a-session-eg-with-easysession-desktopel-etc)
     - [Why? What problem is this aiming to solve?](#why-what-problem-is-this-aiming-to-solve)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
   - [Author and License](#author-and-license)
@@ -104,6 +105,20 @@ Define how frequently the cleanup process should run (default is every 10 minute
 (Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
 
 ## Frequently asked questions
+
+### How to restore buffer display time when loading a session (e.g., with EasySession, desktop.el, etc.)
+
+The built-in *savehist* package can be used to save and restore `buffer-display-time` and `buffer-terminator--buffer-display-time`:
+```
+(add-to-list 'savehist-additional-variables 'buffer-display-time)
+(add-to-list 'savehist-additional-variables 'buffer-terminator--buffer-display-time)
+(savehist-mode 1)
+
+;; 1. Load easysession
+;; 2. Load buffer-terminator
+```
+
+Make sure to load *savehist* before *EasySession* and *buffer-terminator*.
 
 ### Why? What problem is this aiming to solve?
 

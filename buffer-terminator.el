@@ -264,6 +264,13 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                           buffer-terminator-kill-special-buffer-names-regexps)))
               t))
            (or
+            ;; Keep buffer names or regular expressions
+            (buffer-terminator--match-buffer-p
+             buffer-name buffer-terminator-keep-buffer-names)
+
+            (buffer-terminator--match-buffer-regexp-p
+             buffer-name buffer-terminator-keep-buffer-names-regexps)
+
             ;; Special buffers
             (and buffer-terminator-keep-special-buffers
                  special-buffer)
@@ -288,15 +295,7 @@ IGNORE-BUFFERS is a list of buffers to ignore."
 
             ;; Keep buffers that contain processes
             (and buffer-terminator-keep-buffers-with-process
-                 (get-buffer-process buffer))
-
-            ;; Keep buffer names or regular expressions
-            (or
-             (buffer-terminator--match-buffer-p
-              buffer-name buffer-terminator-keep-buffer-names)
-
-             (buffer-terminator--match-buffer-regexp-p
-              buffer-name buffer-terminator-keep-buffer-names-regexps))))))))
+                 (get-buffer-process buffer))))))))
 
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
