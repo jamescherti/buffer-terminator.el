@@ -194,8 +194,7 @@ The message is formatted with the provided arguments ARGS."
   (with-current-buffer buffer
     (let ((buffer-name (buffer-name)))
       (or (string-prefix-p " " buffer-name)
-          (and (or (string-prefix-p "*" buffer-name)
-                   (string-prefix-p " *" buffer-name))
+          (and (string-prefix-p "*" buffer-name)
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
