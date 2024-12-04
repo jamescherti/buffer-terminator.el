@@ -5,11 +5,11 @@
 
 The **buffer-terminator** package automatically terminates inactive buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those inactive buffers.
 
-By default:
-- Only buffers that have been inactive for a certain period are terminated. Modified buffers that have not been saved are not killed.
-- `(buffer-terminator-mode)` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 30 minutes).
-- It checks every `buffer-terminator-interval` (Default: 10 minutes) to determine if a buffer should be terminated.
-- Special buffers are ignored by default, but you can configure *buffer-terminator* to terminate them.
+By default, the following buffers are not terminated: buffers whose names start with a space, start and end with `*`, and buffers whose major mode is derived from `special-mode`.
+
+When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), only buffers that have been inactive for a specified period are terminated. (Exception: modified file-visiting buffers that have not been saved are not terminated; the user must save them first.)
+
+(`(buffer-terminator-mode)` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 30 minutes). It checks every `buffer-terminator-interval` - Default: 10 minutes - to determine if a buffer should be terminated.)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
