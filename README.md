@@ -106,7 +106,7 @@ Define how frequently the cleanup process should run (default is every 10 minute
 
 ### Why? What problem is this aiming to solve?
 
-One reason to terminate inactive buffers is to improve Emacs' performance by reducing the number of open buffers, which in turn decreases the load of active modes, timers, and other processes associated with those buffers.
+One reason to terminate inactive buffers is to improve Emacs' performance by reducing the number of open buffers. This, in turn, decreases the load from active modes, timers, and other processes associated with those buffers. Buffer-local modes and their timers consume both CPU and memory. Why keep them alive when they can be safely removed?
 
 Another reason is to ensure that only the buffers the user actively needs remain open, helping to declutter the buffer list.
 
