@@ -96,6 +96,7 @@ are added to `buffer-terminator-keep-buffer-names' and
   '("*scratch*"
     "*Messages*"
     "*Compile-Log*"
+    "*Warnings*"
     " *eldoc*"
     " *code-conversion-work*"
     "*compile-angel:debug*"
@@ -114,7 +115,7 @@ are added to `buffer-terminator-keep-buffer-names' and
     "\\` \\*stderr of "  ; ’ *stderr of elisp-flymake-byte-compile*’
     "\\` \\*eldoc for "  ; ’ *eldoc for NAME, BUFFER_NAME*’
     "\\` \\*flymake-.*\\*\\'"
-    "\\` \\?\\*EGLOT .*\\*\\'"
+    "\\`\\(?: \\)?\\*EGLOT .*\\*\\'"
     "\\` \\*markdown-code-fontification:.*\\*\\'"
     "\\` \\*org-src-fontification:.*\\*\\'"
     "\\` \\*Echo Area [0-9]+\\*\\'")
@@ -131,7 +132,7 @@ avoid terminating buffers that are associated with files you are working on."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-keep-buffers-with-major-modes nil
+(defcustom buffer-terminator-keep-major-modes nil
   "List of major-modes. Buffers with these major mode are never killed.
 This is useful for keeping buffers associated with specific types of
 files (e.g., Dired buffers, source code, or configuration files) from being
@@ -161,7 +162,7 @@ too many buffers alive."
         (run-with-timer
          seconds
          seconds
-         'buffer-terminator--kill-all-non-visible-timed-out-buffers)))
+         'buffer-terminator--kill-inactive-buffers)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -214,9 +215,9 @@ IGNORE-BUFFERS is a list of buffers to ignore."
          (and buffer-terminator-keep-special-buffers
               (buffer-terminator--special-buffer-p buffer))
 
-         (and buffer-terminator-keep-buffers-with-major-modes
+         (and buffer-terminator-keep-major-modes
               (cl-find major-mode
-                       buffer-terminator-keep-buffers-with-major-modes
+                       buffer-terminator-keep-major-modes
                        :test 'eq))
 
          ;; Keep ignored buffers
@@ -235,9 +236,11 @@ IGNORE-BUFFERS is a list of buffers to ignore."
          (let ((buffer-name (buffer-name)))
            (when buffer-name
              (or
-              (cl-find buffer-name
-                       buffer-terminator-keep-buffer-names
-                       :test #'string-equal)
+              (and
+               buffer-terminator-keep-buffer-names
+               (cl-find buffer-name
+                        buffer-terminator-keep-buffer-names
+                        :test #'string-equal))
 
               ;;(cl-some (lambda (regex)
               ;;           (if (functionp regex)
@@ -246,12 +249,12 @@ IGNORE-BUFFERS is a list of buffers to ignore."
               ;;         buffer-terminator-keep-buffer-names-regexps)
 
               ;; Keep ignored buffer regexp
-              (cl-find buffer-name
-                       buffer-terminator-keep-buffer-names-regexps
-                       :test (lambda (buffer-name regex)
-                               (if (functionp regex)
-                                   (funcall regex buffer-name)
-                                 (string-match regex buffer-name)))))))))))
+              (and
+               buffer-terminator-keep-buffer-names-regexps
+               (cl-find buffer-name
+                        buffer-terminator-keep-buffer-names-regexps
+                        :test (lambda (buffer-name regex)
+                                (string-match regex buffer-name)))))))))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
 
@@ -300,18 +303,18 @@ Return nil when if buffer has never been displayed."
                    (> last-display-time buffer-terminator-inactivity-timeout))
           t)))))
 
-(defun buffer-terminator--kill-all-non-visible-timed-out-buffers
+(defun buffer-terminator--kill-inactive-buffers
     (&optional special)
   "Kill all buffers that are inactive and not visible.
 When SPECIAL is set to t, it also kills special buffers."
   (mapc #'(lambda(buffer)
             (when (buffer-terminator--buffer-inactive-p buffer)
-              (buffer-terminator--kill-buffer-if-not-visible buffer special)))
+              (buffer-terminator--kill-buffer-maybe buffer special)))
         (buffer-list)))
 
-(defun buffer-terminator--kill-buffer-if-not-visible (buffer
-                                                      &optional
-                                                      kill-special-buffers)
+(defun buffer-terminator--kill-buffer-maybe (buffer
+                                             &optional
+                                             kill-special-buffers)
   "Kill BUFFER if it is not visible and not special.
 When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
   ;; TODO improve (ignore-buffers (buffer-terminaltor--find-buffers-to-keep))
@@ -332,7 +335,7 @@ When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
 When KILL-SPECIAL-BUFFERS is set to t, it also kills special buffers."
   (let ((buffer-killed nil))
     (mapc #'(lambda(buffer)
-              (when (buffer-terminator--kill-buffer-if-not-visible
+              (when (buffer-terminator--kill-buffer-maybe
                      buffer kill-special-buffers)
                 (setq buffer-killed t)))
           (buffer-list))
@@ -354,7 +357,7 @@ The buffer is killed when KILL-BUFFER is set to t."
       (dired default-directory))
 
     (when kill-buffer
-      (buffer-terminator--kill-buffer-if-not-visible buffer))))
+      (buffer-terminator--kill-buffer-maybe buffer))))
 
 (defun buffer-terminator-find-dired-parent-kill-buffer ()
   "Open the current directory in a `dired' buffer and select the current file."
