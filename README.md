@@ -3,16 +3,15 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-The `buffer-terminator` package automatically terminates inactive buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those inactive buffers.
+<img align="right" src="https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/develop/.images/terminator.jpg" />
 
-Only buffers that are saved and inactive for a certain amount of time are terminated.
-
-It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
+The **buffer-terminator** package automatically terminates inactive buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those inactive buffers.
 
 By default:
-- `buffer-terminator-mode` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 60 minutes).
+- Only buffers that have been inactive for a certain period are terminated. Modified buffers that have not been saved are not killed.
+- `(buffer-terminator-mode)` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 30 minutes).
 - It checks every `buffer-terminator-interval` (Default: 10 minutes) to determine if a buffer should be terminated.
-- Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option.
+- Special buffers are ignored by default, but you can configure *buffer-terminator* to terminate them.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
