@@ -130,7 +130,7 @@ avoid terminating buffers that are associated with files you are working on."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-keep-major-modes nil
+(defcustom buffer-terminator-keep-buffers-with-major-modes nil
   "When non-nil, buffers with these major mode are never killed.
 This is useful for keeping buffers associated with specific types of files
 (e.g., Dired buffers, source code, or configuration files) from being killed
@@ -213,8 +213,10 @@ IGNORE-BUFFERS is a list of buffers to ignore."
          (and buffer-terminator-keep-special-buffers
               (buffer-terminator--special-buffer-p buffer))
 
-         (and buffer-terminator-keep-major-modes
-              (cl-find major-mode buffer-terminator-keep-major-modes :test 'eq))
+         (and buffer-terminator-keep-buffers-with-major-modes
+              (cl-find major-mode
+                       buffer-terminator-keep-buffers-with-major-modes
+                       :test 'eq))
 
          ;; Keep ignored buffers
          (and ignore-buffers
