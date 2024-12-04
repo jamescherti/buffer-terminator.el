@@ -101,10 +101,10 @@ Default: 10 minutes."
          (set-default symbol value)
          (buffer-terminator--start-timer value)))
 
-(defcustom buffer-terminator-keep-buffers-with-process nil
+(defcustom buffer-terminator-keep-buffers-with-process t
   "When non-nil, do not kill buffers associated with running processes.
 Process buffers are buffers where an active process is running. It is generally
-discouraged to set this to t, as doing so may result in the termination of
+discouraged to set this to nil, as doing so may result in the termination of
 such buffers, potentially disrupting active processes."
   :type 'boolean
   :group 'buffer-terminator)
