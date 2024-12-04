@@ -132,14 +132,14 @@ avoid terminating buffers that are associated with files you are working on."
   :group 'buffer-terminator)
 
 (defcustom buffer-terminator-keep-buffers-with-major-modes nil
-  "When non-nil, buffers with these major mode are never killed.
+  "List of major-modes. Buffers with these major mode are never killed.
 This is useful for keeping buffers associated with specific types of
 files (e.g., Dired buffers, source code, or configuration files) from being
 killed automatically.
 
-By default, this option is nil, which means that all major modes are considered
-for termination. To keep buffers for specific major modes, set this variable to
-a list of mode symbols. For example: \\='(text-mode org-mode python-mode)
+To keep buffers for specific major modes, set this variable to
+a list of mode symbols.
+For example: \\='(org-mode my-special-mode)
 
 It is recommended to configure this carefully to avoid unintentionally keeping
 too many buffers alive."
