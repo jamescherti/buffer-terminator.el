@@ -121,10 +121,10 @@ Midnight mode and `clean-buffer-list` are for killing buffers once a day. The Mi
 In contrast, `buffer-terminator` allows specifying the timeout interval in seconds (Default: 30 minutes), enabling more frequent termination of inactive buffers.
 
 The `buffer-terminator` package offers additional features that are not supported by midnight and `clean-buffer-list`, including:
-- Buffer-terminator does not kill special buffers by default, whereas Midnight kills all special buffers. Midnight's behavior can disrupt packages like Corfu, Cape, Consult, Eglot, Flymake, etc., which rely on special buffers for storing data.
 - Buffer-terminator does not kill visible buffers in other tabs, even if they exceed the timeout. This prevents disruptions to editing workflows.
 Buffer-terminator provides the option to choose whether to keep or kill specific types of buffers, such as those associated with processes or file-visiting buffers.
 - Buffer-terminator avoids relying on `buffer-display-time`, which is not always updated reliably. For instance, `buffer-display-time` may not reflect activity when switching to a window or tab displaying a specific buffer.
+- Buffer-terminator does not kill special buffers by default, whereas Midnight kills all special buffers by default unless the user tells Midnight to ignore them. Midnight's behavior can disrupt packages like Corfu, Cape, Consult, Eglot, Flymake, and others that rely on special buffers to store data.
 - Buffer-terminator can also kill specific special buffers. It is useful, for example, if the user want to keep special buffers (i.e. using buffer-terminator-keep-special-buffers), but with a few exceptions: The user still want to kill *Help* and *helpful ...* buffers (and maybe some other buffers related to documentation) if they weren't used for a while.
 
 ## Author and License
