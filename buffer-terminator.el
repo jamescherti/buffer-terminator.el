@@ -130,6 +130,21 @@ avoid terminating buffers that are associated with files you are working on."
   :type 'boolean
   :group 'buffer-terminator)
 
+(defcustom buffer-terminator-keep-major-modes nil
+  "When non-nil, buffers with these major mode are never killed.
+This is useful for keeping buffers associated with specific types of files
+(e.g., Dired buffers, source code, or configuration files) from being killed
+automatically.
+
+By default, this option is nil, which means that all major modes are considered
+for termination. To keep buffers for specific major modes, set this variable to
+a list of mode symbols. For example: \\='(text-mode org-mode python-mode)
+
+It is recommended to configure this carefully to avoid unintentionally keeping
+too many buffers alive."
+  :type '(repeat symbol)
+  :group 'buffer-terminator)
+
 (defvar buffer-terminator--kill-inactive-buffers-timer nil
   "Timer object for killing inactive buffers.")
 
@@ -197,6 +212,9 @@ IGNORE-BUFFERS is a list of buffers to ignore."
          ;; Special buffers
          (and buffer-terminator-keep-special-buffers
               (buffer-terminator--special-buffer-p buffer))
+
+         (and buffer-terminator-keep-major-modes
+              (cl-find major-mode buffer-terminator-keep-major-modes :test 'eq))
 
          ;; Keep ignored buffers
          (and ignore-buffers
