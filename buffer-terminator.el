@@ -188,51 +188,49 @@ Returns non-nil if BUFFER should be kept.
 IGNORE-BUFFERS is a list of buffers to ignore."
   (if (buffer-live-p buffer)
       (with-current-buffer buffer
-        (let ((buffer-name (buffer-name))
-              (file-name (buffer-file-name (buffer-base-buffer))))
-          (when (or (not buffer-name)
-                    ;; Keep unsaved buffers
-                    (and file-name
-                         (or buffer-terminator-keep-file-visiting-buffers
-                             (buffer-modified-p)))
+        (or
+         ;; File visiting buffer
+         (and (buffer-file-name (buffer-base-buffer))
+              (or buffer-terminator-keep-file-visiting-buffers
+                  (buffer-modified-p)))
 
-                    ;; Special buffers
-                    (and buffer-terminator-keep-special-buffers
-                         (not file-name)
-                         (buffer-terminator--special-buffer-p buffer))
+         ;; Special buffers
+         (and buffer-terminator-keep-special-buffers
+              (buffer-terminator--special-buffer-p buffer))
 
-                    ;; Keep ignored buffers
-                    (and ignore-buffers
-                         (memq buffer ignore-buffers))
+         ;; Keep ignored buffers
+         (and ignore-buffers
+              (memq buffer ignore-buffers))
 
-                    ;; Keep visible buffers
-                    (and buffer-terminator-keep-visible-buffers
-                         (buffer-terminator--buffer-visible-p buffer))
+         ;; Keep visible buffers
+         (and buffer-terminator-keep-visible-buffers
+              (buffer-terminator--buffer-visible-p buffer))
 
-                    ;; Keep buffers that contain processes
-                    (and buffer-terminator-keep-buffers-with-process
-                         (get-buffer-process buffer))
+         ;; Keep buffers that contain processes
+         (and buffer-terminator-keep-buffers-with-process
+              (get-buffer-process buffer))
 
-                    ;; Keep ignored buffer names
-                    (cl-find buffer-name
-                             buffer-terminator-keep-buffer-names
-                             :test #'string-equal)
+         ;; Keep buffer names or regular expressions
+         (let ((buffer-name (buffer-name)))
+           (when buffer-name
+             (or
+              (cl-find buffer-name
+                       buffer-terminator-keep-buffer-names
+                       :test #'string-equal)
 
-                    ;;(cl-some (lambda (regex)
-                    ;;           (if (functionp regex)
-                    ;;               (funcall regex buffer-name)
-                    ;;             (string-match-p regex buffer-name)))
-                    ;;         buffer-terminator-keep-buffer-regexps)
+              ;;(cl-some (lambda (regex)
+              ;;           (if (functionp regex)
+              ;;               (funcall regex buffer-name)
+              ;;             (string-match-p regex buffer-name)))
+              ;;         buffer-terminator-keep-buffer-regexps)
 
-                    ;; Keep ignored buffer regexp
-                    (cl-find buffer-name
-                             buffer-terminator-keep-buffer-regexps
-                             :test (lambda (buffer-name regex)
-                                     (if (functionp regex)
-                                         (funcall regex buffer-name)
-                                       (string-match regex buffer-name)))))
-            ;; t = Keep buffer
-            t)))))
+              ;; Keep ignored buffer regexp
+              (cl-find buffer-name
+                       buffer-terminator-keep-buffer-regexps
+                       :test (lambda (buffer-name regex)
+                               (if (functionp regex)
+                                   (funcall regex buffer-name)
+                                 (string-match regex buffer-name)))))))))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
 

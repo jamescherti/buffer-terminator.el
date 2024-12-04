@@ -10,9 +10,9 @@ Only buffers that are saved and inactive for a certain amount of time are termin
 It provides configurable options to determine which buffers to keep, a timeout for inactivity, and periodic cleanup intervals.
 
 By default:
-- `buffer-terminator-mode` terminates all file-visiting and dired buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 60 minutes).
+- `buffer-terminator-mode` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 60 minutes).
 - It checks every `buffer-terminator-interval` (Default: 10 minutes) to determine if a buffer should be terminated.
-- Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option below.
+- Special buffers are ignored by default, but you can configure `buffer-terminator` to include them by adjusting the relevant option.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
