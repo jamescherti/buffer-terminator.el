@@ -236,6 +236,8 @@ MATCH-NAMES-REGEXP is a list of regular expressions."
                      (string-match regex buffer-name)))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
+(defvar buffer-terminator--disable-buffer-display-time-update nil)
+
 (defun buffer-terminator--keep-buffer-p (buffer &optional ignore-buffers)
   "Check if BUFFER should be excluded from being automatically killed.
 Returns non-nil if BUFFER should be kept.
@@ -299,7 +301,8 @@ IGNORE-BUFFERS is a list of buffers to ignore."
 
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
-  (setq-local buffer-terminator--buffer-display-time (current-time)))
+  (unless buffer-terminator--disable-buffer-display-time-update
+    (setq-local buffer-terminator--buffer-display-time (current-time))))
 
 (defun buffer-terminator--last-display-time (buffer)
   "Return the time in seconds since BUFFER was last displayed.
@@ -319,28 +322,19 @@ Return nil when if buffer has never been displayed."
                    ;; (buffer-display-time
                    ;;  (float-time (time-subtract (current-time)
                    ;;                             buffer-display-time)))
-                   ))
-
-            ;; The above replaced buffer-display-time because it is not updated
-            ;; when switching to the window or the tab where the buffer's window
-            ;; is displayed. It only updates when the user switches to a buffer.
-            ;; (buffer-display-time
-            ;;  (if (boundp 'buffer-display-time)
-            ;;      (float-time (time-subtract (current-time)
-            ;;                                 buffer-display-time))))
-            )
+                   )))
         buffer-last-view))))
 
 (defun buffer-terminator--buffer-inactive-p (buffer)
   "Return non-nil when BUFFER is inactive."
   (when buffer
     (let ((last-display-time (buffer-terminator--last-display-time buffer)))
-      (if (not last-display-time)
-          ;; Never displayed = inactive
-          t
-        (when (and last-display-time
-                   (> last-display-time buffer-terminator-inactivity-timeout))
-          t)))))
+      (cond
+       ((not last-display-time)
+        t)
+
+       ((>= last-display-time buffer-terminator-inactivity-timeout)
+        t)))))
 
 (defun buffer-terminator--kill-inactive-buffers
     (&optional special)
