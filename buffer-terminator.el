@@ -193,7 +193,8 @@ The message is formatted with the provided arguments ARGS."
     (setq buffer (current-buffer)))
   (with-current-buffer buffer
     (let ((buffer-name (buffer-name)))
-      (or (and (or (string-prefix-p "*" buffer-name)
+      (or (and (string-prefix-p " " buffer-name)
+               (or (string-prefix-p "*" buffer-name)
                    (string-prefix-p " *" buffer-name))
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
