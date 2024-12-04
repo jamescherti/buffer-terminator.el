@@ -152,18 +152,37 @@ are added to `buffer-terminator-keep-buffer-names' and
   "List of regexps that match buffer names that will never be killed."
   :type '(repeat regexp))
 
-;; This is only useful when 'buffer-terminator-keep-special-buffers' is set.
-(defcustom buffer-terminator-kill-special-buffer-names nil
-  "List of special buffer names that can be killed.
-Allows to cancel effect of `buffer-terminator-keep-special-buffers'
-for some buffers that you don't want to keep."
+(defcustom buffer-terminator-kill-buffer-names nil
+  "List of buffer names that can be killed.
+This setting allows specific special buffers to be terminated, overriding the
+general `buffer-terminator-keep-buffer-names' and
+`buffer-terminator-keep-buffer-names-regexps' . This is useful for excluding
+certain special buffers from being preserved when inactive."
   :type '(repeat (string :tag "Buffer Name")))
 
-;; This is only useful when 'buffer-terminator-keep-special-buffers' is set.
+(defcustom buffer-terminator-kill-buffer-names-regexps nil
+  "List of regex patterns matching buffer names that can be killed.
+This setting allows specific special buffers to be terminated, overriding the
+general `buffer-terminator-keep-buffer-names' and
+`buffer-terminator-keep-buffer-names-regexps' . This is useful for excluding
+certain special buffers from being preserved when inactive."
+  :type '(repeat regexp))
+
+(defcustom buffer-terminator-kill-special-buffer-names nil
+  "List of special buffer names that can be killed.
+When `buffer-terminator-keep-special-buffers' is enabled, this setting allows
+specific special buffers to be terminated, overriding the general
+keep-special-buffers rule. This is useful for excluding certain special
+buffers (like *Help* or *Messages*) from being preserved when inactive."
+  :type '(repeat (string :tag "Buffer Name")))
+
 (defcustom buffer-terminator-kill-special-buffer-names-regexps nil
-  "List of regexps that match special buffer names that can be killed.
-Allows to cancel effect of `buffer-terminator-keep-special-buffers'
-for some buffers that you don't want to keep."
+  "List of regex patterns matching special buffer names that can be killed.
+When `buffer-terminator-keep-special-buffers' is enabled, this setting allows
+buffers whose names match any of the provided regular expressions to be
+terminated, even if they are generally considered special. This can be useful
+for excluding specific special buffers (such as temporary documentation buffers)
+from being preserved."
   :type '(repeat regexp))
 
 (defun buffer-terminator--message (&rest args)
@@ -231,10 +250,13 @@ IGNORE-BUFFERS is a list of buffers to ignore."
          ;; Special buffers
          (and buffer-terminator-keep-special-buffers
               (buffer-terminator--special-buffer-p buffer)
-              (not (buffer-terminator--match-buffer-p
-                    buffer
-                    buffer-terminator-kill-special-buffer-names
-                    buffer-terminator-kill-special-buffer-names-regexps)))
+              (or
+               (and (not buffer-terminator-kill-special-buffer-names)
+                    (not buffer-terminator-kill-special-buffer-names-regexps))
+               (not (buffer-terminator--match-buffer-p
+                     buffer
+                     buffer-terminator-kill-special-buffer-names
+                     buffer-terminator-kill-special-buffer-names-regexps))))
 
          (and buffer-terminator-keep-major-modes
               (cl-find major-mode
@@ -252,6 +274,15 @@ IGNORE-BUFFERS is a list of buffers to ignore."
          ;; Keep buffers that contain processes
          (and buffer-terminator-keep-buffers-with-process
               (get-buffer-process buffer))
+
+         ;; Kill buffer names or regular expressions
+         (or
+          (and (not buffer-terminator-kill-buffer-names)
+               (not buffer-terminator-kill-buffer-names-regexps))
+          (not (buffer-terminator--match-buffer-p
+                buffer
+                buffer-terminator-kill-buffer-names
+                buffer-terminator-kill-buffer-names-regexps)))
 
          ;; Keep buffer names or regular expressions
          (buffer-terminator--match-buffer-p
