@@ -50,6 +50,7 @@
 
 (defcustom buffer-terminator-inactivity-timeout (* 30 60)
   "Time in seconds before a buffer is considered inactive.
+See also `buffer-terminator-interval'.
 Default: 30 minutes."
   :type 'integer
   :group 'buffer-terminator)
@@ -62,12 +63,11 @@ Default: 30 minutes."
 (defcustom buffer-terminator-keep-major-modes nil
   "List of major-modes. Buffers with these major mode are never killed.
 This is useful for keeping buffers associated with specific types of
-files (e.g., Dired buffers, source code, or configuration files) from being
+files (e.g., Dired buffers, specific modes, or configuration files) from being
 killed automatically.
 
-To keep buffers for specific major modes, set this variable to
-a list of mode symbols.
-For example: \\='(org-mode my-special-mode)
+To keep buffers for specific major modes, set this variable to a list of mode
+symbols. For example: \\='(org-mode my-special-mode)
 
 It is recommended to configure this carefully to avoid unintentionally keeping
 too many buffers alive."
@@ -86,13 +86,13 @@ too many buffers alive."
 (defun buffer-terminator--start-timer (seconds)
   "Start the `buffer-terminator' timer every SECONDS."
   (setq buffer-terminator--kill-inactive-buffers-timer
-        (run-with-timer
-         seconds
-         seconds
-         'buffer-terminator--kill-inactive-buffers)))
+        (run-with-timer seconds
+                        seconds
+                        'buffer-terminator--kill-inactive-buffers)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
+See also `buffer-terminator-inactivity-timeout'.
 Default: 10 minutes."
   :type 'integer
   :group 'buffer-terminator
