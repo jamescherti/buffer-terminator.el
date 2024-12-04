@@ -40,6 +40,8 @@
 (require 'dired)
 (require 'cl-lib)
 
+;;; Customizations
+
 (defgroup buffer-terminator nil
   "Terminate inactive buffers automatically."
   :group 'buffer-terminator
@@ -184,6 +186,8 @@ terminated, even if they are generally considered special. This can be useful
 for excluding specific special buffers (such as temporary documentation buffers)
 from being preserved."
   :type '(repeat regexp))
+
+;;; Functions
 
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
@@ -352,8 +356,10 @@ Return nil when if buffer has never been displayed."
         (let ((kill-buffer-query-functions '()))
           (kill-buffer buffer)))
       (when buffer-terminator-verbose
-        (buffer-terminator--message "Terminated the buffer: '%s'" buffer-name)))
-    t))
+        (buffer-terminator--message "Terminated the buffer: '%s'" buffer-name))
+      t)))
+
+;;; Helper functions
 
 (defun buffer-terminator-kill-all-non-visible-buffers ()
   "Kill all buffers that are not visible."
@@ -382,8 +388,9 @@ The buffer is killed when KILL-BUFFER is set to t."
 
 (defun buffer-terminator-find-dired-parent-kill-buffer ()
   "Open the current directory in a `dired' buffer and select the current file."
-  (let ((kill-buffer t))
-    (buffer-terminator-find-dired-parent kill-buffer)))
+  (buffer-terminator-find-dired-parent t))
+
+;;; Mode
 
 ;;;###autoload
 (define-minor-mode buffer-terminator-mode
