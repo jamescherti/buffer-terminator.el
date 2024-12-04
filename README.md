@@ -125,6 +125,7 @@ The `buffer-terminator` package offers additional features that are not supporte
 - Buffer-terminator does not kill visible buffers in other tabs, even if they exceed the timeout. This prevents disruptions to editing workflows.
 Buffer-terminator provides the option to choose whether to keep or kill specific types of buffers, such as those associated with processes or file-visiting buffers.
 - Buffer-terminator avoids relying on `buffer-display-time`, which is not always updated reliably. For instance, `buffer-display-time` may not reflect activity when switching to a window or tab displaying a specific buffer.
+- Buffer-terminator can also kill specific special buffers. It is useful, for example, if the user want to keep special buffers (i.e. using buffer-terminator-keep-special-buffers), but with a few exceptions: The user still want to kill *Help* and *helpful ...* buffers (and maybe some other buffers related to documentation) if they weren't used for a while.
 
 ## Author and License
 
