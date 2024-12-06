@@ -159,6 +159,20 @@ are added to `buffer-terminator-keep-buffer-names' and
   :type 'boolean
   :group 'buffer-terminator)
 
+(defcustom buffer-terminator-rules-alist nil
+  "Rules for processing buffers.
+Each rule is a cons cell where the key is a symbol indicating the rule type, and
+the value is either a string or a list of strings."
+  :type '(repeat (cons (choice (const :keep-buffer-name)
+                               (const :kill-buffer-name)
+                               (const :keep-buffer-name-regexp)
+                               (const :kill-buffer-name-regexp))
+                       (choice string
+                               (repeat string))))
+  :group 'buffer-terminator)
+
+;;; Obsolete
+
 (defcustom buffer-terminator-keep-buffer-names nil
   "List of buffer names that will never be killed."
   :type '(repeat (string :tag "Buffer Name"))
@@ -194,12 +208,28 @@ This variable is obsolete.")
   "List of regex patterns matching special buffer names that can be killed.
 This variable is obsolete.")
 
+(make-obsolete-variable 'buffer-terminator-keep-buffer-names
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
+(make-obsolete-variable 'buffer-terminator-keep-buffer-names-regexps
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
+(make-obsolete-variable 'buffer-terminator-kill-buffer-names
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
+(make-obsolete-variable 'buffer-terminator-kill-buffer-names-regexps
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
-                        'buffer-terminator-kill-buffer-names
+                        'buffer-terminator-rules-alist
                         "1.0.3")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names-regexps
-                        'buffer-terminator-kill-buffer-names-regexps
+                        'buffer-terminator-rules-alist
                         "1.0.3")
 
 ;;; Functions
@@ -229,25 +259,98 @@ The message is formatted with the provided arguments ARGS."
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
-(defun buffer-terminator--match-buffer-p (buffer-name match-names)
-  "Check if BUFFER-NAME matches one of the names or regexps in MATCH-NAMES.
-MATCH-NAMES is a list of string for exact matches.
-Returns non-nil if BUFFER-NAME matches any of the names."
-  (when (and buffer-name match-names)
-    (cl-find buffer-name
-             match-names
-             :test #'string-equal)))
+(defun buffer-terminator--process-rule (rule value)
+  "Run the rule RULE with the value VALUE."
+  (let ((buffer-name (buffer-name)))
+    (cond
+     ((not (symbolp rule))
+      (buffer-terminator--message
+       "[Warning] Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
+       rule value)
+      nil)
 
-(defun buffer-terminator--match-buffer-regexp-p
-    (buffer-name match-names-regexp)
-  "Check if BUFFER-NAME is matched by one of the names or name regexps.
-MATCH-NAMES-REGEXP is a list of regular expressions.
+     ((not (or (listp value) (stringp value)))
+      (buffer-terminator--message
+       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
+       rule value)
+      nil)
+
+     ((eq rule 'keep-buffer-name)
+      (if (buffer-terminator--match-buffer-p buffer-name value)
+          :keep
+        nil))
+
+     ((eq rule 'kill-buffer-name)
+      (if (buffer-terminator--match-buffer-p buffer-name value)
+          :kill
+        nil))
+
+     ((eq rule 'keep-buffer-name-regexp)
+      (if (buffer-terminator--match-buffer-regexp-p buffer-name value)
+          :keep
+        nil))
+
+     ((eq rule 'kill-buffer-name-regexp)
+      (if (buffer-terminator--match-buffer-regexp-p buffer-name value)
+          :kill
+        nil))
+
+     (t
+      (buffer-terminator--message
+       "[Warning] Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'"
+       rule value)
+      nil)
+
+     ;; TODO: Special buffers.
+     ;; (buffer-terminator--match-buffer-p
+     ;;  buffer-name
+     ;;  buffer-terminator-kill-special-buffer-names)
+     ;; (buffer-terminator--match-buffer-regexp-p
+     ;;  buffer-name
+     ;;  buffer-terminator-kill-special-buffer-names-regexps)
+     )))
+
+(defun buffer-terminator--process-buffer-rules ()
+  "Process `buffer-terminator-rules-alist'.
+Return :kill or :keep or nil."
+  (catch 'result
+    (dolist (rule buffer-terminator-rules-alist)
+      (let ((key (car rule))
+            (value (cdr rule)))
+        (let ((result (buffer-terminator--process-rule key value)))
+          (when result
+            (throw 'result result)))))
+    ;; Return nil if no rule produces a result
+    nil))
+
+(defun buffer-terminator--match-buffer-p (buffer-name match-names)
+  "Check if BUFFER-NAME matches one of the names in MATCH-NAMES.
+MATCH-NAMES can be a string for a single exact match or a list of strings.
+Returns non-nil if BUFFER-NAME matches any of the names."
+  (when buffer-name
+    (cond
+     ((stringp match-names)
+      (string-equal buffer-name match-names))
+
+     ((listp match-names)
+      (cl-find buffer-name
+               match-names
+               :test #'string-equal)))))
+
+(defun buffer-terminator--match-buffer-regexp-p (buffer-name match-names-regexp)
+  "Check if BUFFER-NAME is matched by one or more regexps in MATCH-NAMES-REGEXP.
+MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
 Returns non-nil if BUFFER-NAME matches any of the regexps."
-  (when (and buffer-name match-names-regexp)
-    (cl-find buffer-name
-             match-names-regexp
-             :test (lambda (buffer-name regex)
-                     (string-match regex buffer-name)))))
+  (when buffer-name
+    (cond
+     ((stringp match-names-regexp)
+      (string-match match-names-regexp buffer-name))
+
+     ((listp match-names-regexp)
+      (cl-find buffer-name
+               match-names-regexp
+               :test (lambda (buffer-name regex)
+                       (string-match regex buffer-name)))))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
 (defvar buffer-terminator--disable-buffer-display-time-update nil)
@@ -352,37 +455,48 @@ Return nil when if buffer has never been displayed."
 
 (defun buffer-terminator--kill-buffer-maybe (buffer)
   "Kill BUFFER if it is not visible and not special."
-  (when (and (buffer-live-p buffer)
-             (if buffer-terminator-predicate
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (when (and
+             (let ((decision nil))
+               ;; Predicate
+               (when (and buffer-terminator-predicate
+                          (not decision))
                  (cond
                   ;; Function
                   ((functionp buffer-terminator-predicate)
-                   (let ((ret (with-current-buffer buffer
-                                (funcall buffer-terminator-predicate))))
-                     (cond
-                      ((eq ret :kill)
-                       t)
+                   (setq decision (funcall buffer-terminator-predicate)))
 
-                      ((eq ret :keep)
-                       nil)
-
-                      (t
-                       ;; Let Buffer Terminator decide
-                       (not (buffer-terminator--keep-buffer-p buffer))))))
-                  ;; Error: not a function
+                  ;; Error: Predicate is not a function
                   (t
                    (buffer-terminator--message
-                    "Warning: 'buffer-terminator-predicate' is not a function.")
-                   (not (buffer-terminator--keep-buffer-p buffer))))
-               ;; No predicate
-               (not (buffer-terminator--keep-buffer-p buffer))))
-    (let ((buffer-name (buffer-name buffer)))
-      (ignore-errors
-        (let ((kill-buffer-query-functions '()))
-          (kill-buffer buffer)))
-      (when buffer-terminator-verbose
-        (buffer-terminator--message "Terminated the buffer: '%s'" buffer-name))
-      t)))
+                    (concat "Warning: 'buffer-terminator-predicate' is "
+                            "not a function.")))))
+
+               ;; Rules
+               (when (and buffer-terminator-rules-alist
+                          (not decision))
+                 (setq decision (buffer-terminator--process-buffer-rules)))
+
+               ;; Let Buffer-Terminator decide
+               (unless decision
+                 (setq decision
+                       (if (buffer-terminator--keep-buffer-p buffer)
+                           :keep
+                         :kill)))
+
+               ;; Final decision
+               (if (eq decision :kill)
+                   t
+                 nil)))
+        (let ((buffer-name (buffer-name buffer)))
+          (ignore-errors
+            (let ((kill-buffer-query-functions '()))
+              (kill-buffer buffer)))
+          (when buffer-terminator-verbose
+            (buffer-terminator--message "Terminated the buffer: '%s'"
+                                        buffer-name))
+          t)))))
 
 ;;; Helper functions
 

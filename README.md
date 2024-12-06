@@ -23,6 +23,7 @@ When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), o
     - [Verbose Mode](#verbose-mode)
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
+    - [Rules](#rules)
     - [Predicate function](#predicate-function)
   - [Frequently asked questions](#frequently-asked-questions)
     - [Why? What problem is this aiming to solve?](#why-what-problem-is-this-aiming-to-solve)
@@ -103,6 +104,28 @@ Define how frequently the cleanup process should run (default is every 10 minute
 ```
 
 (Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
+
+### Rules
+
+By default, *buffer-terminator* automatically determines which buffers are safe to terminate.
+
+However, if you need to define specific rules for keeping or terminating certain buffers, you can configure them using `buffer-terminator-rules`.
+
+The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds instructions for keeping or terminating buffers based on their names or regular expressions. Each rule is a cons cell where the key is a symbol indicating the rule type, and the value is either string or a list of strings:
+```elisp
+(setq buffer-terminator-rules-alist
+      '((kill-buffer-name . ("temporary-buffer-name1"
+                             "temporary-buffer-name2"))
+
+        (keep-buffer-name . ("important-buffer-name1"
+                             "important-buffer-name2"))
+
+        ;; Users can also define strings
+        (kill-buffer-name . "temporary-buffer-name3")
+
+        (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
+        (kill-buffer-name-regexp . "compile-angel")))
+```
 
 ### Predicate function
 
