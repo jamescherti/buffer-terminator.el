@@ -23,8 +23,8 @@ When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), o
     - [Verbose Mode](#verbose-mode)
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
+    - [Predicate function](#predicate-function)
   - [Frequently asked questions](#frequently-asked-questions)
-    - [How to persist and restore buffer display time when loading a session (e.g., with EasySession, desktop.el, etc.)](#how-to-persist-and-restore-buffer-display-time-when-loading-a-session-eg-with-easysession-desktopel-etc)
     - [Why? What problem is this aiming to solve?](#why-what-problem-is-this-aiming-to-solve)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
   - [Author and License](#author-and-license)
@@ -104,21 +104,38 @@ Define how frequently the cleanup process should run (default is every 10 minute
 
 (Using `customize-set-variable` allows `buffer-terminator-interval` to update the timer dynamically, without the need to restart `buffer-terminator-mode`.)
 
+### Predicate function
+
+You can set a custom predicate function using `buffer-terminator-predicate` to control which inactive buffers the *buffer-terminator* should keep or kill based on specific conditions.
+
+Here is an example of how to define a custom predicate function:
+
+``` elisp
+(defun my-buffer-terminator-predicate (buffer)
+  "Function to decide the fate of a buffer.
+This function takes a single argument, BUFFER, and can return one of the
+following values:
+:kill    Indicates that the buffer should be killed.
+:keep    Indicates that the buffer should be kept.
+nil      Let Buffer-Terminator decide."
+  (let ((buffer-name (buffer-name buffer)))
+    (cond
+     ;; Kill the scratch buffer
+     ((string= buffer-name "*scratch*")
+      :kill)
+
+     ;; Keep this buffer:
+     ((string= buffer-name "my-precious-buffer")
+      :keep)
+
+     (t
+      ;; Nil = Buffer-Terminator decides
+      nil))))
+
+(setq buffer-terminator-predicate #'my-buffer-terminator-predicate)
+```
+
 ## Frequently asked questions
-
-### How to persist and restore buffer display time when loading a session (e.g., with EasySession, desktop.el, etc.)
-
-The built-in *savehist* package can be used to save and restore `buffer-display-time` and `buffer-terminator--buffer-display-time`:
-```
-(add-to-list 'savehist-additional-variables 'buffer-display-time)
-(add-to-list 'savehist-additional-variables 'buffer-terminator--buffer-display-time)
-(savehist-mode 1)
-
-;; 1. Load easysession
-;; 2. Load buffer-terminator
-```
-
-Make sure to load *savehist* before *EasySession* and *buffer-terminator*.
 
 ### Why? What problem is this aiming to solve?
 

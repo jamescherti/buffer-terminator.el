@@ -92,6 +92,22 @@ too many buffers alive."
                         seconds
                         'buffer-terminator--kill-inactive-buffers)))
 
+(defcustom buffer-terminator-predicate nil
+  "Function to decide the fate of a buffer.
+This function takes a single argument, BUFFER, and can return one of the
+following values:
+
+:kill    Indicates that the buffer should be killed.
+:keep    Indicates that the buffer should be kept.
+nil      Let Buffer Terminator decide. It indicates that the default
+         procedure should be followed, using other predicates such as those
+         influenced by `buffer-terminator-keep-*` variables.
+
+This function has precedence over all other predicates."
+  :group 'buffer-terminator
+  :type '(choice (const nil)
+                 (function)))
+
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
 See also `buffer-terminator-inactivity-timeout'.
@@ -350,7 +366,28 @@ Return nil when if buffer has never been displayed."
 (defun buffer-terminator--kill-buffer-maybe (buffer)
   "Kill BUFFER if it is not visible and not special."
   (when (and (buffer-live-p buffer)
-             (not (buffer-terminator--keep-buffer-p buffer)))
+             (if buffer-terminator-predicate
+                 (cond
+                  ;; Function
+                  ((functionp buffer-terminator-predicate)
+                   (let ((ret (funcall buffer-terminator-predicate buffer)))
+                     (cond
+                      ((eq ret :kill)
+                       t)
+
+                      ((eq ret :keep)
+                       nil)
+
+                      (t
+                       ;; Let Buffer Terminator decide
+                       (not (buffer-terminator--keep-buffer-p buffer))))))
+                  ;; Error: not a function
+                  ((not (functionp buffer-terminator-predicate))
+                   (buffer-terminator--message
+                    "Warning: 'buffer-terminator-predicate' is not a function.")
+                   (not (buffer-terminator--keep-buffer-p buffer))))
+               ;; No predicate
+               (not (buffer-terminator--keep-buffer-p buffer))))
     (let ((buffer-name (buffer-name buffer)))
       (ignore-errors
         (let ((kill-buffer-query-functions '()))
