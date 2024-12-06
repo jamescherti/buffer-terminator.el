@@ -130,8 +130,9 @@ avoid terminating buffers that are associated with files you are working on."
 
 (defcustom buffer-terminator-predicate nil
   "Function to decide the fate of a buffer.
-This function takes a single argument, BUFFER, and can return one of the
-following values:
+This function is called (with no parameters) from the buffer.
+
+This function can return one of the following values:
 
 :kill    Indicates that the buffer should be killed.
 :keep    Indicates that the buffer should be kept.
