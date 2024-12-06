@@ -90,23 +90,7 @@ too many buffers alive."
   (setq buffer-terminator--kill-inactive-buffers-timer
         (run-with-timer seconds
                         seconds
-                        'buffer-terminator--kill-inactive-buffers)))
-
-(defcustom buffer-terminator-predicate nil
-  "Function to decide the fate of a buffer.
-This function takes a single argument, BUFFER, and can return one of the
-following values:
-
-:kill    Indicates that the buffer should be killed.
-:keep    Indicates that the buffer should be kept.
-nil      Let Buffer Terminator decide. It indicates that the default
-         procedure should be followed, using other predicates such as those
-         influenced by `buffer-terminator-keep-*` variables.
-
-This function has precedence over all other predicates."
-  :group 'buffer-terminator
-  :type '(choice (const nil)
-                 (function)))
+                        'buffer-terminator-kill-inactive-buffers)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -144,6 +128,22 @@ avoid terminating buffers that are associated with files you are working on."
   :type 'boolean
   :group 'buffer-terminator)
 
+(defcustom buffer-terminator-predicate nil
+  "Function to decide the fate of a buffer.
+This function takes a single argument, BUFFER, and can return one of the
+following values:
+
+:kill    Indicates that the buffer should be killed.
+:keep    Indicates that the buffer should be kept.
+nil      Let Buffer Terminator decide. It indicates that the default
+         procedure should be followed, using other predicates such as those
+         influenced by `buffer-terminator-keep-*` variables.
+
+This function has precedence over all other predicates."
+  :group 'buffer-terminator
+  :type '(choice (const nil)
+                 (function)))
+
 ;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
 ;; you are doing. If you decide to set it to nil, make sure to update
 ;; `buffer-terminator-keep-buffer-names' or
@@ -158,50 +158,40 @@ are added to `buffer-terminator-keep-buffer-names' and
   :type 'boolean
   :group 'buffer-terminator)
 
-;; THIS LIST IS IGNORED BY DEFAULT. It is only useful when
-;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-keep-buffer-names nil
   "List of buffer names that will never be killed."
-  :type '(repeat (string :tag "Buffer Name")))
+  :type '(repeat (string :tag "Buffer Name"))
+  :group 'buffer-terminator)
 
-;; THIS LIST OF REGEXP IS IGNORED BY DEFAULT. It is only useful when
-;; `buffer-terminator-keep-special-buffers' is set to nil:
 (defcustom buffer-terminator-keep-buffer-names-regexps nil
   "List of regexps that match buffer names that will never be killed."
-  :type '(repeat regexp))
+  :type '(repeat regexp)
+  :group 'buffer-terminator)
 
 (defcustom buffer-terminator-kill-buffer-names nil
   "List of buffer names that can be killed.
-This setting allows specific special buffers to be terminated, overriding the
-general `buffer-terminator-keep-buffer-names' and
+This setting allows specific buffers to be terminated, overriding the general
+`buffer-terminator-keep-buffer-names' and
 `buffer-terminator-keep-buffer-names-regexps' . This is useful for excluding
 certain special buffers from being preserved when inactive."
-  :type '(repeat (string :tag "Buffer Name")))
+  :type '(repeat (string :tag "Buffer Name"))
+  :group 'buffer-terminator)
 
 (defcustom buffer-terminator-kill-buffer-names-regexps nil
   "List of regex patterns matching buffer names that can be killed.
-This setting allows specific special buffers to be terminated, overriding the
-general `buffer-terminator-keep-buffer-names' and
+This setting allows specific buffers to be terminated, overriding the general
+`buffer-terminator-keep-buffer-names' and
 `buffer-terminator-keep-buffer-names-regexps' . This is useful for excluding
 certain special buffers from being preserved when inactive."
-  :type '(repeat regexp))
+  :type '(repeat regexp)
+  :group 'buffer-terminator)
 
-(defcustom buffer-terminator-kill-special-buffer-names nil
+(defvar buffer-terminator-kill-special-buffer-names nil
   "List of special buffer names that can be killed.
-When `buffer-terminator-keep-special-buffers' is enabled, this setting allows
-specific special buffers to be terminated, overriding the general
-keep-special-buffers rule. This is useful for excluding certain special
-buffers (like *Help* or *Messages*) from being preserved when inactive."
-  :type '(repeat (string :tag "Buffer Name")))
-
-(defcustom buffer-terminator-kill-special-buffer-names-regexps nil
+This variable is obsolete.")
+(defvar buffer-terminator-kill-special-buffer-names-regexps nil
   "List of regex patterns matching special buffer names that can be killed.
-When `buffer-terminator-keep-special-buffers' is enabled, this setting allows
-buffers whose names match any of the provided regular expressions to be
-terminated, even if they are generally considered special. This can be useful
-for excluding specific special buffers (such as temporary documentation buffers)
-from being preserved."
-  :type '(repeat regexp))
+This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
                         'buffer-terminator-kill-buffer-names
@@ -241,7 +231,7 @@ The message is formatted with the provided arguments ARGS."
 (defun buffer-terminator--match-buffer-p (buffer-name match-names)
   "Check if BUFFER-NAME matches one of the names or regexps in MATCH-NAMES.
 MATCH-NAMES is a list of string for exact matches.
-Returns non-nil if BUFFER-NAME matches any of the names or regexps."
+Returns non-nil if BUFFER-NAME matches any of the names."
   (when (and buffer-name match-names)
     (cl-find buffer-name
              match-names
@@ -250,13 +240,8 @@ Returns non-nil if BUFFER-NAME matches any of the names or regexps."
 (defun buffer-terminator--match-buffer-regexp-p
     (buffer-name match-names-regexp)
   "Check if BUFFER-NAME is matched by one of the names or name regexps.
-MATCH-NAMES is a list of names.
-MATCH-NAMES-REGEXP is a list of regular expressions."
-  ;;(cl-some (lambda (regex)
-  ;;           (if (functionp regex)
-  ;;               (funcall regex buffer-name)
-  ;;             (string-match-p regex buffer-name)))
-  ;;         match-names-regexp)
+MATCH-NAMES-REGEXP is a list of regular expressions.
+Returns non-nil if BUFFER-NAME matches any of the regexps."
   (when (and buffer-name match-names-regexp)
     (cl-find buffer-name
              match-names-regexp
@@ -364,13 +349,6 @@ Return nil when if buffer has never been displayed."
        ((>= last-display-time buffer-terminator-inactivity-timeout)
         t)))))
 
-(defun buffer-terminator--kill-inactive-buffers ()
-  "Kill all buffers that are inactive and not visible."
-  (mapc #'(lambda(buffer)
-            (when (buffer-terminator--buffer-inactive-p buffer)
-              (buffer-terminator--kill-buffer-maybe buffer)))
-        (buffer-list)))
-
 (defun buffer-terminator--kill-buffer-maybe (buffer)
   "Kill BUFFER if it is not visible and not special."
   (when (and (buffer-live-p buffer)
@@ -378,7 +356,8 @@ Return nil when if buffer has never been displayed."
                  (cond
                   ;; Function
                   ((functionp buffer-terminator-predicate)
-                   (let ((ret (funcall buffer-terminator-predicate buffer)))
+                   (let ((ret (with-current-buffer
+                                  (funcall buffer-terminator-predicate buffer))))
                      (cond
                       ((eq ret :kill)
                        t)
@@ -390,7 +369,7 @@ Return nil when if buffer has never been displayed."
                        ;; Let Buffer Terminator decide
                        (not (buffer-terminator--keep-buffer-p buffer))))))
                   ;; Error: not a function
-                  ((not (functionp buffer-terminator-predicate))
+                  (t
                    (buffer-terminator--message
                     "Warning: 'buffer-terminator-predicate' is not a function.")
                    (not (buffer-terminator--keep-buffer-p buffer))))
@@ -406,8 +385,15 @@ Return nil when if buffer has never been displayed."
 
 ;;; Helper functions
 
-(defun buffer-terminator-kill-all-non-visible-buffers ()
-  "Kill all buffers that are not visible."
+(defun buffer-terminator-kill-inactive-buffers ()
+  "Kill all buffers that are inactive and not visible."
+  (mapc #'(lambda(buffer)
+            (when (buffer-terminator--buffer-inactive-p buffer)
+              (buffer-terminator--kill-buffer-maybe buffer)))
+        (buffer-list)))
+
+(defun buffer-terminator-kill-non-visible-buffers ()
+  "Kill all non visible buffers."
   (let ((buffer-killed nil))
     (mapc #'(lambda(buffer)
               (when (buffer-terminator--kill-buffer-maybe buffer)
@@ -415,6 +401,13 @@ Return nil when if buffer has never been displayed."
           (buffer-list))
     ;; Return the list of killed buffer names
     buffer-killed))
+
+(defalias 'buffer-terminator-kill-all-non-visible-buffers
+  'buffer-terminator-kill-non-visible-buffers
+  "Renamed to `buffer-terminator-kill-non-visible-buffers'.")
+(make-obsolete 'buffer-terminator-kill-all-non-visible-buffers
+               'buffer-terminator-kill-non-visible-buffers
+               "1.0.2")
 
 (defun buffer-terminator-find-dired-parent (&optional kill-buffer)
   "Open the current directory in a `dired' buffer and select the current file.
