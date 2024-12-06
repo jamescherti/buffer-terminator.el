@@ -3,7 +3,7 @@
 ;; Copyright (C) 2024 James Cherti | https://www.jamescherti.com/contact/
 
 ;; Author: James Cherti
-;; Version: 1.0.1
+;; Version: 1.0.2
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
@@ -196,11 +196,11 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
                         'buffer-terminator-kill-buffer-names
-                        "1.0.1")
+                        "1.0.2")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names-regexps
                         'buffer-terminator-kill-buffer-names-regexps
-                        "1.0.1")
+                        "1.0.2")
 
 ;;; Functions
 
