@@ -3,7 +3,7 @@
 ;; Copyright (C) 2024 James Cherti | https://www.jamescherti.com/contact/
 
 ;; Author: James Cherti
-;; Version: 1.0.2
+;; Version: 1.0.3
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
@@ -196,11 +196,11 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
                         'buffer-terminator-kill-buffer-names
-                        "1.0.2")
+                        "1.0.3")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names-regexps
                         'buffer-terminator-kill-buffer-names-regexps
-                        "1.0.2")
+                        "1.0.3")
 
 ;;; Functions
 
@@ -408,7 +408,7 @@ Return nil when if buffer has never been displayed."
   "Renamed to `buffer-terminator-kill-non-visible-buffers'.")
 (make-obsolete 'buffer-terminator-kill-all-non-visible-buffers
                'buffer-terminator-kill-non-visible-buffers
-               "1.0.2")
+               "1.0.3")
 
 (defun buffer-terminator-find-dired-parent (&optional kill-buffer)
   "Open the current directory in a `dired' buffer and select the current file.
