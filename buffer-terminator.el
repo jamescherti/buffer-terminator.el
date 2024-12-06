@@ -203,6 +203,14 @@ for excluding specific special buffers (such as temporary documentation buffers)
 from being preserved."
   :type '(repeat regexp))
 
+(make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
+                        'buffer-terminator-kill-buffer-names
+                        "1.0.1")
+
+(make-obsolete-variable 'buffer-terminator-kill-special-buffer-names-regexps
+                        'buffer-terminator-kill-buffer-names-regexps
+                        "1.0.1")
+
 ;;; Functions
 
 (defun buffer-terminator--message (&rest args)
