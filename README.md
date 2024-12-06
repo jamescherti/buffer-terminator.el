@@ -111,14 +111,13 @@ You can set a custom predicate function using `buffer-terminator-predicate` to c
 Here is an example of how to define a custom predicate function:
 
 ``` elisp
-(defun my-buffer-terminator-predicate (buffer)
+(defun my-buffer-terminator-predicate ()
   "Function to decide the fate of a buffer.
-This function takes a single argument, BUFFER, and can return one of the
-following values:
 :kill    Indicates that the buffer should be killed.
 :keep    Indicates that the buffer should be kept.
 nil      Let Buffer-Terminator decide."
-  (let ((buffer-name (buffer-name buffer)))
+  (let* ((buffer (current-buffer))
+         (buffer-name (buffer-name buffer)))
     (cond
      ;; Kill the scratch buffer
      ((string= buffer-name "*scratch*")

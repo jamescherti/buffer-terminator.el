@@ -357,7 +357,7 @@ Return nil when if buffer has never been displayed."
                   ;; Function
                   ((functionp buffer-terminator-predicate)
                    (let ((ret (with-current-buffer
-                                  (funcall buffer-terminator-predicate buffer))))
+                                  (funcall buffer-terminator-predicate))))
                      (cond
                       ((eq ret :kill)
                        t)
