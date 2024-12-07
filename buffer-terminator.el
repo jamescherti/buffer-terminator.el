@@ -444,7 +444,7 @@ Return nil when if buffer has never been displayed."
                    )))
         buffer-last-view))))
 
-(defun buffer-terminator--buffer-inactive-p (buffer)
+(defun buffer-terminator--match-buffer-inactive-p (buffer)
   "Return non-nil when BUFFER is inactive."
   (when buffer
     (let ((last-display-time (buffer-terminator--last-display-time buffer)))
@@ -495,12 +495,19 @@ Return nil when if buffer has never been displayed."
 
 ;;; Helper functions
 
-(defun buffer-terminator-kill-inactive-buffers ()
+(defun buffer-terminator-kill-buffers ()
   "Kill all buffers that are inactive and not visible."
   (mapc #'(lambda(buffer)
-            (when (buffer-terminator--buffer-inactive-p buffer)
+            (when (buffer-terminator--match-buffer-inactive-p buffer)
               (buffer-terminator--kill-buffer-maybe buffer)))
         (buffer-list)))
+
+(defalias 'buffer-terminator-kill-inactive-buffers
+  'buffer-terminator-kill-buffers
+  "Renamed to `buffer-terminator-kill-buffers'.")
+(make-obsolete 'buffer-terminator-kill-inactive-buffers
+               'buffer-terminator-kill-buffers
+               "1.0.4")
 
 (defun buffer-terminator-kill-non-visible-buffers ()
   "Kill all non visible buffers."
