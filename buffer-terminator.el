@@ -120,7 +120,7 @@ buffers you want to keep are added to `buffer-terminator-rules-alist'."
                                (const :keep-buffer-name-regexp)
                                (const :kill-buffer-name-regexp))
                        (choice string
-                               (repeat symbol)
+                               ;; TODO add symbol and list of symbols
                                (repeat string))))
   :group 'buffer-terminator)
 
