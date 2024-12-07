@@ -470,7 +470,7 @@ Return nil when if buffer has never been displayed."
                   ;; Error: Predicate is not a function
                   (t
                    (buffer-terminator--message
-                    (concat "Warning: 'buffer-terminator-predicate' is "
+                    (concat "WARNING: 'buffer-terminator-predicate' is "
                             "not a function.")))))
 
                ;; Rules
@@ -543,6 +543,24 @@ The buffer is killed when KILL-BUFFER is set to t."
   "Open the current directory in a `dired' buffer and select the current file."
   (buffer-terminator-find-dired-parent t))
 
+(defvar buffer-terminator-display-warnings t)
+
+(defun buffer-terminator--warn-obsolete-vars ()
+  "Warn the user if any obsolete `buffer-terminator' variables are non-nil."
+  (when buffer-terminator-display-warnings
+    (dolist (var '(buffer-terminator-keep-buffer-names
+                   buffer-terminator-keep-buffer-names-regexps
+                   buffer-terminator-kill-buffer-names
+                   buffer-terminator-kill-buffer-names-regexps
+                   buffer-terminator-kill-special-buffer-names
+                   buffer-terminator-kill-special-buffer-names-regexps))
+      (when (and (boundp var) (symbol-value var))
+        (buffer-terminator--message
+         (concat "WARNING: The variable `%s` is obsolete. "
+                 "Use `buffer-terminator-rules-alist` instead. "
+                 "(The obsolete variable will be removed in future versions.)")
+         var)))))
+
 ;;; Mode
 
 ;;;###autoload
@@ -556,6 +574,7 @@ and not visible based on a defined timeout."
   (if buffer-terminator-mode
       ;; Enable
       (progn
+        (buffer-terminator--warn-obsolete-vars)
         ;; Initialize the last view time for all buffers
         (dolist (buffer (buffer-list))
           (with-current-buffer buffer
