@@ -159,6 +159,14 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
 
 You can set a custom predicate function using `buffer-terminator-predicate` to control which inactive buffers the *buffer-terminator* should keep or kill based on specific conditions.
 
+The default is:
+```elisp
+(setq buffer-terminator-rules-alist '((keep-buffer-type . "special")
+                                      (keep-buffer-type . "process")
+                                      (keep-buffer-status . "visible")
+                                      (return . :kill)))
+```
+
 Here is an example of how to define a custom predicate function:
 
 ``` elisp

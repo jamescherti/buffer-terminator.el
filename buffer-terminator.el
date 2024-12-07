@@ -106,8 +106,8 @@ This function has precedence over all other predicates."
   :type '(choice (const nil)
                  (function)))
 
-(defvar buffer-terminator-rules-alist '((keep-buffer-type . "process")
-                                        (keep-buffer-type . "special")
+(defvar buffer-terminator-rules-alist '((keep-buffer-type . "special")
+                                        (keep-buffer-type . "process")
                                         (keep-buffer-status . "visible")
                                         (return . :kill))
   "Rules for processing buffers.
