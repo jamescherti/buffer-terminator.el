@@ -235,7 +235,7 @@ The message is formatted with the provided arguments ARGS."
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
-(defun buffer-terminator--buffer-type-p (rule type)
+(defun buffer-terminator--match-buffer-type-p (rule type)
   "Return non-nil when the buffer type of the current buffer is TYPE.
 RULE is the rule name.
 TYPE is a string (\"process\" or \"file\")."
@@ -267,7 +267,7 @@ TYPE is a string (\"process\" or \"file\")."
          type)
         nil)))))
 
-(defun buffer-terminator--buffer-status-p (rule status)
+(defun buffer-terminator--match-buffer-status-p (rule status)
   "Return non-nil when the buffer status of the current buffer is STATUS.
 RULE is the rule name.
 STATUS can be \"visible\" or \"special\"."
@@ -287,7 +287,48 @@ STATUS can be \"visible\" or \"special\"."
          rule status)
         nil)))))
 
-(defun buffer-terminator--buffer-major-mode-p (rule major-modes)
+(defun buffer-terminator--match-buffer-p (match-names)
+  "Check if buffer name matches one of the names in MATCH-NAMES.
+MATCH-NAMES can be a string for a single exact match or a list of strings.
+Returns non-nil if the buffer name matches any of the names."
+  (let ((buffer-name (buffer-name)))
+    (if (not (or (listp match-names) (stringp match-names)))
+        (buffer-terminator--message
+         "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
+         buffer-name match-names)
+      (when buffer-name
+        (cond
+         ((stringp match-names)
+          (string-equal buffer-name match-names))
+
+         ((listp match-names)
+          (cl-find buffer-name
+                   match-names
+                   :test #'string-equal)))))))
+
+(defun buffer-terminator--match-buffer-regexp-p (match-names-regexp)
+  "Check if BUFFER-NAME is matched by one or more regexps in MATCH-NAMES-REGEXP.
+RULE is the rule name.
+MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
+Returns non-nil if BUFFER-NAME matches any of the regexps."
+  (let ((buffer-name (buffer-name)))
+    (if (not (or (listp match-names-regexp) (stringp match-names-regexp)))
+        (buffer-terminator--message
+         "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
+         match-names-regexp)
+      (when buffer-name
+        (cond
+         ((stringp match-names-regexp)
+          (string-match match-names-regexp buffer-name))
+
+         ((listp match-names-regexp)
+          (cl-find buffer-name
+                   match-names-regexp
+                   :test (lambda (buffer-name regex)
+                           (string-match regex buffer-name)))))))))
+
+
+(defun buffer-terminator--match-buffer-major-mode-p (rule major-modes)
   "Return non-nil when the buffer major mode is part of MAJOR-MODES.
 RULE is the rule name."
   (if (not (or (listp major-modes) (symbolp major-modes)))
@@ -299,73 +340,72 @@ RULE is the rule name."
 
 (defun buffer-terminator--process-rule (rule value)
   "Run the rule RULE with the value VALUE."
-  (let ((buffer-name (buffer-name)))
-    (cond
-     ((not (symbolp rule))
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
-       rule value)
-      nil)
+  (cond
+   ((not (symbolp rule))
+    (buffer-terminator--message
+     "[Warning] Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
+     rule value)
+    nil)
 
-     ((eq rule 'return)
-      value)
+   ((eq rule 'return)
+    value)
 
-     ((eq rule 'keep-buffer-status)
-      (if (buffer-terminator--buffer-status-p rule value)
-          :keep
-        nil))
+   ((eq rule 'keep-buffer-status)
+    (if (buffer-terminator--match-buffer-status-p rule value)
+        :keep
+      nil))
 
-     ((eq rule 'kill-buffer-status)
-      (if (buffer-terminator--buffer-status-p rule value)
-          :kill
-        nil))
+   ((eq rule 'kill-buffer-status)
+    (if (buffer-terminator--match-buffer-status-p rule value)
+        :kill
+      nil))
 
-     ((eq rule 'keep-buffer-type)
-      (if (buffer-terminator--buffer-type-p rule value)
-          :keep
-        nil))
+   ((eq rule 'keep-buffer-type)
+    (if (buffer-terminator--match-buffer-type-p rule value)
+        :keep
+      nil))
 
-     ((eq rule 'kill-buffer-type)
-      (if (buffer-terminator--buffer-type-p rule value)
-          :kill
-        nil))
+   ((eq rule 'kill-buffer-type)
+    (if (buffer-terminator--match-buffer-type-p rule value)
+        :kill
+      nil))
 
-     ((eq rule 'keep-buffer-name)
-      (if (buffer-terminator--match-buffer-p buffer-name value)
-          :keep
-        nil))
+   ((eq rule 'keep-buffer-name)
+    (if (buffer-terminator--match-buffer-p value)
+        :keep
+      nil))
 
-     ((eq rule 'kill-buffer-name)
-      (if (buffer-terminator--match-buffer-p buffer-name value)
-          :kill
-        nil))
+   ((eq rule 'kill-buffer-name)
+    (if (buffer-terminator--match-buffer-p value)
+        :kill
+      nil))
 
-     ((eq rule 'keep-buffer-name-regexp)
-      (if (buffer-terminator--match-buffer-regexp-p rule buffer-name value)
-          :keep
-        nil))
+   ((eq rule 'keep-buffer-name-regexp)
+    (if (buffer-terminator--match-buffer-regexp-p value)
+        :keep
+      nil))
 
-     ((eq rule 'kill-buffer-name-regexp)
-      (if (buffer-terminator--match-buffer-regexp-p rule buffer-name value)
-          :kill
-        nil))
+   ((eq rule 'kill-buffer-name-regexp)
+    (if (buffer-terminator--match-buffer-regexp-p value)
+        :kill
+      nil))
 
-     ((eq rule 'keep-buffer-major-modes)
-      (if (buffer-terminator--buffer-major-mode-p rule value)
-          :keep
-        nil))
+   ((eq rule 'keep-buffer-major-modes)
+    (if (buffer-terminator--match-buffer-major-mode-p rule value)
+        :keep
+      nil))
 
-     ((eq rule 'kill-buffer-major-modes)
-      (if (buffer-terminator--buffer-major-mode-p rule value)
-          :kill
-        nil))
+   ((eq rule 'kill-buffer-major-modes)
+    (if (buffer-terminator--match-buffer-major-mode-p rule value)
+        :kill
+      nil))
 
-     ;; TODO: Special buffers.
-     (t
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'"
-       rule value)
-      nil))))
+   ;; TODO: Special buffers.
+   (t
+    (buffer-terminator--message
+     "[Warning] Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'"
+     rule value)
+    nil)))
 
 (defun buffer-terminator--process-buffer-rules ()
   "Process `buffer-terminator-rules-alist'.
@@ -379,44 +419,6 @@ Return :kill or :keep or nil."
             (throw 'result result)))))
     ;; Return nil if no rule produces a result
     nil))
-
-(defun buffer-terminator--match-buffer-p (buffer-name match-names)
-  "Check if BUFFER-NAME matches one of the names in MATCH-NAMES.
-MATCH-NAMES can be a string for a single exact match or a list of strings.
-Returns non-nil if BUFFER-NAME matches any of the names."
-  (if (not (or (listp match-names) (stringp match-names)))
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-       buffer-name match-names)
-    (when buffer-name
-      (cond
-       ((stringp match-names)
-        (string-equal buffer-name match-names))
-
-       ((listp match-names)
-        (cl-find buffer-name
-                 match-names
-                 :test #'string-equal))))))
-
-(defun buffer-terminator--match-buffer-regexp-p (rule buffer-name match-names-regexp)
-  "Check if BUFFER-NAME is matched by one or more regexps in MATCH-NAMES-REGEXP.
-RULE is the rule name.
-MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
-Returns non-nil if BUFFER-NAME matches any of the regexps."
-  (if (not (or (listp match-names-regexp) (stringp match-names-regexp)))
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-       rule match-names-regexp)
-    (when buffer-name
-      (cond
-       ((stringp match-names-regexp)
-        (string-match match-names-regexp buffer-name))
-
-       ((listp match-names-regexp)
-        (cl-find buffer-name
-                 match-names-regexp
-                 :test (lambda (buffer-name regex)
-                         (string-match regex buffer-name))))))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
 (defvar buffer-terminator--disable-buffer-display-time-update nil)
