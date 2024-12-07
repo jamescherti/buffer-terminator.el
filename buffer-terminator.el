@@ -330,7 +330,6 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
                    :test (lambda (buffer-name regex)
                            (string-match regex buffer-name)))))))))
 
-
 (defun buffer-terminator--match-buffer-major-mode-p (major-modes)
   "Return non-nil when the buffer major mode is part of MAJOR-MODES."
   (if (not (or (listp major-modes) (symbolp major-modes)))
@@ -349,7 +348,7 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
      rule value)
     nil)
 
-   ((eq rule 'funcall)
+   ((and (eq rule 'call-function) (functionp value))
     (funcall value))
 
    ((eq rule 'return)
