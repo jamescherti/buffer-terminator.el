@@ -218,7 +218,7 @@ The message is formatted with the provided arguments ARGS."
 (defun buffer-terminator--buffer-visible-p (buffer)
   "Return non-nil if BUFFER is visible in any window on any frame."
   (when buffer
-    (or (get-buffer-window buffer 0)
+    (or (get-buffer-window buffer 'visible)
         ;; Tab-bar
         (and (bound-and-true-p tab-bar-mode)
              (fboundp 'tab-bar-get-buffer-tab)
