@@ -300,5 +300,71 @@
   (test-buffer-terminator--check-modified-file-buffer t)
   (test-buffer-terminator--check-process-buffer t))
 
+(ert-deftest test-buffer-terminator-test08-keep-kill-name ()
+  ;; Keep
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        ;; TODO: use variable test-buffer-terminator--file-buffers
+        '((keep-buffer-name . "test-file1")
+          (keep-buffer-name . ("test-file2" "test-file3"))
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :kill)))
+  (buffer-terminator-kill-buffers)
+  (test-buffer-terminator--check-special-buffers nil)
+  (test-buffer-terminator--check-special-mode-buffer nil)
+  (test-buffer-terminator--check-func-buffer nil)
+  (test-buffer-terminator--check-file-buffers t)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer nil)
+
+  ;; Kill
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        ;; TODO: use variable test-buffer-terminator--file-buffers
+        '((kill-buffer-name . "test-file1")
+          (kill-buffer-name . ("test-file2" "test-file3"))
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :keep)))
+  (buffer-terminator-kill-buffers)
+  (test-buffer-terminator--check-special-buffers t)
+  (test-buffer-terminator--check-special-mode-buffer t)
+  (test-buffer-terminator--check-func-buffer t)
+  (test-buffer-terminator--check-file-buffers nil)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer t))
+
+(ert-deftest test-buffer-terminator-test00-keep-regexp ()
+  ;; Keep
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        ;; TODO: use variable test-buffer-terminator--file-buffers
+        '((keep-buffer-name-regexp . "test-process-buffer")
+          (keep-buffer-name-regexp . ("test-file" "func-buffer"))
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :kill)))
+  (buffer-terminator-kill-buffers)
+  (test-buffer-terminator--check-special-buffers nil)
+  (test-buffer-terminator--check-special-mode-buffer nil)
+  (test-buffer-terminator--check-func-buffer t)
+  (test-buffer-terminator--check-file-buffers t)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer t)
+
+  ;; Kill
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        ;; TODO: use variable test-buffer-terminator--file-buffers
+        '((kill-buffer-name-regexp . "test-process-buffer")
+          (kill-buffer-name-regexp . ("test-file" "func-buffer"))
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :keep)))
+  (buffer-terminator-kill-buffers)
+  (test-buffer-terminator--check-special-buffers t)
+  (test-buffer-terminator--check-special-mode-buffer t)
+  (test-buffer-terminator--check-func-buffer nil)
+  (test-buffer-terminator--check-file-buffers nil)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer nil))
+
 (provide 'test-buffer-terminator)
 ;;; test-buffer-terminator.el ends here
