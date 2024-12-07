@@ -5,7 +5,7 @@
 
 The **buffer-terminator** package automatically terminates inactive buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those inactive buffers.
 
-By default, all inactive buffers are terminated except special buffers (buffers whose names start with a space, start and end with `*`, and buffers whose major mode is derived from `special-mode`).
+By default, all inactive buffers are terminated except special buffers (special buffers are buffers whose names start with a space, start and end with `*`, or whose major mode is derived from `special-mode`).
 
 When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), only buffers that have been inactive for a specified period are terminated. (Exception: modified file-visiting buffers that have not been saved are not terminated; the user must save them first.)
 
@@ -126,11 +126,24 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
         (kill-buffer-name-regexp . "compile-angel")
 
-        ;; Visible buffers
-        (keep-buffer-status . "visible")
+        ;; Retain special buffers (Important).
+        ;; Keep this in the end, after all the rules above.
+        ;; If you choose to terminate special buffers by removing the following,
+        ;; ensure that the special buffers you want to keep are added
+        ;; keep-buffer-name rules above.
+        ;;
+        ;; DO NOT REMOVE special buffers unless you are certain of what
+        ;; you are doing.
+        (keep-buffer-status . "special")
 
-        ;; NEVER REMOVE special buffers unless you know what you are doing.
-        (keep-buffer-status . "special")))
+        ;; Retain visible buffers are those currently displayed in any window.
+        ;; Keep this in the end, after all the rules above.
+        ;; It is generally discouraged to set this to nil, as doing so may result
+        ;; in the termination of visible buffers, except for the currently active
+        ;; buffer in the selected window.
+        ;;
+        ;; DO NOT REMOVE visible buffers unless necessary.
+        (keep-buffer-status . "visible")))
 ```
 
 ### Predicate function
