@@ -107,7 +107,8 @@ This function has precedence over all other predicates."
                  (function)))
 
 (defcustom buffer-terminator-rules-alist '((keep-buffer-status . "special")
-                                           (keep-buffer-status . "visible"))
+                                           (keep-buffer-status . "visible")
+                                           (return . :kill))
   "Rules for processing buffers.
 Each rule is a cons cell where the key is a symbol indicating the rule type, and
 the value is either a string or a list of strings.
@@ -313,6 +314,9 @@ RULE is the rule name."
        rule value)
       nil)
 
+     ((eq rule 'return)
+      value)
+
      ((eq rule 'keep-buffer-status)
       (if (buffer-terminator--buffer-status-p rule value)
           :keep
@@ -424,73 +428,6 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
 (defvar-local buffer-terminator--buffer-display-time nil)
 (defvar buffer-terminator--disable-buffer-display-time-update nil)
 
-(defun buffer-terminator--keep-buffer-p (buffer &optional ignore-buffers)
-  "Check if BUFFER should be excluded from being automatically killed.
-Returns non-nil if BUFFER should be kept.
-IGNORE-BUFFERS is a list of buffers to ignore."
-  (if (buffer-live-p buffer)
-      (with-current-buffer buffer
-        (let ((buffer-name (buffer-name))
-              (special-buffer (buffer-terminator--special-buffer-p buffer)))
-          (and
-           ;; TODO obsolete
-           (not (or (buffer-terminator--match-buffer-p
-                     buffer-name
-                     buffer-terminator-kill-buffer-names)
-
-                    (buffer-terminator--match-buffer-regexp-p
-                     nil
-                     buffer-name
-                     buffer-terminator-kill-buffer-names-regexps)))
-           ;; Terminate special buffers
-           (and
-            ;; TODO obsolete
-            (if special-buffer
-                (not (or (buffer-terminator--match-buffer-p
-                          buffer-name
-                          buffer-terminator-kill-special-buffer-names)
-                         (buffer-terminator--match-buffer-regexp-p
-                          nil
-                          buffer-name
-                          buffer-terminator-kill-special-buffer-names-regexps)))
-              t))
-           (or
-            ;; TODO obsolete
-            (buffer-terminator--match-buffer-p
-             buffer-name buffer-terminator-keep-buffer-names)
-
-            ;; TODO obsolete
-            (buffer-terminator--match-buffer-regexp-p
-             nil
-             buffer-name buffer-terminator-keep-buffer-names-regexps)
-
-            ;; Special buffers (TODO: Obsolete)
-            (and buffer-terminator-keep-special-buffers
-                 special-buffer)
-
-            ;; File visiting buffer (TODO: Obsolete)
-            (and (buffer-file-name (buffer-base-buffer))
-                 (or buffer-terminator-keep-file-visiting-buffers
-                     (buffer-modified-p)))
-
-            ;; TODO obsolete
-            (and buffer-terminator-keep-major-modes
-                 (cl-find major-mode
-                          buffer-terminator-keep-major-modes
-                          :test 'eq))
-
-            ;; Keep ignored buffers
-            (and ignore-buffers
-                 (memq buffer ignore-buffers))
-
-            ;; Keep visible buffers (TODO: Obsolete)
-            (and buffer-terminator-keep-visible-buffers
-                 (buffer-terminator--buffer-visible-p buffer))
-
-            ;; Keep buffers that contain processes (TODO: Obsolete)
-            (and buffer-terminator-keep-buffers-with-process
-                 (get-buffer-process buffer))))))))
-
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
   (unless buffer-terminator--disable-buffer-display-time-update
@@ -552,13 +489,6 @@ Return nil when if buffer has never been displayed."
                (when (and buffer-terminator-rules-alist
                           (not decision))
                  (setq decision (buffer-terminator--process-buffer-rules)))
-
-               ;; Let Buffer-Terminator decide
-               (unless decision
-                 (setq decision
-                       (if (buffer-terminator--keep-buffer-p buffer)
-                           :keep
-                         :kill)))
 
                ;; Final decision
                (if (eq decision :kill)
@@ -623,13 +553,20 @@ The buffer is killed when KILL-BUFFER is set to t."
 (defun buffer-terminator--warn-obsolete-vars ()
   "Warn the user if any obsolete `buffer-terminator' variables are non-nil."
   (when buffer-terminator-display-warnings
+    (dolist (var '(buffer-terminator-keep-buffers-with-process
+                   buffer-terminator-keep-special-buffers
+                   buffer-terminator-keep-visible-buffers))
+      (when (and (boundp var) (not (symbol-value var)))
+        (buffer-terminator--message
+         (concat "WARNING: The variable `%s` is obsolete. "
+                 "Use `buffer-terminator-rules-alist` instead. "
+                 "(The obsolete variable will be removed in future versions.)")
+         var))))
+  (when buffer-terminator-display-warnings
     (dolist (var '(buffer-terminator-keep-buffer-names
                    buffer-terminator-keep-buffer-names-regexps
-                   buffer-terminator-keep-buffers-with-process
                    buffer-terminator-keep-file-visiting-buffers
                    buffer-terminator-keep-major-modes
-                   buffer-terminator-keep-special-buffers
-                   buffer-terminator-keep-visible-buffers
                    buffer-terminator-kill-buffer-names
                    buffer-terminator-kill-buffer-names-regexps
                    buffer-terminator-kill-special-buffer-names

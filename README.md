@@ -143,7 +143,10 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         ;; buffer in the selected window.
         ;;
         ;; DO NOT REMOVE visible buffers unless necessary.
-        (keep-buffer-status . "visible")))
+        (keep-buffer-status . "visible")
+
+        ;; Kill the remaining buffers that were not retained by previous rules
+        (return . :kill)))
 ```
 
 ### Predicate function
