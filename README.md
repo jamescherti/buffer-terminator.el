@@ -125,12 +125,6 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
         (kill-buffer-name-regexp . "compile-angel")
 
-        ;; Call a function that decides the fate of a buffer. It returns:
-        ;; :kill    Indicates that the buffer should be killed.
-        ;; :keep    Indicates that the buffer should be kept.
-        ;; nil      Let Buffer-Terminator decide.
-        (funcall . function-name)
-
         ;; Retain special buffers (Important).
         ;; Keep this before kill-buffer-property: inactive and visible.
         ;;
@@ -161,6 +155,12 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         ;; This can be customized with `buffer-terminator-inactivity-timeout`
         ;; and `buffer-terminator-interval`.
         (kill-buffer-property . inactive)
+
+        ;; Call a function that decides the fate of a buffer. It returns:
+        ;; :kill    Indicates that the buffer should be killed.
+        ;; :keep    Indicates that the buffer should be kept.
+        ;; nil      Let Buffer-Terminator decide.
+        (call-function . function-name)
 
         ;; Kill the remaining buffers that were not retained by previous rules
         (return . :kill)))
