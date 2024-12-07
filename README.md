@@ -126,6 +126,9 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
         (kill-buffer-name-regexp . "compile-angel")
 
+        ;; Kill inactive buffers
+        (kill-buffer-status . "inactive")
+
         ;; Keep process buffers
         ;; Process buffers are buffers where an active process is running.
         ;; Removing the following will result in the termination of such

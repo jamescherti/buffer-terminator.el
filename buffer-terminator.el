@@ -106,10 +106,21 @@ This function has precedence over all other predicates."
   :type '(choice (const nil)
                  (function)))
 
-(defvar buffer-terminator-rules-alist '((keep-buffer-type . "special")
-                                        (keep-buffer-type . "process")
-                                        (keep-buffer-status . "visible")
-                                        (return . :kill))
+(defvar buffer-terminator-rules-alist
+  '(;; Kill inactive buffers.
+    (keep-buffer-status . "inactive")
+
+    ;; Keep process buffers.
+    (keep-buffer-type . "special")
+
+    ;; Retain special buffers (Important).
+    (keep-buffer-type . "process")
+
+    ;; Retain visible buffers are those currently displayed in any window.
+    (keep-buffer-status . "visible")
+
+    ;; Kill the remaining buffers that were not retained by previous rules.
+    (return . :kill))
   "Rules for processing buffers.
 Each rule is a cons cell where the key is a symbol indicating the rule type, and
 the value is either a string or a list of strings.
@@ -235,6 +246,17 @@ The message is formatted with the provided arguments ARGS."
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
+(defun buffer-terminator--match-buffer-inactive-p (buffer)
+  "Return non-nil when BUFFER is inactive."
+  (when buffer
+    (let ((last-display-time (buffer-terminator--last-display-time buffer)))
+      (cond
+       ((not last-display-time)
+        t)
+
+       ((>= last-display-time buffer-terminator-inactivity-timeout)
+        t)))))
+
 (defun buffer-terminator--match-buffer-type-p (type)
   "Return non-nil when the buffer type of the current buffer is TYPE.
 TYPE is a string (\"process\" or \"file\")."
@@ -275,6 +297,10 @@ STATUS can be \"visible\" or \"special\"."
       (cond
        ((string= status "visible")
         (when (buffer-terminator--buffer-visible-p buffer)
+          t))
+
+       ((string= status "inactive")
+        (when (buffer-terminator--match-buffer-inactive-p buffer)
           t))
 
        (t
@@ -444,17 +470,6 @@ Return nil when if buffer has never been displayed."
                    )))
         buffer-last-view))))
 
-(defun buffer-terminator--match-buffer-inactive-p (buffer)
-  "Return non-nil when BUFFER is inactive."
-  (when buffer
-    (let ((last-display-time (buffer-terminator--last-display-time buffer)))
-      (cond
-       ((not last-display-time)
-        t)
-
-       ((>= last-display-time buffer-terminator-inactivity-timeout)
-        t)))))
-
 (defun buffer-terminator--kill-buffer-maybe (buffer)
   "Kill BUFFER if it is not visible and not special."
   (when (buffer-live-p buffer)
@@ -498,8 +513,7 @@ Return nil when if buffer has never been displayed."
 (defun buffer-terminator-kill-buffers ()
   "Kill all buffers that are inactive and not visible."
   (mapc #'(lambda(buffer)
-            (when (buffer-terminator--match-buffer-inactive-p buffer)
-              (buffer-terminator--kill-buffer-maybe buffer)))
+            (buffer-terminator--kill-buffer-maybe buffer))
         (buffer-list)))
 
 (defalias 'buffer-terminator-kill-inactive-buffers
