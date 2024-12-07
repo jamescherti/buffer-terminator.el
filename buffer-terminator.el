@@ -43,7 +43,7 @@
 ;;; Customizations
 
 (defgroup buffer-terminator nil
-  "Terminate inactive buffers automatically."
+  "Terminate buffers automatically."
   :group 'buffer-terminator
   :prefix "buffer-terminator-"
   :link '(url-link
@@ -90,34 +90,32 @@ Default: 10 minutes."
          (buffer-terminator--start-timer value)))
 
 (defcustom buffer-terminator-predicate nil
-  "Function to decide the fate of a buffer.
-This function is called (with no parameters) from the buffer.
-
-This function can return one of the following values:
-
-:kill    Indicates that the buffer should be killed.
-:keep    Indicates that the buffer should be kept.
-nil      Let Buffer Terminator decide. It indicates that the default
-         procedure should be followed, using other predicates such as those
-         influenced by `buffer-terminator-keep-*` variables.
-
-This function has precedence over all other predicates."
+  "This variable is obsolete.
+Use `buffer-terminator-rules-alist' instead."
   :group 'buffer-terminator
-  :type '(choice (const nil)
-                 (function)))
+  :type '(choice (const nil) (function)))
+
+(make-obsolete-variable 'buffer-terminator-predicate
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
 
 (defvar buffer-terminator-rules-alist
-  '(;; Kill inactive buffers.
-    (keep-buffer-status . "inactive")
+  '(;; Retain special buffers (Important).
+    ;;  Keep this before kill-buffer-property: inactive and visible.
+    ;;
+    ;; DO NOT REMOVE (keep-buffer-property . special) unless you know of what
+    ;; you are doing.
+    (keep-buffer-property . special)
 
-    ;; Keep process buffers.
-    (keep-buffer-type . "special")
+    ;; Keep process buffers (those where an active process is running.)
+    (keep-buffer-property . process)
 
-    ;; Retain special buffers (Important).
-    (keep-buffer-type . "process")
+    ;; Keep visible buffers (those currently displayed in any window).
+    (keep-buffer-property . visible)
 
-    ;; Retain visible buffers are those currently displayed in any window.
-    (keep-buffer-status . "visible")
+    ;; Kill inactive buffers.
+    ;; (Keep this at the end, after all the other rules.)
+    (kill-buffer-property . inactive)
 
     ;; Kill the remaining buffers that were not retained by previous rules.
     (return . :kill))
@@ -125,9 +123,13 @@ This function has precedence over all other predicates."
 Each rule is a cons cell where the key is a symbol indicating the rule type, and
 the value is either a string or a list of strings.
 
-It is generally recommended to keep at least keep-buffer-status special.
-If you choose to remove keep-buffer-status special, ensure that the special
-buffers you want to keep are added to `buffer-terminator-rules-alist'.")
+It is generally recommended to keep at least:
+    (keep-buffer-property . special)
+    (keep-buffer-property . visible)
+    (kill-buffer-property . inactive)
+
+If you choose to remove the above, ensure that the special buffers you want to
+keep are added to `buffer-terminator-rules-alist'.")
 
 ;;; Obsolete variables
 
@@ -257,57 +259,36 @@ The message is formatted with the provided arguments ARGS."
        ((>= last-display-time buffer-terminator-inactivity-timeout)
         t)))))
 
-(defun buffer-terminator--match-buffer-type-p (type)
-  "Return non-nil when the buffer type of the current buffer is TYPE.
-TYPE is a string (\"process\" or \"file\")."
-  (if (not (stringp type))
-      (buffer-terminator--message
-       (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
-               "'%s' -> '%s'")
-       type)
-    (let ((buffer (current-buffer)))
-      (cond
-       ((string= type "process")
-        (when (get-buffer-process buffer)
-          t))
+(defun buffer-terminator--match-buffer-property-p (property)
+  "Return non-nil when the buffer property of the current buffer is PROPERTY.
+PROPERTY can be \\='visible or \\='special."
+  (let ((buffer (current-buffer)))
+    (cond
+     ((or (eq property 'special))
+      (when (buffer-terminator--special-buffer-p buffer)
+        t))
 
-       ((string= type "file")
-        (when (buffer-file-name (buffer-base-buffer))
-          t))
+     ((or (eq property 'process))
+      (when (get-buffer-process buffer)
+        t))
 
-       ((string= type "special")
-        (when (buffer-terminator--special-buffer-p buffer)
-          t))
+     ((or (eq property 'visible))
+      (when (buffer-terminator--buffer-visible-p buffer)
+        t))
 
-       (t
-        (buffer-terminator--message
-         (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
-                 "'%s'")
-         type)
-        nil)))))
+     ((or (eq property 'inactive))
+      (when (buffer-terminator--match-buffer-inactive-p buffer)
+        t))
 
-(defun buffer-terminator--match-buffer-status-p (status)
-  "Return non-nil when the buffer status of the current buffer is STATUS.
-STATUS can be \"visible\" or \"special\"."
-  (if (not (stringp status))
+     ((or (eq property 'file))
+      (when (buffer-file-name (buffer-base-buffer))
+        t))
+
+     (t
       (buffer-terminator--message
        "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
-       status)
-    (let ((buffer (current-buffer)))
-      (cond
-       ((string= status "visible")
-        (when (buffer-terminator--buffer-visible-p buffer)
-          t))
-
-       ((string= status "inactive")
-        (when (buffer-terminator--match-buffer-inactive-p buffer)
-          t))
-
-       (t
-        (buffer-terminator--message
-         "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
-         status)
-        nil)))))
+       property)
+      nil))))
 
 (defun buffer-terminator--match-buffer-p (match-names)
   "Check if buffer name matches one of the names in MATCH-NAMES.
@@ -368,26 +349,19 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
      rule value)
     nil)
 
+   ((eq rule 'funcall)
+    (funcall value))
+
    ((eq rule 'return)
     value)
 
-   ((eq rule 'keep-buffer-status)
-    (if (buffer-terminator--match-buffer-status-p value)
+   ((eq rule 'keep-buffer-property)
+    (if (buffer-terminator--match-buffer-property-p value)
         :keep
       nil))
 
-   ((eq rule 'kill-buffer-status)
-    (if (buffer-terminator--match-buffer-status-p value)
-        :kill
-      nil))
-
-   ((eq rule 'keep-buffer-type)
-    (if (buffer-terminator--match-buffer-type-p value)
-        :keep
-      nil))
-
-   ((eq rule 'kill-buffer-type)
-    (if (buffer-terminator--match-buffer-type-p value)
+   ((eq rule 'kill-buffer-property)
+    (if (buffer-terminator--match-buffer-property-p value)
         :kill
       nil))
 
@@ -577,6 +551,7 @@ The buffer is killed when KILL-BUFFER is set to t."
     (dolist (var '(buffer-terminator-keep-buffer-names
                    buffer-terminator-keep-buffer-names-regexps
                    buffer-terminator-keep-file-visiting-buffers
+                   buffer-terminator-predicate
                    buffer-terminator-keep-major-modes
                    buffer-terminator-kill-buffer-names
                    buffer-terminator-kill-buffer-names-regexps

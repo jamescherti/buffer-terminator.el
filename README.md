@@ -24,7 +24,6 @@ When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), o
     - [Timeout for Inactivity](#timeout-for-inactivity)
     - [Cleanup Interval](#cleanup-interval)
     - [Rules](#rules)
-    - [Predicate function](#predicate-function)
   - [Frequently asked questions](#frequently-asked-questions)
     - [Why? What problem is this aiming to solve?](#why-what-problem-is-this-aiming-to-solve)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
@@ -126,24 +125,27 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
         (kill-buffer-name-regexp . "compile-angel")
 
-        ;; Kill inactive buffers
-        (kill-buffer-status . "inactive")
+        ;; Call a function that decides the fate of a buffer. It returns:
+        ;; :kill    Indicates that the buffer should be killed.
+        ;; :keep    Indicates that the buffer should be kept.
+        ;; nil      Let Buffer-Terminator decide.
+        (funcall . function-name)
+
+        ;; Retain special buffers (Important).
+        ;; Keep this before kill-buffer-property: inactive and visible.
+        ;;
+        ;; (If you choose to kill special buffers by removing the following,
+        ;; ensure that the special buffers you want to keep are added
+        ;; keep-buffer-name rules above.)
+        ;;
+        ;; DO NOT REMOVE special buffers unless you know of what you are doing.
+        (keep-buffer-property . special)
 
         ;; Keep process buffers
         ;; Process buffers are buffers where an active process is running.
         ;; Removing the following will result in the termination of such
         ;; buffers, potentially disrupting active processes.
-        (keep-buffer-type . "process")
-
-        ;; Retain special buffers (Important).
-        ;; Keep this in the end, after all the rules above.
-        ;; If you choose to terminate special buffers by removing the following,
-        ;; ensure that the special buffers you want to keep are added
-        ;; keep-buffer-name rules above.
-        ;;
-        ;; DO NOT REMOVE special buffers unless you are certain of what
-        ;; you are doing.
-        (keep-buffer-type . "special")
+        (keep-buffer-property . process)
 
         ;; Retain visible buffers are those currently displayed in any window.
         ;; Keep this in the end, after all the rules above.
@@ -152,48 +154,16 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         ;; buffer in the selected window.
         ;;
         ;; DO NOT REMOVE visible buffers unless necessary.
-        (keep-buffer-status . "visible")
+        (keep-buffer-property . visible)
+
+        ;; Kill the buffers that have been inactive.
+        ;; Keep this in the end, after all the rules above.
+        ;; This can be customized with `buffer-terminator-inactivity-timeout`
+        ;; and `buffer-terminator-interval`.
+        (kill-buffer-property . inactive)
 
         ;; Kill the remaining buffers that were not retained by previous rules
         (return . :kill)))
-```
-
-### Predicate function
-
-You can set a custom predicate function using `buffer-terminator-predicate` to control which inactive buffers the *buffer-terminator* should keep or kill based on specific conditions.
-
-The default is:
-```elisp
-(setq buffer-terminator-rules-alist '((keep-buffer-type . "special")
-                                      (keep-buffer-type . "process")
-                                      (keep-buffer-status . "visible")
-                                      (return . :kill)))
-```
-
-Here is an example of how to define a custom predicate function:
-
-``` elisp
-(defun my-buffer-terminator-predicate ()
-  "Function to decide the fate of a buffer.
-:kill    Indicates that the buffer should be killed.
-:keep    Indicates that the buffer should be kept.
-nil      Let Buffer-Terminator decide."
-  (let* ((buffer (current-buffer))
-         (buffer-name (buffer-name buffer)))
-    (cond
-     ;; Kill the scratch buffer
-     ((string= buffer-name "*scratch*")
-      :kill)
-
-     ;; Keep this buffer:
-     ((string= buffer-name "my-precious-buffer")
-      :keep)
-
-     (t
-      ;; Nil = Buffer-Terminator decides
-      nil))))
-
-(setq buffer-terminator-predicate #'my-buffer-terminator-predicate)
 ```
 
 ## Frequently asked questions
