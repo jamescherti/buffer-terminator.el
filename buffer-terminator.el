@@ -228,6 +228,11 @@ This variable is obsolete.")
 The message is formatted with the provided arguments ARGS."
   (apply #'message (concat "[buffer-terminator] " (car args)) (cdr args)))
 
+(defun buffer-terminator--error (&rest args)
+  "Display an error message with '[buffer-terminator]' prepended.
+The message is formatted with the provided arguments ARGS."
+  (apply #'error (concat "[buffer-terminator] " (car args)) (cdr args)))
+
 (defun buffer-terminator--buffer-visible-p (buffer)
   "Return non-nil if BUFFER is visible in any window on any frame."
   (when buffer
@@ -264,30 +269,30 @@ The message is formatted with the provided arguments ARGS."
 PROPERTY can be \\='visible or \\='special."
   (let ((buffer (current-buffer)))
     (cond
-     ((or (eq property 'special))
+     ((eq property 'special)
       (when (buffer-terminator--special-buffer-p buffer)
         t))
 
-     ((or (eq property 'process))
+     ((eq property 'process)
       (when (get-buffer-process buffer)
         t))
 
-     ((or (eq property 'visible))
+     ((eq property 'visible)
       (when (buffer-terminator--buffer-visible-p buffer)
         t))
 
-     ((or (eq property 'inactive))
+     ((eq property 'inactive)
       (when (buffer-terminator--match-buffer-inactive-p buffer)
         t))
 
-     ((or (eq property 'file))
+     ((eq property 'file)
       (when (buffer-file-name (buffer-base-buffer))
         t))
 
      (t
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
-       property)
+      (buffer-terminator--error
+       "Invalid buffer-terminator-rules-alist value: '%s' (%s)"
+       property (type-of property))
       nil))))
 
 (defun buffer-terminator--match-buffer-p (match-names)
@@ -296,8 +301,8 @@ MATCH-NAMES can be a string for a single exact match or a list of strings.
 Returns non-nil if the buffer name matches any of the names."
   (let ((buffer-name (buffer-name)))
     (if (not (or (listp match-names) (stringp match-names)))
-        (buffer-terminator--message
-         "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
+        (buffer-terminator--error
+         "Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
          buffer-name match-names)
       (when buffer-name
         (cond
@@ -316,8 +321,8 @@ MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
 Returns non-nil if BUFFER-NAME matches any of the regexps."
   (let ((buffer-name (buffer-name)))
     (if (not (or (listp match-names-regexp) (stringp match-names-regexp)))
-        (buffer-terminator--message
-         "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
+        (buffer-terminator--error
+         "Invalid buffer-terminator-rules-alist value: '%s'"
          match-names-regexp)
       (when buffer-name
         (cond
@@ -333,8 +338,8 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
 (defun buffer-terminator--match-buffer-major-mode-p (major-modes)
   "Return non-nil when the buffer major mode is part of MAJOR-MODES."
   (if (not (or (listp major-modes) (symbolp major-modes)))
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
+      (buffer-terminator--error
+       "Invalid buffer-terminator-rules-alist value: '%s'"
        major-modes)
     (when (cl-find major-mode major-modes :test 'eq)
       t)))
@@ -343,8 +348,8 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
   "Run the rule RULE with the value VALUE."
   (cond
    ((not (symbolp rule))
-    (buffer-terminator--message
-     "[Warning] Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
+    (buffer-terminator--error
+     "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
      rule value)
     nil)
 
@@ -396,8 +401,8 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
 
    ;; TODO: Special buffers.
    (t
-    (buffer-terminator--message
-     "[Warning] Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'"
+    (buffer-terminator--error
+     "Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'"
      rule value)
     nil)))
 

@@ -6,7 +6,7 @@
 ;; Version: 1.0.3
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24.4") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "27.1") (cl-lib "0.5"))
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software; you can redistribute it and/or modify
@@ -371,12 +371,12 @@
   (setq buffer-terminator-rules-alist
         '((call-function . test-buffer-terminator--special-predicate)
           (return . :kill)))
-  (setq buffer-terminator-inactivity-timeout 1)
-  (setq buffer-terminator-interval 1)
+  (setq buffer-terminator-inactivity-timeout 0.1)
+  (setq buffer-terminator-interval 0.1)
   (unwind-protect
       (progn
         (buffer-terminator-mode 1)
-        (sleep-for 1.5)
+        (sleep-for 0.3)
         (test-buffer-terminator--check-special-buffers nil)
         (test-buffer-terminator--check-special-mode-buffer nil)
         (test-buffer-terminator--check-func-buffer nil)
@@ -390,12 +390,12 @@
   (setq buffer-terminator-rules-alist
         '((call-function . test-buffer-terminator--special-predicate)
           (return . :kill)))
-  (setq buffer-terminator-inactivity-timeout 30)
-  (setq buffer-terminator-interval 1)
+  (setq buffer-terminator-inactivity-timeout 0.1)
+  (setq buffer-terminator-interval 0.1)
   (unwind-protect
       (progn
         (buffer-terminator-mode 1)
-        (sleep-for 1.5)
+        (sleep-for 0.3)
         (test-buffer-terminator--check-special-buffers nil)
         (test-buffer-terminator--check-special-mode-buffer nil)
         (test-buffer-terminator--check-func-buffer nil)
@@ -403,6 +403,33 @@
         (test-buffer-terminator--check-modified-file-buffer t)
         (test-buffer-terminator--check-process-buffer nil))
     (buffer-terminator-mode 0)))
+
+(ert-deftest test-buffer-terminator-test12-visible ()
+  (test-buffer-terminator--create-test-environment)
+  ;; TODO use variable
+  (unwind-protect
+      (progn
+        (tab-bar-mode 1)
+        (pop-to-buffer (get-buffer test-buffer-terminator--special-mode-buffer))
+        ;; Current buffer
+        (tab-bar-mode 1)
+        (pop-to-buffer (get-buffer test-buffer-terminator--process-buffer-name))
+        ;; Other split
+        (switch-to-buffer (get-buffer test-buffer-terminator--func-buffer))
+
+        (tab-bar-new-tab)
+        (setq buffer-terminator-rules-alist
+              '((call-function . test-buffer-terminator--special-predicate)
+                (keep-buffer-property . visible)
+                (return . :kill)))
+        (buffer-terminator-kill-buffers)
+        (test-buffer-terminator--check-special-buffers nil)
+        (test-buffer-terminator--check-special-mode-buffer t)
+        (test-buffer-terminator--check-func-buffer t)
+        (test-buffer-terminator--check-file-buffers nil)
+        (test-buffer-terminator--check-modified-file-buffer t)
+        (test-buffer-terminator--check-process-buffer nil))
+    (tab-bar-mode 0)))
 
 (provide 'test-buffer-terminator)
 ;;; test-buffer-terminator.el ends here
