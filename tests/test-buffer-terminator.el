@@ -333,7 +333,7 @@
   (test-buffer-terminator--check-modified-file-buffer t)
   (test-buffer-terminator--check-process-buffer t))
 
-(ert-deftest test-buffer-terminator-test00-keep-regexp ()
+(ert-deftest test-buffer-terminator-test09-keep-regexp ()
   ;; Keep
   (test-buffer-terminator--create-test-environment)
   (setq buffer-terminator-rules-alist
@@ -365,6 +365,26 @@
   (test-buffer-terminator--check-file-buffers nil)
   (test-buffer-terminator--check-modified-file-buffer t)
   (test-buffer-terminator--check-process-buffer nil))
+
+(ert-deftest test-buffer-terminator-test10-mode ()
+  ;; Kill all of them
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        '((call-function . test-buffer-terminator--special-predicate)
+          (return . :kill)))
+  (setq buffer-terminator-inactivity-timeout 1)
+  (setq buffer-terminator-interval 1)
+  (unwind-protect
+      (progn
+        (buffer-terminator-mode 1)
+        (sleep-for 2)
+        (test-buffer-terminator--check-special-buffers nil)
+        (test-buffer-terminator--check-special-mode-buffer nil)
+        (test-buffer-terminator--check-func-buffer nil)
+        (test-buffer-terminator--check-file-buffers nil)
+        (test-buffer-terminator--check-modified-file-buffer t)
+        (test-buffer-terminator--check-process-buffer nil))
+    (buffer-terminator-mode 1)))
 
 (provide 'test-buffer-terminator)
 ;;; test-buffer-terminator.el ends here
