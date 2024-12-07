@@ -34,5 +34,5 @@ compile: cask
 	  (ret=$$? ; cask clean-elc && exit $$ret)
 
 .PHONY: test
-test:
+test: compile
 	cask emacs --batch -L . -L tests -l tests/test-buffer-terminator.el -f ert-run-tests-batch-and-exit
