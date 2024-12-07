@@ -134,7 +134,7 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         ;;
         ;; DO NOT REMOVE special buffers unless you are certain of what
         ;; you are doing.
-        (keep-buffer-status . "special")
+        (keep-buffer-type . "special")
 
         ;; Retain visible buffers are those currently displayed in any window.
         ;; Keep this in the end, after all the rules above.

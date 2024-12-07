@@ -106,7 +106,8 @@ This function has precedence over all other predicates."
   :type '(choice (const nil)
                  (function)))
 
-(defvar buffer-terminator-rules-alist '((keep-buffer-status . "special")
+(defvar buffer-terminator-rules-alist '((keep-buffer-type . "process")
+                                        (keep-buffer-type . "special")
                                         (keep-buffer-status . "visible")
                                         (return . :kill))
   "Rules for processing buffers.
@@ -254,6 +255,10 @@ TYPE is a string (\"process\" or \"file\")."
         (when (buffer-file-name (buffer-base-buffer))
           t))
 
+       ((string= type "special")
+        (when (buffer-terminator--special-buffer-p buffer)
+          t))
+
        (t
         (buffer-terminator--message
          (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
@@ -274,10 +279,6 @@ STATUS can be \"visible\" or \"special\"."
       (cond
        ((string= status "visible")
         (when (buffer-terminator--buffer-visible-p buffer)
-          t))
-
-       ((string= status "special")
-        (when (buffer-terminator--special-buffer-p buffer)
           t))
 
        (t
