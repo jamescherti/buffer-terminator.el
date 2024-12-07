@@ -157,10 +157,10 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (kill-buffer-property . inactive)
 
         ;; Call a function that decides the fate of a buffer. It returns:
-        ;; :kill    Indicates that the buffer should be killed.
-        ;; :keep    Indicates that the buffer should be kept.
-        ;; nil      Let Buffer-Terminator decide.
-        (call-function . function-name)
+        ;;   :kill    Indicates that the buffer should be killed.
+        ;;   :keep    Indicates that the buffer should be kept.
+        ;;   nil      Let Buffer-Terminator decide.
+        ;; (call-function . function-name)
 
         ;; Kill the remaining buffers that were not retained by previous rules
         (return . :kill)))

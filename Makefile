@@ -33,6 +33,6 @@ compile: cask
 	  -f batch-byte-compile $$(cask files); \
 	  (ret=$$? ; cask clean-elc && exit $$ret)
 
-# .PHONY: test
-# test: compile
-# 	cask emacs --batch -L . -L tests -l tests/test-buffer-terminator.el -f test-buffer-terminator
+.PHONY: test
+test:
+	cask emacs --batch -L . -L tests -l tests/test-buffer-terminator.el -f ert-run-tests-batch-and-exit

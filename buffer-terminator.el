@@ -449,19 +449,10 @@ Return nil when if buffer has never been displayed."
     (with-current-buffer buffer
       (when (and
              (let ((decision nil))
-               ;; Predicate
-               (when (and buffer-terminator-predicate
-                          (not decision))
-                 (cond
-                  ;; Function
-                  ((functionp buffer-terminator-predicate)
-                   (setq decision (funcall buffer-terminator-predicate)))
-
-                  ;; Error: Predicate is not a function
-                  (t
-                   (buffer-terminator--message
-                    (concat "WARNING: 'buffer-terminator-predicate' is "
-                            "not a function.")))))
+               ;; Pre-flight checks (safety)
+               (when (and (buffer-file-name (buffer-base-buffer))
+                          (buffer-modified-p))
+                 (setq decision :keep))
 
                ;; Rules
                (when (and buffer-terminator-rules-alist
