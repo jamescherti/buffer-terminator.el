@@ -106,24 +106,16 @@ This function has precedence over all other predicates."
   :type '(choice (const nil)
                  (function)))
 
-(defcustom buffer-terminator-rules-alist '((keep-buffer-status . "special")
-                                           (keep-buffer-status . "visible")
-                                           (return . :kill))
+(defvar buffer-terminator-rules-alist '((keep-buffer-status . "special")
+                                        (keep-buffer-status . "visible")
+                                        (return . :kill))
   "Rules for processing buffers.
 Each rule is a cons cell where the key is a symbol indicating the rule type, and
 the value is either a string or a list of strings.
 
 It is generally recommended to keep at least keep-buffer-status special.
 If you choose to remove keep-buffer-status special, ensure that the special
-buffers you want to keep are added to `buffer-terminator-rules-alist'."
-  :type '(repeat (cons (choice (const :keep-buffer-name)
-                               (const :kill-buffer-name)
-                               (const :keep-buffer-name-regexp)
-                               (const :kill-buffer-name-regexp))
-                       (choice string
-                               ;; TODO add symbol and list of symbols
-                               (repeat string))))
-  :group 'buffer-terminator)
+buffers you want to keep are added to `buffer-terminator-rules-alist'.")
 
 ;;; Obsolete
 
