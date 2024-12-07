@@ -118,7 +118,7 @@ It is generally recommended to keep at least keep-buffer-status special.
 If you choose to remove keep-buffer-status special, ensure that the special
 buffers you want to keep are added to `buffer-terminator-rules-alist'.")
 
-;;; Obsolete
+;;; Obsolete variables
 
 (defvar buffer-terminator-keep-buffers-with-process t
   "When non-nil, do not kill buffers associated with running processes.
@@ -235,15 +235,13 @@ The message is formatted with the provided arguments ARGS."
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
-(defun buffer-terminator--match-buffer-type-p (rule type)
+(defun buffer-terminator--match-buffer-type-p (type)
   "Return non-nil when the buffer type of the current buffer is TYPE.
-RULE is the rule name.
 TYPE is a string (\"process\" or \"file\")."
   (if (not (stringp type))
       (buffer-terminator--message
        (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
                "'%s' -> '%s'")
-       rule
        type)
     (let ((buffer (current-buffer)))
       (cond
@@ -262,19 +260,17 @@ TYPE is a string (\"process\" or \"file\")."
        (t
         (buffer-terminator--message
          (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
-                 "'rule' -> '%s'")
-         rule
+                 "'%s'")
          type)
         nil)))))
 
-(defun buffer-terminator--match-buffer-status-p (rule status)
+(defun buffer-terminator--match-buffer-status-p (status)
   "Return non-nil when the buffer status of the current buffer is STATUS.
-RULE is the rule name.
 STATUS can be \"visible\" or \"special\"."
   (if (not (stringp status))
       (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-       rule status)
+       "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
+       status)
     (let ((buffer (current-buffer)))
       (cond
        ((string= status "visible")
@@ -283,8 +279,8 @@ STATUS can be \"visible\" or \"special\"."
 
        (t
         (buffer-terminator--message
-         "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-         rule status)
+         "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
+         status)
         nil)))))
 
 (defun buffer-terminator--match-buffer-p (match-names)
@@ -328,13 +324,12 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
                            (string-match regex buffer-name)))))))))
 
 
-(defun buffer-terminator--match-buffer-major-mode-p (rule major-modes)
-  "Return non-nil when the buffer major mode is part of MAJOR-MODES.
-RULE is the rule name."
+(defun buffer-terminator--match-buffer-major-mode-p (major-modes)
+  "Return non-nil when the buffer major mode is part of MAJOR-MODES."
   (if (not (or (listp major-modes) (symbolp major-modes)))
       (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-       rule major-modes)
+       "[Warning] Invalid buffer-terminator-rules-alist value: '%s'"
+       major-modes)
     (when (cl-find major-mode major-modes :test 'eq)
       t)))
 
@@ -351,22 +346,22 @@ RULE is the rule name."
     value)
 
    ((eq rule 'keep-buffer-status)
-    (if (buffer-terminator--match-buffer-status-p rule value)
+    (if (buffer-terminator--match-buffer-status-p value)
         :keep
       nil))
 
    ((eq rule 'kill-buffer-status)
-    (if (buffer-terminator--match-buffer-status-p rule value)
+    (if (buffer-terminator--match-buffer-status-p value)
         :kill
       nil))
 
    ((eq rule 'keep-buffer-type)
-    (if (buffer-terminator--match-buffer-type-p rule value)
+    (if (buffer-terminator--match-buffer-type-p value)
         :keep
       nil))
 
    ((eq rule 'kill-buffer-type)
-    (if (buffer-terminator--match-buffer-type-p rule value)
+    (if (buffer-terminator--match-buffer-type-p value)
         :kill
       nil))
 
@@ -391,12 +386,12 @@ RULE is the rule name."
       nil))
 
    ((eq rule 'keep-buffer-major-modes)
-    (if (buffer-terminator--match-buffer-major-mode-p rule value)
+    (if (buffer-terminator--match-buffer-major-mode-p value)
         :keep
       nil))
 
    ((eq rule 'kill-buffer-major-modes)
-    (if (buffer-terminator--match-buffer-major-mode-p rule value)
+    (if (buffer-terminator--match-buffer-major-mode-p value)
         :kill
       nil))
 
