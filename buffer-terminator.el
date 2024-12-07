@@ -62,20 +62,6 @@ Default: 30 minutes."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-keep-major-modes nil
-  "List of major-modes. Buffers with these major mode are never killed.
-This is useful for keeping buffers associated with specific types of
-files (e.g., Dired buffers, specific modes, or configuration files) from being
-killed automatically.
-
-To keep buffers for specific major modes, set this variable to a list of mode
-symbols. For example: \\='(org-mode my-special-mode)
-
-It is recommended to configure this carefully to avoid unintentionally keeping
-too many buffers alive."
-  :type '(repeat symbol)
-  :group 'buffer-terminator)
-
 (defvar buffer-terminator--kill-inactive-buffers-timer nil
   "Timer object for killing inactive buffers.")
 
@@ -103,31 +89,6 @@ Default: 10 minutes."
          (set-default symbol value)
          (buffer-terminator--start-timer value)))
 
-(defcustom buffer-terminator-keep-buffers-with-process t
-  "When non-nil, do not kill buffers associated with running processes.
-Process buffers are buffers where an active process is running. It is generally
-discouraged to set this to nil, as doing so may result in the termination of
-such buffers, potentially disrupting active processes."
-  :type 'boolean
-  :group 'buffer-terminator)
-
-(defcustom buffer-terminator-keep-visible-buffers t
-  "When non-nil, `buffer-terminator' will not kill visible buffers.
-Visible buffers are those currently displayed in any window.
-It is generally discouraged to set this to nil, as doing so may result
-in the termination of visible buffers, except for the currently active
-buffer in the selected window."
-  :type 'boolean
-  :group 'buffer-terminator)
-
-(defcustom buffer-terminator-keep-file-visiting-buffers nil
-  "When non-nil, `buffer-terminator' will not kill buffers visiting files.
-File-visiting buffers are those associated with files, whether the file is
-modified or not. It is generally recommended to keep this variable set to t to
-avoid terminating buffers that are associated with files you are working on."
-  :type 'boolean
-  :group 'buffer-terminator)
-
 (defcustom buffer-terminator-predicate nil
   "Function to decide the fate of a buffer.
 This function is called (with no parameters) from the buffer.
@@ -145,6 +106,81 @@ This function has precedence over all other predicates."
   :type '(choice (const nil)
                  (function)))
 
+(defcustom buffer-terminator-rules-alist '((keep-buffer-status . "visible")
+                                           (keep-buffer-status . "special"))
+  "Rules for processing buffers.
+Each rule is a cons cell where the key is a symbol indicating the rule type, and
+the value is either a string or a list of strings.
+
+It is generally recommended to keep at least keep-buffer-status special.
+If you choose to remove keep-buffer-status special, ensure that the special
+buffers you want to keep are added to `buffer-terminator-rules-alist'."
+  :type '(repeat (cons (choice (const :keep-buffer-name)
+                               (const :kill-buffer-name)
+                               (const :keep-buffer-name-regexp)
+                               (const :kill-buffer-name-regexp))
+                       (choice string
+                               (repeat symbol)
+                               (repeat string))))
+  :group 'buffer-terminator)
+
+;;; Obsolete
+
+(defcustom buffer-terminator-keep-buffers-with-process t
+  "When non-nil, do not kill buffers associated with running processes.
+Process buffers are buffers where an active process is running. It is generally
+discouraged to set this to nil, as doing so may result in the termination of
+such buffers, potentially disrupting active processes."
+  :type 'boolean
+  :group 'buffer-terminator)
+
+(make-obsolete-variable 'buffer-terminator-keep-buffers-with-process
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
+(defcustom buffer-terminator-keep-major-modes nil
+  "List of major-modes. Buffers with these major mode are never killed.
+This is useful for keeping buffers associated with specific types of
+files (e.g., Dired buffers, specific modes, or configuration files) from being
+killed automatically.
+
+To keep buffers for specific major modes, set this variable to a list of mode
+symbols. For example: \\='(org-mode my-special-mode)
+
+It is recommended to configure this carefully to avoid unintentionally keeping
+too many buffers alive."
+  :type '(repeat symbol)
+  :group 'buffer-terminator)
+
+(make-obsolete-variable 'buffer-terminator-keep-major-modes
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
+(defcustom buffer-terminator-keep-visible-buffers t
+  "When non-nil, `buffer-terminator' will not kill visible buffers.
+Visible buffers are those currently displayed in any window.
+It is generally discouraged to set this to nil, as doing so may result
+in the termination of visible buffers, except for the currently active
+buffer in the selected window."
+  :type 'boolean
+  :group 'buffer-terminator)
+
+(make-obsolete-variable 'buffer-terminator-keep-visible-buffers
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
+(defcustom buffer-terminator-keep-file-visiting-buffers nil
+  "When non-nil, `buffer-terminator' will not kill buffers visiting files.
+File-visiting buffers are those associated with files, whether the file is
+modified or not. It is generally recommended to keep this variable set to t to
+avoid terminating buffers that are associated with files you are working on."
+  :type 'boolean
+  :group 'buffer-terminator)
+
+(make-obsolete-variable 'buffer-terminator-keep-file-visiting-buffers
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
+
 ;; DO NOT modify `buffer-terminator-keep-visible-buffers' unless you know what
 ;; you are doing. If you decide to set it to nil, make sure to update
 ;; `buffer-terminator-keep-buffer-names' or
@@ -154,24 +190,13 @@ This function has precedence over all other predicates."
   "If non-nil, `buffer-terminator' will never kill special buffers.
 It is generally NOT recommended to set this to nil.
 If you choose to set it to nil, ensure that the special buffers you want to keep
-are added to `buffer-terminator-keep-buffer-names' and
-`buffer-terminator-keep-buffer-names-regexps'."
+are added to `buffer-terminator-rules-alist'."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defcustom buffer-terminator-rules-alist nil
-  "Rules for processing buffers.
-Each rule is a cons cell where the key is a symbol indicating the rule type, and
-the value is either a string or a list of strings."
-  :type '(repeat (cons (choice (const :keep-buffer-name)
-                               (const :kill-buffer-name)
-                               (const :keep-buffer-name-regexp)
-                               (const :kill-buffer-name-regexp))
-                       (choice string
-                               (repeat string))))
-  :group 'buffer-terminator)
-
-;;; Obsolete
+(make-obsolete-variable 'buffer-terminator-keep-special-buffers
+                        'buffer-terminator-rules-alist
+                        "1.0.4")
 
 (defcustom buffer-terminator-keep-buffer-names nil
   "List of buffer names that will never be killed."
@@ -259,6 +284,54 @@ The message is formatted with the provided arguments ARGS."
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
+(defun buffer-terminator--buffer-type-p (type)
+  "Return non-nil when the buffer type of the current buffer is TYPE."
+  (if (not (or (stringp type)))
+      (buffer-terminator--message
+       (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
+               "'keep-buffer-type' -> '%s'")
+       type)
+    (let ((buffer (current-buffer)))
+      (cond
+       ((string= type "process")
+        (when (get-buffer-process buffer)
+          t))
+
+       ((string= type "file")
+        (when (buffer-file-name (buffer-base-buffer))
+          t))
+
+       ((string= type "visible")
+        (when (buffer-terminator--buffer-visible-p buffer)
+          t))))))
+
+(defun buffer-terminator--buffer-status-p (status)
+  "Return non-nil when the buffer status of the current buffer is STATUS."
+  (if (not (or (stringp status)))
+      (buffer-terminator--message
+       (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
+               "'keep-buffer-status' -> '%s'")
+       status)
+    (let ((buffer (current-buffer)))
+      (cond
+       ((string= status "visible")
+        (when (buffer-terminator--buffer-visible-p buffer)
+          t))
+
+       ((string= status "special")
+        (when (buffer-terminator--special-buffer-p buffer)
+          t))))))
+
+(defun buffer-terminator--buffer-major-mode-p (major-modes)
+  "Return non-nil when the buffer major mode is part of MAJOR-MODES."
+  (if (not (or (listp major-modes) (symbolp major-modes)))
+      (buffer-terminator--message
+       (concat "[Warning] Invalid buffer-terminator-rules-alist value: "
+               "'keep/kill-buffer-major-modes' -> '%s'")
+       major-modes)
+    (when (cl-find major-mode major-modes :test 'eq)
+      t)))
+
 (defun buffer-terminator--process-rule (rule value)
   "Run the rule RULE with the value VALUE."
   (let ((buffer-name (buffer-name)))
@@ -269,11 +342,25 @@ The message is formatted with the provided arguments ARGS."
        rule value)
       nil)
 
-     ((not (or (listp value) (stringp value)))
-      (buffer-terminator--message
-       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-       rule value)
-      nil)
+     ((eq rule 'keep-buffer-status)
+      (if (buffer-terminator--buffer-status-p value)
+          :keep
+        nil))
+
+     ((eq rule 'kill-buffer-status)
+      (if (buffer-terminator--buffer-status-p value)
+          :kill
+        nil))
+
+     ((eq rule 'keep-buffer-type)
+      (if (buffer-terminator--buffer-type-p value)
+          :keep
+        nil))
+
+     ((eq rule 'kill-buffer-type)
+      (if (buffer-terminator--buffer-type-p value)
+          :kill
+        nil))
 
      ((eq rule 'keep-buffer-name)
       (if (buffer-terminator--match-buffer-p buffer-name value)
@@ -292,6 +379,16 @@ The message is formatted with the provided arguments ARGS."
 
      ((eq rule 'kill-buffer-name-regexp)
       (if (buffer-terminator--match-buffer-regexp-p buffer-name value)
+          :kill
+        nil))
+
+     ((eq rule 'keep-buffer-major-modes)
+      (if (buffer-terminator--buffer-major-mode-p value)
+          :keep
+        nil))
+
+     ((eq rule 'kill-buffer-major-modes)
+      (if (buffer-terminator--buffer-major-mode-p value)
           :kill
         nil))
 
@@ -327,30 +424,38 @@ Return :kill or :keep or nil."
   "Check if BUFFER-NAME matches one of the names in MATCH-NAMES.
 MATCH-NAMES can be a string for a single exact match or a list of strings.
 Returns non-nil if BUFFER-NAME matches any of the names."
-  (when buffer-name
-    (cond
-     ((stringp match-names)
-      (string-equal buffer-name match-names))
+  (if (not (or (listp match-names) (stringp match-names)))
+      (buffer-terminator--message
+       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
+       buffer-name match-names)
+    (when buffer-name
+      (cond
+       ((stringp match-names)
+        (string-equal buffer-name match-names))
 
-     ((listp match-names)
-      (cl-find buffer-name
-               match-names
-               :test #'string-equal)))))
+       ((listp match-names)
+        (cl-find buffer-name
+                 match-names
+                 :test #'string-equal))))))
 
 (defun buffer-terminator--match-buffer-regexp-p (buffer-name match-names-regexp)
   "Check if BUFFER-NAME is matched by one or more regexps in MATCH-NAMES-REGEXP.
 MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
 Returns non-nil if BUFFER-NAME matches any of the regexps."
-  (when buffer-name
-    (cond
-     ((stringp match-names-regexp)
-      (string-match match-names-regexp buffer-name))
+  (if (not (or (listp match-names-regexp) (stringp match-names-regexp)))
+      (buffer-terminator--message
+       "[Warning] Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
+       buffer-name match-names-regexp)
+    (when buffer-name
+      (cond
+       ((stringp match-names-regexp)
+        (string-match match-names-regexp buffer-name))
 
-     ((listp match-names-regexp)
-      (cl-find buffer-name
-               match-names-regexp
-               :test (lambda (buffer-name regex)
-                       (string-match regex buffer-name)))))))
+       ((listp match-names-regexp)
+        (cl-find buffer-name
+                 match-names-regexp
+                 :test (lambda (buffer-name regex)
+                         (string-match regex buffer-name))))))))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
 (defvar buffer-terminator--disable-buffer-display-time-update nil)
@@ -364,7 +469,7 @@ IGNORE-BUFFERS is a list of buffers to ignore."
         (let ((buffer-name (buffer-name))
               (special-buffer (buffer-terminator--special-buffer-p buffer)))
           (and
-           ;; Terminate any buffer
+           ;; TODO obsolete
            (not (or (buffer-terminator--match-buffer-p
                      buffer-name
                      buffer-terminator-kill-buffer-names)
@@ -374,6 +479,7 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                      buffer-terminator-kill-buffer-names-regexps)))
            ;; Terminate special buffers
            (and
+            ;; TODO obsolete
             (if special-buffer
                 (not (or (buffer-terminator--match-buffer-p
                           buffer-name
@@ -383,22 +489,24 @@ IGNORE-BUFFERS is a list of buffers to ignore."
                           buffer-terminator-kill-special-buffer-names-regexps)))
               t))
            (or
-            ;; Keep buffer names or regular expressions
+            ;; TODO obsolete
             (buffer-terminator--match-buffer-p
              buffer-name buffer-terminator-keep-buffer-names)
 
+            ;; TODO obsolete
             (buffer-terminator--match-buffer-regexp-p
              buffer-name buffer-terminator-keep-buffer-names-regexps)
 
-            ;; Special buffers
+            ;; Special buffers (TODO: Obsolete)
             (and buffer-terminator-keep-special-buffers
                  special-buffer)
 
-            ;; File visiting buffer
+            ;; File visiting buffer (TODO: Obsolete)
             (and (buffer-file-name (buffer-base-buffer))
                  (or buffer-terminator-keep-file-visiting-buffers
                      (buffer-modified-p)))
 
+            ;; TODO obsolete
             (and buffer-terminator-keep-major-modes
                  (cl-find major-mode
                           buffer-terminator-keep-major-modes
@@ -408,11 +516,11 @@ IGNORE-BUFFERS is a list of buffers to ignore."
             (and ignore-buffers
                  (memq buffer ignore-buffers))
 
-            ;; Keep visible buffers
+            ;; Keep visible buffers (TODO: Obsolete)
             (and buffer-terminator-keep-visible-buffers
                  (buffer-terminator--buffer-visible-p buffer))
 
-            ;; Keep buffers that contain processes
+            ;; Keep buffers that contain processes (TODO: Obsolete)
             (and buffer-terminator-keep-buffers-with-process
                  (get-buffer-process buffer))))))))
 
@@ -550,6 +658,11 @@ The buffer is killed when KILL-BUFFER is set to t."
   (when buffer-terminator-display-warnings
     (dolist (var '(buffer-terminator-keep-buffer-names
                    buffer-terminator-keep-buffer-names-regexps
+                   buffer-terminator-keep-buffers-with-process
+                   buffer-terminator-keep-file-visiting-buffers
+                   buffer-terminator-keep-major-modes
+                   buffer-terminator-keep-special-buffers
+                   buffer-terminator-keep-visible-buffers
                    buffer-terminator-kill-buffer-names
                    buffer-terminator-kill-buffer-names-regexps
                    buffer-terminator-kill-special-buffer-names

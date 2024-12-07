@@ -5,7 +5,7 @@
 
 The **buffer-terminator** package automatically terminates inactive buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those inactive buffers.
 
-By default, the following buffers are not terminated: buffers whose names start with a space, start and end with `*`, and buffers whose major mode is derived from `special-mode`.
+By default, all inactive buffers are terminated except special buffers (buffers whose names start with a space, start and end with `*`, and buffers whose major mode is derived from `special-mode`).
 
 When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), only buffers that have been inactive for a specified period are terminated. (Exception: modified file-visiting buffers that have not been saved are not terminated; the user must save them first.)
 
@@ -124,7 +124,13 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (kill-buffer-name . "temporary-buffer-name3")
 
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
-        (kill-buffer-name-regexp . "compile-angel")))
+        (kill-buffer-name-regexp . "compile-angel")
+
+        ;; Visible buffers
+        (keep-buffer-status . "visible")
+
+        ;; NEVER REMOVE special buffers unless you know what you are doing.
+        (keep-buffer-status . "special")))
 ```
 
 ### Predicate function
