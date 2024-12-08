@@ -74,7 +74,7 @@ Default: 30 minutes."
   (setq buffer-terminator--kill-inactive-buffers-timer
         (run-with-timer seconds
                         seconds
-                        'buffer-terminator--kill-buffers)))
+                        'buffer-terminator--execute-rules)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -487,8 +487,8 @@ Return nil when if buffer has never been displayed."
                                         buffer-name))
           t)))))
 
-(defun buffer-terminator--kill-buffers ()
-  "Kill all buffers that are supposed to be killed."
+(defun buffer-terminator--execute-rules ()
+  "Evaluate rules to determine whether to kill or retain buffers."
   (let ((result nil))
     (dolist (buffer (buffer-list))
       (let ((buffer-name (buffer-terminator--kill-buffer-maybe buffer)))
