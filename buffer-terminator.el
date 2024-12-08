@@ -1,4 +1,4 @@
-;;; buffer-terminator.el --- Terminate/Kill Inactive Buffers Automatically  -*- lexical-binding: t; -*-
+;;; buffer-terminator.el --- Terminate/Kill Buffers Automatically  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 James Cherti | https://www.jamescherti.com/contact/
 
@@ -23,12 +23,11 @@
 ;; along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-;; The buffer-terminator Emacs package automatically terminates inactive buffers
-;; to help maintain a clean and efficient workspace.
+;; The buffer-terminator Emacs package automatically terminates buffers to help
+;; maintain a clean and efficient workspace.
 ;;
 ;; It provides configurable options to determine which buffers to keep, a
 ;; timeout for inactivity, and periodic cleanup intervals.
-;;
 ;;
 ;; Links:
 ;; ------
@@ -37,7 +36,6 @@
 
 ;;; Code:
 
-(require 'dired)
 (require 'cl-lib)
 
 ;;; Customizations
@@ -89,20 +87,8 @@ Default: 10 minutes."
          (set-default symbol value)
          (buffer-terminator--start-timer value)))
 
-(defcustom buffer-terminator-predicate nil
-  "This variable is obsolete.
-Use `buffer-terminator-rules-alist' instead."
-  :group 'buffer-terminator
-  :type '(choice (const nil) (function)))
-
-(make-obsolete-variable 'buffer-terminator-predicate
-                        'buffer-terminator-rules-alist
-                        "1.0.4")
-
 (defvar buffer-terminator-rules-alist
   '(;; Retain special buffers (Important).
-    ;;  Keep this before kill-buffer-property: inactive and visible.
-    ;;
     ;; DO NOT REMOVE (keep-buffer-property . special) unless you know of what
     ;; you are doing.
     (keep-buffer-property . special)
@@ -113,9 +99,9 @@ Use `buffer-terminator-rules-alist' instead."
     ;; Keep visible buffers (those currently displayed in any window).
     (keep-buffer-property . visible)
 
-    ;; Kill inactive buffers.
-    ;; (Keep this at the end, after all the other rules.)
-    (kill-buffer-property . inactive)
+    ;; Keep active buffers.
+    ;; (Keep this at the end, after all the "keep" rules)
+    (keep-buffer-property . active)
 
     ;; Kill the remaining buffers that were not retained by previous rules.
     (return . :kill))
@@ -133,13 +119,23 @@ keep are added to `buffer-terminator-rules-alist'.")
 
 ;;; Obsolete variables
 
+(defcustom buffer-terminator-predicate nil
+  "This variable is obsolete.
+Use `buffer-terminator-rules-alist' instead."
+  :group 'buffer-terminator
+  :type '(choice (const nil) (function)))
+
+(make-obsolete-variable 'buffer-terminator-predicate
+                        'buffer-terminator-rules-alist
+                        "1.1.0")
+
 (defvar buffer-terminator-keep-buffers-with-process t
   "When non-nil, do not kill buffers associated with running processes.
 This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-buffers-with-process
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (defvar buffer-terminator-keep-major-modes nil
   "List of major-modes. Buffers with these major mode are never killed.
@@ -147,7 +143,7 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-major-modes
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (defvar buffer-terminator-keep-visible-buffers t
   "When non-nil, `buffer-terminator' will not kill visible buffers.
@@ -155,7 +151,7 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-visible-buffers
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (defvar buffer-terminator-keep-file-visiting-buffers nil
   "When non-nil, `buffer-terminator' will not kill buffers visiting files.
@@ -163,7 +159,7 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-file-visiting-buffers
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (defvar buffer-terminator-keep-special-buffers t
   "If non-nil, `buffer-terminator' will never kill special buffers.
@@ -171,7 +167,7 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-special-buffers
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (defvar buffer-terminator-keep-buffer-names nil
   "List of buffer names that will never be killed.
@@ -199,19 +195,19 @@ This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-buffer-names
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (make-obsolete-variable 'buffer-terminator-keep-buffer-names-regexps
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (make-obsolete-variable 'buffer-terminator-kill-buffer-names
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (make-obsolete-variable 'buffer-terminator-kill-buffer-names-regexps
                         'buffer-terminator-rules-alist
-                        "1.0.4")
+                        "1.1.0")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
                         'buffer-terminator-rules-alist
@@ -279,6 +275,10 @@ PROPERTY can be \\='visible or \\='special."
 
      ((eq property 'visible)
       (when (buffer-terminator--buffer-visible-p buffer)
+        t))
+
+     ((eq property 'active)
+      (unless (buffer-terminator--match-buffer-inactive-p buffer)
         t))
 
      ((eq property 'inactive)
@@ -480,7 +480,7 @@ Return nil when if buffer has never been displayed."
 ;;; Helper functions
 
 (defun buffer-terminator-kill-buffers ()
-  "Kill all buffers that are inactive and not visible."
+  "Kill all buffers that are supposed to be killed."
   (mapc #'(lambda(buffer)
             (buffer-terminator--kill-buffer-maybe buffer))
         (buffer-list)))
@@ -490,7 +490,7 @@ Return nil when if buffer has never been displayed."
   "Renamed to `buffer-terminator-kill-buffers'.")
 (make-obsolete 'buffer-terminator-kill-inactive-buffers
                'buffer-terminator-kill-buffers
-               "1.0.4")
+               "1.1.0")
 
 (defun buffer-terminator-kill-non-visible-buffers ()
   "Kill all non visible buffers."
@@ -508,25 +508,6 @@ Return nil when if buffer has never been displayed."
 (make-obsolete 'buffer-terminator-kill-all-non-visible-buffers
                'buffer-terminator-kill-non-visible-buffers
                "1.0.3")
-
-(defun buffer-terminator-find-dired-parent (&optional kill-buffer)
-  "Open the current directory in a `dired' buffer and select the current file.
-The buffer is killed when KILL-BUFFER is set to t."
-  (let* ((buffer (or (buffer-base-buffer)
-                     (current-buffer)))
-         (file-name (buffer-file-name buffer)))
-    (if file-name
-        (progn
-          (dired (file-name-directory file-name))
-          (dired-goto-file file-name))
-      (dired default-directory))
-
-    (when kill-buffer
-      (buffer-terminator--kill-buffer-maybe buffer))))
-
-(defun buffer-terminator-find-dired-parent-kill-buffer ()
-  "Open the current directory in a `dired' buffer and select the current file."
-  (buffer-terminator-find-dired-parent t))
 
 (defvar buffer-terminator-display-warnings t)
 

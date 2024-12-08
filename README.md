@@ -1,20 +1,20 @@
-# buffer-terminator.el - Terminate Inactive Emacs Buffers Automatically
+# buffer-terminator.el - Safely Terminate Emacs Buffers Automatically
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-The **buffer-terminator** package automatically terminates inactive buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those inactive buffers.
+The **buffer-terminator** package automatically terminates buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those buffers.
 
-By default, all inactive buffers are terminated except special buffers (special buffers are buffers whose names start with a space, start and end with `*`, or whose major mode is derived from `special-mode`).
+By default, **buffer-terminator** kills all inactive buffers except special buffers (special buffers are buffers whose names start with a space, start and end with `*`, or whose major mode is derived from `special-mode`).
 
-When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), only buffers that have been inactive for a specified period are terminated. (Exception: modified file-visiting buffers that have not been saved are not terminated; the user must save them first.)
+When a buffer is not a special buffer (e.g., a file-visiting buffer), only buffers that have been inactive for a specified period are terminated. (Exception: modified file-visiting buffers that have not been saved are not terminated; the user must save them first.)
 
-(`(buffer-terminator-mode)` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 30 minutes). It checks every `buffer-terminator-interval` - Default: 10 minutes - to determine if a buffer should be terminated.)
+(By default, `(buffer-terminator-mode)` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 30 minutes). It checks every `buffer-terminator-interval` - Default: 10 minutes - to determine if a buffer should be terminated.)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el - Terminate Inactive Emacs Buffers Automatically](#buffer-terminatorel---terminate-inactive-emacs-buffers-automatically)
+- [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically)
   - [Features](#features)
   - [Installation](#installation)
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
@@ -35,10 +35,11 @@ When a buffer is not a special buffer (e.g., a file-visiting or dired buffer), o
 ## Features
 
 - Automatically terminates/kills inactive buffers based on a configurable timeout.
-- Excludes specific buffers using buffer names, regular expressions, or special buffer types.
+- Keep/Kill buffers using buffer names, regular expressions, or special buffer types.
 - Verbose mode for logging terminated buffers.
 - Supports customizable intervals for periodic cleanup.
 - Ensures special buffers and important user-defined buffers are preserved.
+- Fully customizable rules.
 
 ## Installation
 
@@ -110,7 +111,9 @@ By default, *buffer-terminator* automatically determines which buffers are safe 
 
 However, if you need to define specific rules for keeping or terminating certain buffers, you can configure them using `buffer-terminator-rules`.
 
-The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds instructions for keeping or terminating buffers based on their names or regular expressions. Each rule is a cons cell where the key is a symbol indicating the rule type, and the value is either string or a list of strings:
+The `buffer-terminator-rules` variable holds instructions for keeping or terminating buffers based on their names or regular expressions. Each rule is a cons cell where the key is a symbol indicating the rule type, and the value is either string or a list of strings.
+
+Here is an example:
 ```elisp
 (setq buffer-terminator-rules-alist
       '((kill-buffer-name . ("temporary-buffer-name1"
@@ -119,30 +122,30 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         (keep-buffer-name . ("important-buffer-name1"
                              "important-buffer-name2"))
 
-        ;; Users can also define strings
         (kill-buffer-name . "temporary-buffer-name3")
 
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
         (kill-buffer-name-regexp . "compile-angel")
 
-        ;; Retain special buffers (Important).
-        ;; Keep this before kill-buffer-property: inactive and visible.
+        ;; Retain special buffers (DO NOT REMOVE).
         ;;
         ;; (If you choose to kill special buffers by removing the following,
         ;; ensure that the special buffers you want to keep are added
-        ;; keep-buffer-name rules above.)
+        ;; keep-buffer-name or keep-buffer-name-regexp rules above.)
         ;;
         ;; DO NOT REMOVE special buffers unless you know of what you are doing.
         (keep-buffer-property . special)
 
-        ;; Keep process buffers
-        ;; Process buffers are buffers where an active process is running.
+        ;; Retain process buffers.
+        ;;
+        ;; (Process buffers are buffers where an active process is running.
         ;; Removing the following will result in the termination of such
-        ;; buffers, potentially disrupting active processes.
+        ;; buffers, potentially disrupting active processes like vterm.)
         (keep-buffer-property . process)
 
-        ;; Retain visible buffers are those currently displayed in any window.
-        ;; Keep this in the end, after all the rules above.
+        ;; Retain visible buffers (DO NOT REMOVE).
+        ;;
+        ;; Visible buffer are those currently displayed in any window.
         ;; It is generally discouraged to set this to nil, as doing so may result
         ;; in the termination of visible buffers, except for the currently active
         ;; buffer in the selected window.
@@ -150,16 +153,17 @@ The `buffer-terminator-rules` `defcustom` is a centralized defcustom that holds 
         ;; DO NOT REMOVE visible buffers unless necessary.
         (keep-buffer-property . visible)
 
-        ;; Kill the buffers that have been inactive.
-        ;; Keep this in the end, after all the rules above.
+        ;; Keep the buffers that are not inactive.
+        ;;
         ;; This can be customized with `buffer-terminator-inactivity-timeout`
         ;; and `buffer-terminator-interval`.
-        (kill-buffer-property . inactive)
+        (keep-buffer-property . active)
 
         ;; Call a function that decides the fate of a buffer. It returns:
         ;;   :kill    Indicates that the buffer should be killed.
         ;;   :keep    Indicates that the buffer should be kept.
-        ;;   nil      Let Buffer-Terminator decide.
+        ;;   nil      Leave decision to the next rule specified
+        ;;            in `buffer-terminator-rules-alist`.
         ;; (call-function . function-name)
 
         ;; Kill the remaining buffers that were not retained by previous rules
@@ -184,6 +188,7 @@ Midnight mode and `clean-buffer-list` are for killing buffers once a day. The Mi
 In contrast, `buffer-terminator` allows specifying the timeout interval in seconds (Default: 30 minutes), enabling more frequent termination of inactive buffers.
 
 The `buffer-terminator` package offers additional features that are not supported by midnight and `clean-buffer-list`, including:
+- The *buffer-terminator* package is more customizable than Midnight Mode. It allows users to specify a customized list of rules using `buffer-terminator-rules-alist`, enabling them to determine which buffers should be killed based on factors such as inactivity, visibility, buffer name, whether it's a file or process buffer, and other conditions.
 - Buffer-terminator does not kill visible buffers in other tabs, even if they exceed the timeout. This prevents disruptions to editing workflows.
 Buffer-terminator provides the option to choose whether to keep or kill specific types of buffers, such as those associated with processes or file-visiting buffers.
 - Buffer-terminator avoids relying on `buffer-display-time`, which is not always updated reliably. For instance, `buffer-display-time` may not reflect activity when switching to a window or tab displaying a specific buffer.
