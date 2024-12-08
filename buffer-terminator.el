@@ -332,7 +332,7 @@ MAJOR-MODES is a list of major mode symbols."
     (eq major-mode major-modes))
 
    ((listp major-modes)
-    (when (cl-find major-mode major-modes :test 'eq)
+    (when (cl-find major-mode major-modes :test #'eq)
       t))
 
    (t

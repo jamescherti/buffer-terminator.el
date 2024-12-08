@@ -141,6 +141,12 @@
       (kill-buffer file)))
   (dolist (file test-buffer-terminator--file-buffers)
     (find-file file))
+  (with-current-buffer (get-buffer (car test-buffer-terminator--file-buffers))
+    (sh-mode))
+  (with-current-buffer (nth 1 test-buffer-terminator--file-buffers)
+    (python-mode))
+  (with-current-buffer (nth 2 test-buffer-terminator--file-buffers)
+    (conf-mode))
 
   ;; Modified file buffer
   ;; --------------------
@@ -212,6 +218,7 @@
   (test-buffer-terminator--check-process-buffer nil))
 
 (ert-deftest test-buffer-terminator-test03-keep-special ()
+  ;; Keep
   (test-buffer-terminator--create-test-environment)
   (setq buffer-terminator-rules-alist '((keep-buffer-property . special)
                                         (return . :kill)))
@@ -221,26 +228,32 @@
   (test-buffer-terminator--check-func-buffer nil)
   (test-buffer-terminator--check-file-buffers nil)
   (test-buffer-terminator--check-modified-file-buffer t)
-  (test-buffer-terminator--check-process-buffer nil))
+  (test-buffer-terminator--check-process-buffer nil)
+
+  ;; Keep
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist '((call-function . test-buffer-terminator--special-predicate)
+                                        (kill-buffer-property . special)
+                                        (return . :keep)))
+  (buffer-terminator--kill-buffers)
+  (test-buffer-terminator--check-special-buffers nil)
+  (test-buffer-terminator--check-special-mode-buffer nil)
+  (test-buffer-terminator--check-func-buffer t)
+  (test-buffer-terminator--check-file-buffers t)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer t))
 
 (ert-deftest test-buffer-terminator-test04-keep-func ()
-  (defun test-buffer-terminator-predicate-keep ()
-    (let ((buffer-name (buffer-name)))
-      (if (string= buffer-name test-buffer-terminator--process-buffer-name)
-          :keep
-        nil)))
-
-  (defun test-buffer-terminator-predicate ()
+  ;; Kill process buffer
+  (defun test-buffer-terminator-predicate-kill ()
     (let ((buffer-name (buffer-name)))
       (if (string= buffer-name test-buffer-terminator--process-buffer-name)
           :kill
         nil)))
-
-  ;; Kill process buffer
   (test-buffer-terminator--create-test-environment)
   (setq buffer-terminator-rules-alist
         '((keep-buffer-property . special)
-          (call-function . test-buffer-terminator-predicate)
+          (call-function . test-buffer-terminator-predicate-kill)
           (return . :kill)))
   (buffer-terminator--kill-buffers)
   (test-buffer-terminator--check-special-buffers t)
@@ -251,6 +264,11 @@
   (test-buffer-terminator--check-process-buffer nil)
 
   ;; Keep process buffer
+  (defun test-buffer-terminator-predicate-keep ()
+    (let ((buffer-name (buffer-name)))
+      (if (string= buffer-name test-buffer-terminator--process-buffer-name)
+          :keep
+        nil)))
   (test-buffer-terminator--create-test-environment)
   (setq buffer-terminator-rules-alist
         '((keep-buffer-property . special)
@@ -260,6 +278,7 @@
   (test-buffer-terminator--check-process-buffer t))
 
 (ert-deftest test-buffer-terminator-test05-keep-file ()
+  ;; Keep
   (test-buffer-terminator--create-test-environment)
   (setq buffer-terminator-rules-alist
         '((call-function . test-buffer-terminator--special-predicate)
@@ -271,7 +290,21 @@
   (test-buffer-terminator--check-func-buffer nil)
   (test-buffer-terminator--check-file-buffers t)
   (test-buffer-terminator--check-modified-file-buffer t)
-  (test-buffer-terminator--check-process-buffer nil))
+  (test-buffer-terminator--check-process-buffer nil)
+
+  ;; Kill
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        '((call-function . test-buffer-terminator--special-predicate)
+          (kill-buffer-property . file)
+          (return . :keep)))
+  (buffer-terminator--kill-buffers)
+  (test-buffer-terminator--check-special-buffers t)
+  (test-buffer-terminator--check-special-mode-buffer t)
+  (test-buffer-terminator--check-func-buffer t)
+  (test-buffer-terminator--check-file-buffers nil)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer t))
 
 (ert-deftest test-buffer-terminator-test06-keep-modified-file ()
   (test-buffer-terminator--create-test-environment)
@@ -287,6 +320,7 @@
   (test-buffer-terminator--check-process-buffer nil))
 
 (ert-deftest test-buffer-terminator-test07-keep-process ()
+  ;; Keep
   (test-buffer-terminator--create-test-environment)
   (setq buffer-terminator-rules-alist
         '((call-function . test-buffer-terminator--special-predicate)
@@ -298,7 +332,21 @@
   (test-buffer-terminator--check-func-buffer nil)
   (test-buffer-terminator--check-file-buffers nil)
   (test-buffer-terminator--check-modified-file-buffer t)
-  (test-buffer-terminator--check-process-buffer t))
+  (test-buffer-terminator--check-process-buffer t)
+
+  ;; Kill
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        '((call-function . test-buffer-terminator--special-predicate)
+          (kill-buffer-property . process)
+          (return . :keep)))
+  (buffer-terminator--kill-buffers)
+  (test-buffer-terminator--check-special-buffers t)
+  (test-buffer-terminator--check-special-mode-buffer t)
+  (test-buffer-terminator--check-func-buffer t)
+  (test-buffer-terminator--check-file-buffers t)
+  (test-buffer-terminator--check-modified-file-buffer t)
+  (test-buffer-terminator--check-process-buffer nil))
 
 (ert-deftest test-buffer-terminator-test08-keep-kill-name ()
   ;; Keep
@@ -405,8 +453,9 @@
     (buffer-terminator-mode 0)))
 
 (ert-deftest test-buffer-terminator-test12-visible ()
-  (test-buffer-terminator--create-test-environment)
+  ;; Keep visible
   ;; TODO use variable
+  (test-buffer-terminator--create-test-environment)
   (unwind-protect
       (progn
         (tab-bar-mode 1)
@@ -429,7 +478,62 @@
         (test-buffer-terminator--check-file-buffers nil)
         (test-buffer-terminator--check-modified-file-buffer t)
         (test-buffer-terminator--check-process-buffer nil))
+    (tab-bar-mode 0))
+
+  ;; Kill visible
+  (test-buffer-terminator--create-test-environment)
+  (unwind-protect
+      (progn
+        (tab-bar-mode 1)
+        (pop-to-buffer (get-buffer test-buffer-terminator--special-mode-buffer))
+        ;; Current buffer
+        (tab-bar-mode 1)
+        (pop-to-buffer (get-buffer test-buffer-terminator--process-buffer-name))
+        ;; Other split
+        (switch-to-buffer (get-buffer test-buffer-terminator--func-buffer))
+        (tab-bar-new-tab)
+        (setq buffer-terminator-rules-alist
+              '((call-function . test-buffer-terminator--special-predicate)
+                (kill-buffer-property . visible)
+                (return . :kill)))
+        (should (get-buffer test-buffer-terminator--special-mode-buffer))
+        (should (get-buffer test-buffer-terminator--process-buffer-name))
+        (should (get-buffer test-buffer-terminator--func-buffer))
+        (buffer-terminator--kill-buffers)
+        (should-not (get-buffer test-buffer-terminator--special-mode-buffer))
+        (should-not (get-buffer test-buffer-terminator--process-buffer-name))
+        (should-not (get-buffer test-buffer-terminator--func-buffer)))
     (tab-bar-mode 0)))
+
+
+(ert-deftest test-buffer-terminator-test13-major-modes ()
+  ;; Kill
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        ;; TODO: use variable test-buffer-terminator--file-buffers
+        '((kill-buffer-major-modes . sh-mode)
+          (kill-buffer-major-modes . (python-mode conf-mode))
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :keep)))
+  (buffer-terminator--kill-buffers)
+  (should-not
+   (get-buffer (car test-buffer-terminator--file-buffers)))
+  (should-not
+   (get-buffer (nth 1 test-buffer-terminator--file-buffers)))
+
+  ;; Keep
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        ;; TODO: use variable test-buffer-terminator--file-buffers
+        '((keep-buffer-major-modes . sh-mode)
+          (keep-buffer-major-modes . (python-mode conf-mode))
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :keep)))
+  (buffer-terminator--kill-buffers)
+  (should
+   (get-buffer (car test-buffer-terminator--file-buffers)))
+  (should
+   (get-buffer (nth 1 test-buffer-terminator--file-buffers))))
 
 (provide 'test-buffer-terminator)
 ;;; test-buffer-terminator.el ends here
