@@ -6,7 +6,7 @@
 ;; Version: 1.0.3
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "27.1") (cl-lib "0.5"))
+;; Package-Requires: ((emacs "27.1"))
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software; you can redistribute it and/or modify
