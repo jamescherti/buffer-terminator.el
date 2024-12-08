@@ -93,11 +93,6 @@ Default: 10 minutes."
     ;; you are doing.
     (keep-buffer-property . special)
 
-    ;; Keep active buffers.
-    ;; (This can be customized with `buffer-terminator-inactivity-timeout'
-    ;; and `buffer-terminator-interval'.)
-    (keep-buffer-property . active)
-
     ;; Keep process buffers.
     ;; (Process buffers are buffers where an active process is running.)
     (keep-buffer-property . process)
@@ -106,8 +101,10 @@ Default: 10 minutes."
     ;; (Buffers currently displayed in a window.)
     (keep-buffer-property . visible)
 
-    ;; Kill the remaining buffers that were not retained by previous rules.
-    (return . :kill))
+    ;; Kill inactive buffers.
+    ;; (This can be customized with `buffer-terminator-inactivity-timeout'
+    ;; and `buffer-terminator-interval'.)
+    (kill-buffer-property . inactive))
   "Rules for processing buffers.
 Each rule is a cons cell where the key is a symbol indicating the rule type, and
 the value is either a string or a list of strings.
@@ -115,7 +112,7 @@ the value is either a string or a list of strings.
 It is generally recommended to keep at least:
     (keep-buffer-property . special)
     (keep-buffer-property . visible)
-    (keep-buffer-property . active)
+    (kill-buffer-property . inactive)
 
 If you choose to remove the above, ensure that the special buffers you want to
 keep are added to `buffer-terminator-rules-alist'.")

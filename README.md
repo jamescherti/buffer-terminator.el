@@ -147,11 +147,10 @@ Here is an example:
         ;; DO NOT REMOVE visible buffers unless necessary.
         (keep-buffer-property . visible)
 
-        ;; Keep the buffers that are not inactive.
-        ;;
-        ;; This can be customized with `buffer-terminator-inactivity-timeout`
-        ;; and `buffer-terminator-interval`.
-        (keep-buffer-property . active)
+        ;; Kill inactive buffers.
+        ;; (This can be customized with `buffer-terminator-inactivity-timeout'
+        ;; and `buffer-terminator-interval'.)
+        (kill-buffer-property . inactive)
 
         ;; Call a function that decides the fate of a buffer. It returns:
         ;;   :kill    Indicates that the buffer should be killed.
@@ -161,7 +160,8 @@ Here is an example:
         ;; (call-function . function-name)
 
         ;; Kill the remaining buffers that were not retained by previous rules
-        (return . :kill)))
+        ;; (return . :kill)
+        ))
 ```
 
 ## Frequently asked questions
