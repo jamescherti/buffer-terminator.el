@@ -1,4 +1,4 @@
-;;; buffer-terminator.el --- Terminate/Kill Buffers Automatically  -*- lexical-binding: t; -*-
+;;; buffer-terminator.el --- Safely Terminate/Kill Buffers Automatically  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024 James Cherti | https://www.jamescherti.com/contact/
 
@@ -41,7 +41,7 @@
 ;;; Customizations
 
 (defgroup buffer-terminator nil
-  "Terminate buffers automatically."
+  "Safely terminate buffers automatically."
   :group 'buffer-terminator
   :prefix "buffer-terminator-"
   :link '(url-link
@@ -74,7 +74,7 @@ Default: 30 minutes."
   (setq buffer-terminator--kill-inactive-buffers-timer
         (run-with-timer seconds
                         seconds
-                        'buffer-terminator-kill-inactive-buffers)))
+                        'buffer-terminator--kill-buffers)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -88,19 +88,22 @@ Default: 10 minutes."
          (buffer-terminator--start-timer value)))
 
 (defvar buffer-terminator-rules-alist
-  '(;; Retain special buffers (Important).
+  '(;; Retain special buffers (DO NOT REMOVE).
     ;; DO NOT REMOVE (keep-buffer-property . special) unless you know of what
     ;; you are doing.
     (keep-buffer-property . special)
 
-    ;; Keep process buffers (those where an active process is running.)
+    ;; Keep process buffers.
+    ;; (Process buffers are buffers where an active process is running.)
     (keep-buffer-property . process)
 
-    ;; Keep visible buffers (those currently displayed in any window).
+    ;; Keep visible buffers (DO NOT REMOVE)
+    ;; (Buffers currently displayed in a window.)
     (keep-buffer-property . visible)
 
     ;; Keep active buffers.
-    ;; (Keep this at the end, after all the "keep" rules)
+    ;; (This can be customized with `buffer-terminator-inactivity-timeout'
+    ;; and `buffer-terminator-interval'.)
     (keep-buffer-property . active)
 
     ;; Kill the remaining buffers that were not retained by previous rules.
@@ -112,7 +115,7 @@ the value is either a string or a list of strings.
 It is generally recommended to keep at least:
     (keep-buffer-property . special)
     (keep-buffer-property . visible)
-    (kill-buffer-property . inactive)
+    (keep-buffer-property . active)
 
 If you choose to remove the above, ensure that the special buffers you want to
 keep are added to `buffer-terminator-rules-alist'.")
@@ -173,49 +176,49 @@ This variable is obsolete.")
   "List of buffer names that will never be killed.
 This variable is obsolete.")
 
-(defvar buffer-terminator-keep-buffer-names-regexps nil
-  "List of regexps that match buffer names that will never be killed.
-This variable is obsolete.")
-
-(defvar buffer-terminator-kill-buffer-names nil
-  "List of buffer names that can be killed.
-This variable is obsolete.")
-
-(defvar buffer-terminator-kill-buffer-names-regexps nil
-  "List of regex patterns matching buffer names that can be killed.
-This variable is obsolete.")
-
-(defvar buffer-terminator-kill-special-buffer-names nil
-  "List of special buffer names that can be killed.
-This variable is obsolete.")
-
-(defvar buffer-terminator-kill-special-buffer-names-regexps nil
-  "List of regex patterns matching special buffer names that can be killed.
-This variable is obsolete.")
-
 (make-obsolete-variable 'buffer-terminator-keep-buffer-names
                         'buffer-terminator-rules-alist
                         "1.1.0")
+
+(defvar buffer-terminator-keep-buffer-names-regexps nil
+  "List of regexps that match buffer names that will never be killed.
+This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-keep-buffer-names-regexps
                         'buffer-terminator-rules-alist
                         "1.1.0")
 
+(defvar buffer-terminator-kill-buffer-names nil
+  "List of buffer names that can be killed.
+This variable is obsolete.")
+
 (make-obsolete-variable 'buffer-terminator-kill-buffer-names
                         'buffer-terminator-rules-alist
                         "1.1.0")
+
+(defvar buffer-terminator-kill-buffer-names-regexps nil
+  "List of regex patterns matching buffer names that can be killed.
+This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-kill-buffer-names-regexps
                         'buffer-terminator-rules-alist
                         "1.1.0")
 
+(defvar buffer-terminator-kill-special-buffer-names nil
+  "List of special buffer names that can be killed.
+This variable is obsolete.")
+
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
                         'buffer-terminator-rules-alist
-                        "1.0.3")
+                        "1.1.0")
+
+(defvar buffer-terminator-kill-special-buffer-names-regexps nil
+  "List of regex patterns matching special buffer names that can be killed.
+This variable is obsolete.")
 
 (make-obsolete-variable 'buffer-terminator-kill-special-buffer-names-regexps
                         'buffer-terminator-rules-alist
-                        "1.0.3")
+                        "1.1.0")
 
 ;;; Functions
 
@@ -224,133 +227,124 @@ This variable is obsolete.")
 The message is formatted with the provided arguments ARGS."
   (apply #'message (concat "[buffer-terminator] " (car args)) (cdr args)))
 
-(defun buffer-terminator--error (&rest args)
-  "Display an error message with '[buffer-terminator]' prepended.
-The message is formatted with the provided arguments ARGS."
-  (apply #'error (concat "[buffer-terminator] " (car args)) (cdr args)))
-
-(defun buffer-terminator--buffer-visible-p (buffer)
-  "Return non-nil if BUFFER is visible in any window on any frame."
-  (when buffer
+(defun buffer-terminator--buffer-visible-p ()
+  "Return non-nil if the current buffer is visible in any window on any frame."
+  (let ((buffer (current-buffer)))
     (or (get-buffer-window buffer 'visible)
         ;; Tab-bar
         (and (bound-and-true-p tab-bar-mode)
              (fboundp 'tab-bar-get-buffer-tab)
              (funcall 'tab-bar-get-buffer-tab buffer t nil)))))
 
-(defun buffer-terminator--special-buffer-p (&optional buffer)
-  "Return non-nil if BUFFER is a special buffer."
-  (unless buffer
-    (setq buffer (current-buffer)))
-  (with-current-buffer buffer
-    (let ((buffer-name (buffer-name)))
+(defun buffer-terminator--special-buffer-p ()
+  "Return non-nil if the current buffer is a special buffer."
+  (let ((buffer-name (buffer-name)))
+    (when buffer-name
       (or (string-prefix-p " " buffer-name)
           (and (string-prefix-p "*" buffer-name)
                (string-suffix-p "*" buffer-name))
           (derived-mode-p 'special-mode)))))
 
-(defun buffer-terminator--match-buffer-inactive-p (buffer)
+(defun buffer-terminator--match-buffer-inactive-p ()
   "Return non-nil when BUFFER is inactive."
-  (when buffer
-    (let ((last-display-time (buffer-terminator--last-display-time buffer)))
-      (cond
-       ((not last-display-time)
-        t)
+  (let ((last-display-time (buffer-terminator--last-display-time)))
+    (cond
+     ((not last-display-time)
+      t)
 
-       ((>= last-display-time buffer-terminator-inactivity-timeout)
-        t)))))
+     ((>= last-display-time buffer-terminator-inactivity-timeout)
+      t))))
 
 (defun buffer-terminator--match-buffer-property-p (property)
-  "Return non-nil when the buffer property of the current buffer is PROPERTY.
-PROPERTY can be \\='visible or \\='special."
-  (let ((buffer (current-buffer)))
-    (cond
-     ((eq property 'special)
-      (when (buffer-terminator--special-buffer-p buffer)
-        t))
+  "Return non-nil when the buffer property of the current buffer is PROPERTY."
+  (cond
+   ((eq property 'special)
+    (when (buffer-terminator--special-buffer-p)
+      t))
 
-     ((eq property 'process)
-      (when (get-buffer-process buffer)
-        t))
+   ((eq property 'process)
+    (when (get-buffer-process (current-buffer))
+      t))
 
-     ((eq property 'visible)
-      (when (buffer-terminator--buffer-visible-p buffer)
-        t))
+   ((eq property 'visible)
+    (when (buffer-terminator--buffer-visible-p)
+      t))
 
-     ((eq property 'active)
-      (unless (buffer-terminator--match-buffer-inactive-p buffer)
-        t))
+   ((eq property 'active)
+    (unless (buffer-terminator--match-buffer-inactive-p)
+      t))
 
-     ((eq property 'inactive)
-      (when (buffer-terminator--match-buffer-inactive-p buffer)
-        t))
+   ((eq property 'inactive)
+    (when (buffer-terminator--match-buffer-inactive-p)
+      t))
 
-     ((eq property 'file)
-      (when (buffer-file-name (buffer-base-buffer))
-        t))
+   ((eq property 'file)
+    (when (buffer-file-name (buffer-base-buffer))
+      t))
 
-     (t
-      (buffer-terminator--error
-       "Invalid buffer-terminator-rules-alist value: '%s' (%s)"
-       property (type-of property))
-      nil))))
+   (t
+    (error "Invalid buffer-terminator-rules-alist value: '%s' (%s)"
+           property (type-of property))
+    nil)))
 
 (defun buffer-terminator--match-buffer-p (match-names)
-  "Check if buffer name matches one of the names in MATCH-NAMES.
+  "Check if the name if the current buffer matches MATCH-NAMES.
 MATCH-NAMES can be a string for a single exact match or a list of strings.
 Returns non-nil if the buffer name matches any of the names."
   (let ((buffer-name (buffer-name)))
-    (if (not (or (listp match-names) (stringp match-names)))
-        (buffer-terminator--error
-         "Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
-         buffer-name match-names)
-      (when buffer-name
-        (cond
-         ((stringp match-names)
-          (string-equal buffer-name match-names))
+    (when buffer-name
+      (cond
+       ((stringp match-names)
+        (string-equal buffer-name match-names))
 
-         ((listp match-names)
-          (cl-find buffer-name
-                   match-names
-                   :test #'string-equal)))))))
+       ((listp match-names)
+        (cl-find buffer-name match-names :test #'string-equal))
+
+       (t
+        (error "Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
+               buffer-name match-names))))))
 
 (defun buffer-terminator--match-buffer-regexp-p (match-names-regexp)
-  "Check if BUFFER-NAME is matched by one or more regexps in MATCH-NAMES-REGEXP.
-RULE is the rule name.
+  "Check if the name of the current buffer matches one of MATCH-NAMES-REGEXP.
 MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
 Returns non-nil if BUFFER-NAME matches any of the regexps."
   (let ((buffer-name (buffer-name)))
-    (if (not (or (listp match-names-regexp) (stringp match-names-regexp)))
-        (buffer-terminator--error
-         "Invalid buffer-terminator-rules-alist value: '%s'"
-         match-names-regexp)
-      (when buffer-name
-        (cond
-         ((stringp match-names-regexp)
-          (string-match match-names-regexp buffer-name))
+    (when buffer-name
+      (cond
+       ((stringp match-names-regexp)
+        (string-match match-names-regexp buffer-name))
 
-         ((listp match-names-regexp)
-          (cl-find buffer-name
-                   match-names-regexp
-                   :test (lambda (buffer-name regex)
-                           (string-match regex buffer-name)))))))))
+       ((listp match-names-regexp)
+        (cl-find buffer-name
+                 match-names-regexp
+                 :test (lambda (buffer-name regex)
+                         (string-match regex buffer-name))))
+
+       (t
+        (error "Invalid buffer-terminator-rules-alist value: '%s'"
+               match-names-regexp))))))
 
 (defun buffer-terminator--match-buffer-major-mode-p (major-modes)
-  "Return non-nil when the buffer major mode is part of MAJOR-MODES."
-  (if (not (or (listp major-modes) (symbolp major-modes)))
-      (buffer-terminator--error
-       "Invalid buffer-terminator-rules-alist value: '%s'"
-       major-modes)
+  "Return non-nil if the major mode of the current buffer is MAJOR-MODES.
+MAJOR-MODES is a list of major mode symbols."
+  (cond
+   ((symbolp major-modes)
+    (eq major-mode major-modes))
+
+   ((listp major-modes)
     (when (cl-find major-mode major-modes :test 'eq)
-      t)))
+      t))
+
+   (t
+    (error "Invalid buffer-terminator-rules-alist value: '%s'"
+           major-modes))))
 
 (defun buffer-terminator--process-rule (rule value)
   "Run the rule RULE with the value VALUE."
   (cond
    ((not (symbolp rule))
-    (buffer-terminator--error
-     "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
-     rule value)
+    (error "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
+           rule value)
     nil)
 
    ((and (eq rule 'call-function) (functionp value))
@@ -360,50 +354,32 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
     value)
 
    ((eq rule 'keep-buffer-property)
-    (if (buffer-terminator--match-buffer-property-p value)
-        :keep
-      nil))
+    (if (buffer-terminator--match-buffer-property-p value) :keep nil))
 
    ((eq rule 'kill-buffer-property)
-    (if (buffer-terminator--match-buffer-property-p value)
-        :kill
-      nil))
+    (if (buffer-terminator--match-buffer-property-p value) :kill nil))
 
    ((eq rule 'keep-buffer-name)
-    (if (buffer-terminator--match-buffer-p value)
-        :keep
-      nil))
+    (if (buffer-terminator--match-buffer-p value) :keep nil))
 
    ((eq rule 'kill-buffer-name)
-    (if (buffer-terminator--match-buffer-p value)
-        :kill
-      nil))
+    (if (buffer-terminator--match-buffer-p value) :kill nil))
 
    ((eq rule 'keep-buffer-name-regexp)
-    (if (buffer-terminator--match-buffer-regexp-p value)
-        :keep
-      nil))
+    (if (buffer-terminator--match-buffer-regexp-p value) :keep nil))
 
    ((eq rule 'kill-buffer-name-regexp)
-    (if (buffer-terminator--match-buffer-regexp-p value)
-        :kill
-      nil))
+    (if (buffer-terminator--match-buffer-regexp-p value) :kill nil))
 
    ((eq rule 'keep-buffer-major-modes)
-    (if (buffer-terminator--match-buffer-major-mode-p value)
-        :keep
-      nil))
+    (if (buffer-terminator--match-buffer-major-mode-p value) :keep nil))
 
    ((eq rule 'kill-buffer-major-modes)
-    (if (buffer-terminator--match-buffer-major-mode-p value)
-        :kill
-      nil))
+    (if (buffer-terminator--match-buffer-major-mode-p value) :kill nil))
 
-   ;; TODO: Special buffers.
    (t
-    (buffer-terminator--error
-     "Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'"
-     rule value)
+    (error
+     "Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'" rule value)
     nil)))
 
 (defun buffer-terminator--process-buffer-rules ()
@@ -420,94 +396,66 @@ Return :kill or :keep or nil."
     nil))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
-(defvar buffer-terminator--disable-buffer-display-time-update nil)
+(defvar buffer-terminator--disable-update-buffer-display-time nil)
 
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
-  (unless buffer-terminator--disable-buffer-display-time-update
+  (unless buffer-terminator--disable-update-buffer-display-time
     (setq-local buffer-terminator--buffer-display-time (current-time))))
 
-(defun buffer-terminator--last-display-time (buffer)
-  "Return the time in seconds since BUFFER was last displayed.
+(defun buffer-terminator--last-display-time ()
+  "Return the time in seconds since current buffer was last displayed.
 Return nil when if buffer has never been displayed."
-  (if (eq buffer (current-buffer))
-      0
-    (with-current-buffer buffer
-      (let (;; buffer-last-time is is updated on `window-state-change-hook':
-            ;; on changes related to the state of the window, including buffer
-            ;; changes and resizing.
-            (buffer-last-view
-             (cond ((bound-and-true-p buffer-terminator--buffer-display-time)
-                    (float-time (time-subtract
-                                 (current-time)
-                                 buffer-terminator--buffer-display-time)))
+  (let (;; buffer-display-time is not reliable enough.
+        ;; The `buffer-terminator--buffer-display-time' is updated using
+        ;; `window-state-change-hook', which is more reliable because it is
+        ;; triggered on changes related to the state of the window, including
+        ;; buffer changes and resizing.
+        (buffer-last-view
+         (cond ((bound-and-true-p buffer-terminator--buffer-display-time)
+                (float-time (time-subtract
+                             (current-time)
+                             buffer-terminator--buffer-display-time)))
 
-                   ;; (buffer-display-time
-                   ;;  (float-time (time-subtract (current-time)
-                   ;;                             buffer-display-time)))
-                   )))
-        buffer-last-view))))
+               ;; (buffer-display-time
+               ;;  (float-time (time-subtract (current-time)
+               ;;                             buffer-display-time)))
+               )))
+    buffer-last-view))
 
 (defun buffer-terminator--kill-buffer-maybe (buffer)
-  "Kill BUFFER if it is not visible and not special."
+  "Kill BUFFER if it is supposed to be killed."
   (when (buffer-live-p buffer)
     (with-current-buffer buffer
-      (when (and
-             (let ((decision nil))
-               ;; Pre-flight checks (safety)
-               (when (and (buffer-file-name (buffer-base-buffer))
-                          (buffer-modified-p))
-                 (setq decision :keep))
+      (when (let ((decision nil))
+              ;; Pre-flight checks (safety)
+              (when (and (buffer-file-name (buffer-base-buffer))
+                         (buffer-modified-p))
+                (setq decision :keep))
 
-               ;; Rules
-               (when (and buffer-terminator-rules-alist
-                          (not decision))
-                 (setq decision (buffer-terminator--process-buffer-rules)))
+              ;; Rules
+              (when (and buffer-terminator-rules-alist
+                         (not decision))
+                (setq decision (buffer-terminator--process-buffer-rules)))
 
-               ;; Final decision
-               (if (eq decision :kill)
-                   t
-                 nil)))
+              ;; Final decision
+              (if (eq decision :kill)
+                  t
+                nil))
         (let ((buffer-name (buffer-name buffer)))
           (ignore-errors
             (let ((kill-buffer-query-functions '()))
               (kill-buffer buffer)))
           (when buffer-terminator-verbose
-            (buffer-terminator--message "Terminated the buffer: '%s'"
-                                        buffer-name))
+            (buffer-terminator--message
+             "Terminated the buffer: '%s'" buffer-name))
           t)))))
 
-;;; Helper functions
-
-(defun buffer-terminator-kill-buffers ()
+(defun buffer-terminator--kill-buffers ()
   "Kill all buffers that are supposed to be killed."
   (mapc #'(lambda(buffer)
             (buffer-terminator--kill-buffer-maybe buffer))
         (buffer-list)))
-
-(defalias 'buffer-terminator-kill-inactive-buffers
-  'buffer-terminator-kill-buffers
-  "Renamed to `buffer-terminator-kill-buffers'.")
-(make-obsolete 'buffer-terminator-kill-inactive-buffers
-               'buffer-terminator-kill-buffers
-               "1.1.0")
-
-(defun buffer-terminator-kill-non-visible-buffers ()
-  "Kill all non visible buffers."
-  (let ((buffer-killed nil))
-    (mapc #'(lambda(buffer)
-              (when (buffer-terminator--kill-buffer-maybe buffer)
-                (push (buffer-name) buffer-killed)))
-          (buffer-list))
-    ;; Return the list of killed buffer names
-    buffer-killed))
-
-(defalias 'buffer-terminator-kill-all-non-visible-buffers
-  'buffer-terminator-kill-non-visible-buffers
-  "Renamed to `buffer-terminator-kill-non-visible-buffers'.")
-(make-obsolete 'buffer-terminator-kill-all-non-visible-buffers
-               'buffer-terminator-kill-non-visible-buffers
-               "1.0.3")
 
 (defvar buffer-terminator-display-warnings t)
 
@@ -539,6 +487,23 @@ Return nil when if buffer has never been displayed."
                  "Use `buffer-terminator-rules-alist` instead. "
                  "(The obsolete variable will be removed in future versions.)")
          var)))))
+
+;;; Obsolete functions
+
+(defun buffer-terminator-find-dired-parent (&optional _kill-buffer)
+  "This function is obsolete."
+  t)
+(make-obsolete 'buffer-terminator-find-dired-parent 'ignore "1.1.0")
+
+(defun buffer-terminator-find-dired-parent-kill-buffer ()
+  "This function is obsolete."
+  t)
+(make-obsolete 'buffer-terminator-find-dired-parent-kill-buffer 'ignore "1.1.0")
+
+(defun buffer-terminator-kill-non-visible-buffers ()
+  "This function is obsolete."
+  t)
+(make-obsolete 'buffer-terminator-kill-non-visible-buffers 'ignore "1.1.0")
 
 ;;; Mode
 
