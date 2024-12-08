@@ -63,6 +63,7 @@
 
 ;;; Code:
 
+(require 'uniquify)
 (require 'cl-lib)
 
 ;;; Customizations
@@ -278,12 +279,22 @@ The messages are displayed in the *buffer-terminator* buffer."
 
 (defun buffer-terminator--buffer-visible-p ()
   "Return non-nil if the current buffer is visible in any window on any frame."
-  (let ((buffer (current-buffer)))
-    (or (get-buffer-window buffer t)
-        ;; Tab-bar
-        (and (bound-and-true-p tab-bar-mode)
-             (fboundp 'tab-bar-get-buffer-tab)
-             (funcall 'tab-bar-get-buffer-tab buffer t nil)))))
+  (let ((uniquify-buffer-name (when (bound-and-true-p uniquify-managed)
+                                (uniquify-buffer-base-name)))
+        (buffer (current-buffer))
+        (buffer-name (buffer-name)))
+    (or
+     (get-buffer-window buffer-name t)
+     (when uniquify-buffer-name
+       (get-buffer-window uniquify-buffer-name t))
+     (and (bound-and-true-p tab-bar-mode)
+          (fboundp 'tab-bar-get-buffer-tab)
+          (or
+           (funcall 'tab-bar-get-buffer-tab buffer-name t nil)
+           (when uniquify-buffer-name
+             (funcall 'tab-bar-get-buffer-tab uniquify-buffer-name t nil))
+           (funcall 'tab-bar-get-buffer-tab buffer t nil)))
+     (get-buffer-window buffer t))))
 
 (defun buffer-terminator--special-buffer-p ()
   "Return non-nil if the current buffer is a special buffer."
