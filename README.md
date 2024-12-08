@@ -3,13 +3,15 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-The **buffer-terminator** package automatically terminates buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those buffers.
+The **buffer-terminator** package automatically kills buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those buffers.
 
 By default, **buffer-terminator** kills all inactive buffers except special buffers (special buffers are buffers whose names start with a space, start and end with `*`, or whose major mode is derived from `special-mode`).
 
 When a buffer is not a special buffer (e.g., a file-visiting buffer), only buffers that have been inactive for a specified period are terminated. (Exception: modified file-visiting buffers that have not been saved are not terminated; the user must save them first.)
 
 (By default, `(buffer-terminator-mode)` terminates all the buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (Default: 30 minutes). It checks every `buffer-terminator-interval` - Default: 10 minutes - to determine if a buffer should be terminated.)
+
+Rules are fully customizable. Users can define specific rules for keeping or terminating certain buffers by specifying a set of rules using `buffer-terminator-rules`. These rules can include buffer name patterns or regular expressions, major-modes, buffer properties, etc.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
