@@ -117,6 +117,12 @@ It is generally recommended to keep at least:
 If you choose to remove the above, ensure that the special buffers you want to
 keep are added to `buffer-terminator-rules-alist'.")
 
+(defcustom buffer-terminator-debug nil
+  "Non-nil to display debug messages in the *buffer-terminator:debug* buffer.
+This displays a lot of messages."
+  :type 'boolean
+  :group 'buffer-terminator)
+
 ;;; Obsolete variables
 
 (defcustom buffer-terminator-predicate nil
@@ -219,10 +225,28 @@ This variable is obsolete.")
 
 ;;; Functions
 
+
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
 The message is formatted with the provided arguments ARGS."
   (apply #'message (concat "[buffer-terminator] " (car args)) (cdr args)))
+
+(defun buffer-terminator--insert-message (buffer-name msg &rest args)
+"Insert formatted MSG with ARGS into BUFFER-NAME buffer."
+(with-current-buffer (get-buffer-create buffer-name)
+  (unwind-protect
+      (progn
+        (read-only-mode -1)
+        (goto-char (point-max))
+        (insert (apply 'format msg args) "\n"))
+    (read-only-mode 1))))
+
+(defmacro buffer-terminator--debug-message (&rest args)
+  "Display a debug message with the same ARGS arguments as `message'.
+The messages are displayed in the *buffer-terminator* buffer."
+  `(when buffer-terminator-debug
+     (buffer-terminator--insert-message "*buffer-terminator:debug*"
+                                        ,(car args) ,@(cdr args))))
 
 (defun buffer-terminator--buffer-visible-p ()
   "Return non-nil if the current buffer is visible in any window on any frame."
@@ -388,6 +412,9 @@ Return :kill or :keep or nil."
       (let ((key (car rule))
             (value (cdr rule)))
         (let ((result (buffer-terminator--process-rule key value)))
+          (buffer-terminator--debug-message "RULE RESULT: [%s] %s(%s) = %s"
+                                            (buffer-name)
+                                            key value result)
           (when result
             (throw 'result result)))))
     ;; Return nil if no rule produces a result
@@ -426,6 +453,11 @@ Return nil when if buffer has never been displayed."
   (when (buffer-live-p buffer)
     (with-current-buffer buffer
       (when (let ((decision nil))
+              ;; When debug is enabled, always keep the buffer
+              (when (and buffer-terminator-debug
+                         (string= (buffer-name) "*buffer-terminator:debug*"))
+                (setq decision :keep))
+
               ;; Pre-flight checks (safety)
               (unless decision
                 (let ((base-buffer (or (buffer-base-buffer) (current-buffer))))
@@ -525,6 +557,7 @@ and not visible based on a defined timeout."
   (if buffer-terminator-mode
       ;; Enable
       (progn
+        (buffer-terminator--debug-message "Start: buffer-terminator-mode")
         (buffer-terminator--warn-obsolete-vars)
         ;; Initialize the last view time for all buffers
         (dolist (buffer (buffer-list))
