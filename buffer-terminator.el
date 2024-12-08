@@ -341,6 +341,7 @@ MAJOR-MODES is a list of major mode symbols."
 
 (defun buffer-terminator--process-rule (rule value)
   "Run the rule RULE with the value VALUE."
+
   (cond
    ((not (symbolp rule))
     (error "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
@@ -429,9 +430,10 @@ Return nil when if buffer has never been displayed."
     (with-current-buffer buffer
       (when (let ((decision nil))
               ;; Pre-flight checks (safety)
-              (when (and (buffer-file-name (buffer-base-buffer))
-                         (buffer-modified-p))
-                (setq decision :keep))
+              (let ((base-buffer (or (buffer-base-buffer) (current-buffer))))
+                (when (and (buffer-file-name base-buffer)
+                           (buffer-modified-p base-buffer))
+                  (setq decision :keep)))
 
               ;; Rules
               (when (and buffer-terminator-rules-alist
@@ -447,8 +449,8 @@ Return nil when if buffer has never been displayed."
             (let ((kill-buffer-query-functions '()))
               (kill-buffer buffer)))
           (when buffer-terminator-verbose
-            (buffer-terminator--message
-             "Terminated the buffer: '%s'" buffer-name))
+            (buffer-terminator--message "Terminated the buffer: '%s'"
+                                        buffer-name))
           t)))))
 
 (defun buffer-terminator--kill-buffers ()
