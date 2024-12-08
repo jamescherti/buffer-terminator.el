@@ -230,7 +230,7 @@ The message is formatted with the provided arguments ARGS."
 (defun buffer-terminator--buffer-visible-p ()
   "Return non-nil if the current buffer is visible in any window on any frame."
   (let ((buffer (current-buffer)))
-    (or (get-buffer-window buffer 'visible)
+    (or (get-buffer-window buffer t)
         ;; Tab-bar
         (and (bound-and-true-p tab-bar-mode)
              (fboundp 'tab-bar-get-buffer-tab)
@@ -430,9 +430,14 @@ Return nil when if buffer has never been displayed."
     (with-current-buffer buffer
       (when (let ((decision nil))
               ;; Pre-flight checks (safety)
-              (let ((base-buffer (or (buffer-base-buffer) (current-buffer))))
-                (when (and (buffer-file-name base-buffer)
-                           (buffer-modified-p base-buffer))
+              (unless decision
+                (let ((base-buffer (or (buffer-base-buffer) (current-buffer))))
+                  (when (and (buffer-file-name base-buffer)
+                             (buffer-modified-p base-buffer))
+                    (setq decision :keep))))
+
+              (unless decision
+                (when (eq (window-buffer) buffer)
                   (setq decision :keep)))
 
               ;; Rules
