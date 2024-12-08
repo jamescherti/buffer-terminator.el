@@ -234,12 +234,13 @@ The message is formatted with the provided arguments ARGS."
 (defun buffer-terminator--insert-message (buffer-name msg &rest args)
 "Insert formatted MSG with ARGS into BUFFER-NAME buffer."
 (with-current-buffer (get-buffer-create buffer-name)
-  (unwind-protect
-      (progn
-        (read-only-mode -1)
-        (goto-char (point-max))
-        (insert (apply 'format msg args) "\n"))
-    (read-only-mode 1))))
+  (save-excursion
+    (unwind-protect
+        (progn
+          (read-only-mode -1)
+          (goto-char (point-max))
+          (insert (apply 'format msg args) "\n"))
+      (read-only-mode 1)))))
 
 (defmacro buffer-terminator--debug-message (&rest args)
   "Display a debug message with the same ARGS arguments as `message'.
