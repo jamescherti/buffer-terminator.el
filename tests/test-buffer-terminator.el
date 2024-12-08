@@ -170,7 +170,9 @@
   (start-process-shell-command
    "test-sh-process"
    test-buffer-terminator--process-buffer-name "sh")
-  (test-buffer-terminator--check-test-environment))
+  (test-buffer-terminator--check-test-environment)
+
+  (switch-to-buffer (get-buffer-create "*Messages*")))
 
 (defun test-buffer-terminator--is-special-buffer ()
   "Return t if the current buffer is a test special buffer."
@@ -484,31 +486,38 @@
 
     ;; Kill visible
     ;; TODO fix this one
-    ;; (test-buffer-terminator--create-test-environment)
-    ;; (unwind-protect
-    ;;     (progn
-    ;;       (tab-bar-mode 1)
-    ;;       (tab-bar-close-other-tabs)
-    ;;       (pop-to-buffer (get-buffer test-buffer-terminator--special-mode-buffer))
-    ;;       ;; Current buffer
-    ;;       (tab-bar-mode 1)
-    ;;       (pop-to-buffer (get-buffer test-buffer-terminator--process-buffer-name))
-    ;;       ;; Other split
-    ;;       (switch-to-buffer (get-buffer test-buffer-terminator--func-buffer))
-    ;;       (tab-bar-new-tab)
-    ;;       (setq buffer-terminator-rules-alist
-    ;;             '((call-function . test-buffer-terminator--special-predicate)
-    ;;               (kill-buffer-property . visible)
-    ;;               (return . :kill)))
-    ;;       (should (get-buffer test-buffer-terminator--special-mode-buffer))
-    ;;       (should (get-buffer test-buffer-terminator--process-buffer-name))
-    ;;       (should (get-buffer test-buffer-terminator--func-buffer))
-    ;;       (buffer-terminator--kill-buffers)
-    ;;       (should-not (get-buffer test-buffer-terminator--special-mode-buffer))
-    ;;       (should-not (get-buffer test-buffer-terminator--process-buffer-name))
-    ;;       (should-not (get-buffer test-buffer-terminator--func-buffer)))
-    ;;   (tab-bar-mode 0))
-    ))
+    (test-buffer-terminator--create-test-environment)
+    (unwind-protect
+        (progn
+          (tab-bar-mode 1)
+          (tab-bar-close-other-tabs)
+          (switch-to-buffer (get-buffer test-buffer-terminator--special-mode-buffer))
+          ;; Current buffer
+          (tab-bar-new-tab)
+          (switch-to-buffer (get-buffer test-buffer-terminator--process-buffer-name))
+          (tab-bar-new-tab)
+          ;; Other split
+          (switch-to-buffer (get-buffer test-buffer-terminator--func-buffer))
+          ;; (tab-bar-new-tab)
+          (setq buffer-terminator-rules-alist
+                '((call-function . test-buffer-terminator--special-predicate)
+                  (kill-buffer-property . visible)
+                  (return . :keep)))
+          (buffer-terminator--kill-buffers)
+          ;; TODO broken
+          (test-buffer-terminator--check-special-buffers t)
+          (test-buffer-terminator--check-special-mode-buffer nil)
+          (test-buffer-terminator--check-func-buffer t) ;; Keep current buffer
+          (test-buffer-terminator--check-file-buffers t)
+          (test-buffer-terminator--check-modified-file-buffer t)
+          (test-buffer-terminator--check-process-buffer nil)
+
+          ;; No current buffer
+          (tab-bar-new-tab)
+          (switch-to-buffer (get-buffer-create "*Messages*"))
+          (buffer-terminator--kill-buffers)
+          (test-buffer-terminator--check-func-buffer nil))
+      (tab-bar-mode 0))))
 
 (ert-deftest test-buffer-terminator-test13-major-modes ()
   ;; Kill

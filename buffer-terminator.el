@@ -457,9 +457,12 @@ Return nil when if buffer has never been displayed."
 
 (defun buffer-terminator--kill-buffers ()
   "Kill all buffers that are supposed to be killed."
-  (mapc #'(lambda(buffer)
-            (buffer-terminator--kill-buffer-maybe buffer))
-        (buffer-list)))
+  (let ((result nil))
+    (dolist (buffer (buffer-list))
+      (let ((buffer-name (buffer-terminator--kill-buffer-maybe buffer)))
+        (when buffer-name
+          (push buffer-name result))))
+    result))
 
 (defvar buffer-terminator-display-warnings t)
 
