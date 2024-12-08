@@ -13,7 +13,7 @@ The following buffers are not terminated by default:
 - Buffers currently displayed in any visible window.
 - Buffers associated with running processes.
 
-(the default rules above are fully customizable. Users can define specific rules for keeping or terminating certain buffers by specifying a set of rules using `buffer-terminator-rules-alist`. These rules can include buffer name patterns or regular expressions, major-modes, buffer properties, etc.)
+(The default rules above are fully customizable. Users can define specific rules for keeping or terminating certain buffers by specifying a set of rules using `buffer-terminator-rules-alist`. These rules can include buffer name patterns or regular expressions, major-modes, buffer properties, etc.)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
