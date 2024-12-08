@@ -451,8 +451,8 @@ Return nil when if buffer has never been displayed."
 (defun buffer-terminator--kill-buffer-maybe (buffer)
   "Kill BUFFER if it is supposed to be killed."
   (when (buffer-live-p buffer)
-    (with-current-buffer buffer
-      (when (let ((decision nil))
+    (when (let ((decision nil))
+            (with-current-buffer buffer
               ;; When debug is enabled, always keep the buffer
               (when (and buffer-terminator-debug
                          (string= (buffer-name) "*buffer-terminator:debug*"))
@@ -477,15 +477,15 @@ Return nil when if buffer has never been displayed."
               ;; Final decision
               (if (eq decision :kill)
                   t
-                nil))
-        (let ((buffer-name (buffer-name buffer)))
-          (ignore-errors
-            (let ((kill-buffer-query-functions '()))
-              (kill-buffer buffer)))
-          (when buffer-terminator-verbose
-            (buffer-terminator--message "Terminated the buffer: '%s'"
-                                        buffer-name))
-          t)))))
+                nil)))
+      (let ((buffer-name (buffer-name buffer)))
+        (ignore-errors
+          (let ((kill-buffer-query-functions '()))
+            (kill-buffer buffer)))
+        (when buffer-terminator-verbose
+          (buffer-terminator--message "Terminated the buffer: '%s'"
+                                      buffer-name))
+        t))))
 
 (defun buffer-terminator--execute-rules ()
   "Evaluate rules to determine whether to kill or retain buffers."
