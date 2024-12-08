@@ -93,6 +93,11 @@ Default: 10 minutes."
     ;; you are doing.
     (keep-buffer-property . special)
 
+    ;; Keep active buffers.
+    ;; (This can be customized with `buffer-terminator-inactivity-timeout'
+    ;; and `buffer-terminator-interval'.)
+    (keep-buffer-property . active)
+
     ;; Keep process buffers.
     ;; (Process buffers are buffers where an active process is running.)
     (keep-buffer-property . process)
@@ -100,11 +105,6 @@ Default: 10 minutes."
     ;; Keep visible buffers (DO NOT REMOVE)
     ;; (Buffers currently displayed in a window.)
     (keep-buffer-property . visible)
-
-    ;; Keep active buffers.
-    ;; (This can be customized with `buffer-terminator-inactivity-timeout'
-    ;; and `buffer-terminator-interval'.)
-    (keep-buffer-property . active)
 
     ;; Kill the remaining buffers that were not retained by previous rules.
     (return . :kill))
