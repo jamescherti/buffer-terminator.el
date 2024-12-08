@@ -19,7 +19,6 @@ The following buffers are not terminated by default:
 ## Table of Contents
 
 - [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically)
-  - [Features](#features)
   - [Installation](#installation)
     - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
     - [Installing with use-package and :vc (Built-in feature in Emacs version >= 30)](#installing-with-use-package-and-vc-built-in-feature-in-emacs-version--30)
@@ -35,15 +34,6 @@ The following buffers are not terminated by default:
   - [Links](#links)
 
 <!-- markdown-toc end -->
-
-## Features
-
-- Automatically terminates/kills inactive buffers based on a configurable timeout.
-- Keep/Kill buffers using buffer names, regular expressions, or special buffer types.
-- Verbose mode for logging terminated buffers.
-- Supports customizable intervals for periodic cleanup.
-- Ensures special buffers and important user-defined buffers are preserved.
-- Fully customizable rules.
 
 ## Installation
 
