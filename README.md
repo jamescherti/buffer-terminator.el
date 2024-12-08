@@ -1,4 +1,5 @@
 # buffer-terminator.el - Safely Terminate Emacs Buffers Automatically
+[![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
@@ -19,9 +20,7 @@ The following buffers are not terminated by default:
 ## Table of Contents
 
 - [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically)
-  - [Installation](#installation)
-    - [Install with straight (Emacs version < 30)](#install-with-straight-emacs-version--30)
-    - [Installing with use-package and :vc (Built-in feature in Emacs version >= 30)](#installing-with-use-package-and-vc-built-in-feature-in-emacs-version--30)
+  - [Installation fro MELPA](#installation-fro-melpa)
   - [Configuration](#configuration)
     - [Verbose Mode](#verbose-mode)
     - [Timeout for Inactivity](#timeout-for-inactivity)
@@ -35,36 +34,13 @@ The following buffers are not terminated by default:
 
 <!-- markdown-toc end -->
 
-## Installation
+## Installation fro MELPA
 
-### Install with straight (Emacs version < 30)
-
-To install `buffer-terminator` with `straight.el`:
-
-1. It if hasn't already been done, [add the straight.el bootstrap code](https://github.com/radian-software/straight.el?tab=readme-ov-file#getting-started) to your init file.
+1. If you haven't already done so, [add MELPA repository to your Emacs configuration](https://melpa.org/#/getting-started).
 2. Add the following code to the Emacs init file:
 ```emacs-lisp
 (use-package buffer-terminator
   :ensure t
-  :straight (buffer-terminator
-             :type git
-             :host github
-             :repo "jamescherti/buffer-terminator.el")
-  :custom
-  (buffer-terminator-verbose nil)
-  :config
-  (buffer-terminator-mode 1))
-```
-
-### Installing with use-package and :vc (Built-in feature in Emacs version >= 30)
-
-To install `buffer-terminator` with `use-package` and `:vc` (Emacs >= 30):
-
-``` emacs-lisp
-(use-package buffer-terminator
-  :ensure t
-  :vc (:url "https://github.com/jamescherti/buffer-terminator.el"
-       :rev :newest)
   :custom
   (buffer-terminator-verbose nil)
   :config
