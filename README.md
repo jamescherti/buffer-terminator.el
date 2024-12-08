@@ -159,9 +159,8 @@ Here is an example:
         ;;            in `buffer-terminator-rules-alist`.
         ;; (call-function . function-name)
 
-        ;; Kill the remaining buffers that were not retained by previous rules
-        ;; (return . :kill)
-        ))
+        ;; Keep the remaining buffers that were not retained by previous rules
+        (return . :keep)))
 ```
 
 ## Frequently asked questions
