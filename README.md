@@ -103,9 +103,9 @@ Define how frequently the cleanup process should run (default is every 10 minute
 
 By default, *buffer-terminator* automatically determines which buffers are safe to terminate.
 
-However, if you need to define specific rules for keeping or terminating certain buffers, you can configure them using `buffer-terminator-rules`.
+However, if you need to define specific rules for keeping or terminating certain buffers, you can configure them using `buffer-terminator-rules-alist`.
 
-The `buffer-terminator-rules` variable holds instructions for keeping or terminating buffers based on their names or regular expressions. Each rule is a cons cell where the key is a symbol indicating the rule type, and the value is either string or a list of strings.
+The `buffer-terminator-rules-alist` variable holds instructions for keeping or terminating buffers based on their names or regular expressions. Each rule is a cons cell where the key is a symbol indicating the rule type, and the value is either string or a list of strings.
 
 Here is an example:
 ```elisp
