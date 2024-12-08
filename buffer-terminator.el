@@ -432,22 +432,31 @@ Return :kill or :keep or nil."
 (defun buffer-terminator--last-display-time ()
   "Return the time in seconds since current buffer was last displayed.
 Return nil when if buffer has never been displayed."
-  (let (;; buffer-display-time is not reliable enough.
-        ;; The `buffer-terminator--buffer-display-time' is updated using
-        ;; `window-state-change-hook', which is more reliable because it is
-        ;; triggered on changes related to the state of the window, including
-        ;; buffer changes and resizing.
-        (buffer-last-view
-         (cond ((bound-and-true-p buffer-terminator--buffer-display-time)
-                (float-time (time-subtract
-                             (current-time)
-                             buffer-terminator--buffer-display-time)))
+  (let* (;; buffer-display-time is not reliable enough.
+         ;; The `buffer-terminator--buffer-display-time' is updated using
+         ;; `window-state-change-hook', which is more reliable because it is
+         ;; triggered on changes related to the state of the window, including
+         ;; buffer changes and resizing.
+         (bt-buffer-display-time
+          (when (bound-and-true-p buffer-terminator--buffer-display-time)
+            (float-time (time-subtract
+                         (current-time)
+                         buffer-terminator--buffer-display-time))))
+         (built-in-buffer-display-time
+          (when (bound-and-true-p buffer-display-time)
+            (float-time (time-subtract (current-time)
+                                       buffer-display-time)))))
+    (cond
+     ((and bt-buffer-display-time built-in-buffer-display-time)
+      (if (> bt-buffer-display-time built-in-buffer-display-time)
+          built-in-buffer-display-time
+        bt-buffer-display-time))
 
-               ;; (buffer-display-time
-               ;;  (float-time (time-subtract (current-time)
-               ;;                             buffer-display-time)))
-               )))
-    buffer-last-view))
+     (bt-buffer-display-time
+      bt-buffer-display-time)
+
+     (built-in-buffer-display-time
+      built-in-buffer-display-time))))
 
 (defun buffer-terminator--kill-buffer-maybe (buffer)
   "Kill BUFFER if it is supposed to be killed."
