@@ -20,7 +20,7 @@ The following buffers are not terminated by default:
 ## Table of Contents
 
 - [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically)
-  - [Installation fro MELPA](#installation-fro-melpa)
+  - [Installation from MELPA](#installation-from-melpa)
   - [Configuration](#configuration)
     - [Verbose Mode](#verbose-mode)
     - [Timeout for Inactivity](#timeout-for-inactivity)
@@ -34,7 +34,7 @@ The following buffers are not terminated by default:
 
 <!-- markdown-toc end -->
 
-## Installation fro MELPA
+## Installation from MELPA
 
 To install *buffer-terminator* from MELPA:
 
