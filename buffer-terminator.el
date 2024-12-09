@@ -449,12 +449,10 @@ Return :kill or :keep or nil."
     nil))
 
 (defvar-local buffer-terminator--buffer-display-time nil)
-(defvar buffer-terminator--disable-update-buffer-display-time nil)
 
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
-  (unless buffer-terminator--disable-update-buffer-display-time
-    (setq-local buffer-terminator--buffer-display-time (current-time))))
+  (setq-local buffer-terminator--buffer-display-time (current-time)))
 
 (defun buffer-terminator--last-display-time ()
   "Return the time in seconds since current buffer was last displayed.
