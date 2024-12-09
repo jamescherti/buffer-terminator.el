@@ -448,25 +448,25 @@ Return :kill or :keep or nil."
     ;; Return nil if no rule produces a result
     nil))
 
-(defvar-local buffer-terminator--buffer-display-time nil)
+(defvar-local buffer-terminator--buffer-activity-time nil)
 
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
-  (setq-local buffer-terminator--buffer-display-time (current-time)))
+  (setq-local buffer-terminator--buffer-activity-time (current-time)))
 
 (defun buffer-terminator--last-display-time ()
   "Return the time in seconds since current buffer was last displayed.
 Return nil when if buffer has never been displayed."
   (let* (;; buffer-display-time is not reliable enough.
-         ;; The `buffer-terminator--buffer-display-time' is updated using
+         ;; The `buffer-terminator--buffer-activity-time' is updated using
          ;; `window-state-change-hook', which is more reliable because it is
          ;; triggered on changes related to the state of the window, including
          ;; buffer changes and resizing.
          (bt-buffer-display-time
-          (when (bound-and-true-p buffer-terminator--buffer-display-time)
+          (when (bound-and-true-p buffer-terminator--buffer-activity-time)
             (float-time (time-subtract
                          (current-time)
-                         buffer-terminator--buffer-display-time))))
+                         buffer-terminator--buffer-activity-time))))
          (built-in-buffer-display-time
           (when (bound-and-true-p buffer-display-time)
             (float-time (time-subtract (current-time)
@@ -597,7 +597,7 @@ and not visible based on a defined timeout."
         ;; Initialize the last view time for all buffers
         (dolist (buffer (buffer-list))
           (with-current-buffer buffer
-            (unless buffer-terminator--buffer-display-time
+            (unless buffer-terminator--buffer-activity-time
               (buffer-terminator--update-buffer-last-view-time))))
         ;; Add hooks and timers
         (add-hook 'window-state-change-hook
