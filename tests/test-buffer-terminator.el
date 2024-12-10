@@ -41,6 +41,9 @@
 (defvar test-buffer-terminator--file-buffers
   '("test-file1" "test-file2" "test-file3"))
 
+(defvar test-buffer-terminator--file-buffers-with-asterisks
+  '("*test-file1*"))
+
 (defvar test-buffer-terminator--file-buffer-modified
   '"test-file-mod1")
 
@@ -68,6 +71,14 @@
                    (get-buffer test-buffer-terminator--special-mode-buffer))
                   'special-mode)))
     (should-not (get-buffer test-buffer-terminator--special-mode-buffer))))
+
+(defun test-buffer-terminator--check-file-buffers-with-asterisks (exist)
+  "Test file buffers EXIST."
+  (if exist
+      (dolist (file test-buffer-terminator--file-buffers-with-asterisks)
+        (should (get-buffer file)))
+    (dolist (file test-buffer-terminator--file-buffers-with-asterisks)
+      (should-not (get-buffer file)))))
 
 (defun test-buffer-terminator--check-file-buffers (exist)
   "Test file buffers EXIST."
@@ -147,6 +158,14 @@
     (python-mode))
   (with-current-buffer (nth 2 test-buffer-terminator--file-buffers)
     (conf-mode))
+
+  ;; Create file visiting buffers with asterisks
+  ;; -------------------------------------------
+  (dolist (file test-buffer-terminator--file-buffers-with-asterisks)
+    (when (get-buffer file)
+      (kill-buffer file)))
+  (dolist (file test-buffer-terminator--file-buffers-with-asterisks)
+    (find-file file))
 
   ;; Modified file buffer
   ;; --------------------
@@ -547,6 +566,28 @@
    (get-buffer (car test-buffer-terminator--file-buffers)))
   (should
    (get-buffer (nth 1 test-buffer-terminator--file-buffers))))
+
+(ert-deftest test-buffer-terminator-test14-file-names-with-asterisks ()
+  ;; Check if killing special buffer do not kill file buffers that start
+  ;; and end with an asterisk
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        '((kill-buffer-property . special)
+          (return . :keep)))
+  (buffer-terminator--execute-rules)
+  (should
+   (get-buffer (nth 0 test-buffer-terminator--file-buffers-with-asterisks)))
+
+  ;; Check if keeping file buffers really keep file buffers that start and
+  ;; end with an asterisk
+  (test-buffer-terminator--create-test-environment)
+  (setq buffer-terminator-rules-alist
+        '((keep-buffer-property . file)
+          (call-function . test-buffer-terminator--special-predicate)
+          (return . :kill)))
+  (buffer-terminator--execute-rules)
+  (should
+   (get-buffer (nth 0 test-buffer-terminator--file-buffers-with-asterisks))))
 
 (provide 'test-buffer-terminator)
 ;;; test-buffer-terminator.el ends here

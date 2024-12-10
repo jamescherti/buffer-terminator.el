@@ -289,10 +289,11 @@ The messages are displayed in the *buffer-terminator* buffer."
   "Return non-nil if the current buffer is a special buffer."
   (let ((buffer-name (buffer-name)))
     (when buffer-name
-      (or (string-prefix-p " " buffer-name)
-          (and (string-prefix-p "*" buffer-name)
-               (string-suffix-p "*" buffer-name))
-          (derived-mode-p 'special-mode)))))
+      (and (or (string-prefix-p " " buffer-name)
+               (and (string-prefix-p "*" buffer-name)
+                    (string-suffix-p "*" buffer-name))
+               (derived-mode-p 'special-mode))
+           (not (buffer-file-name (buffer-base-buffer)))))))
 
 (defun buffer-terminator--match-buffer-inactive-p ()
   "Return non-nil when BUFFER is inactive."
