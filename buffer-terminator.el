@@ -518,6 +518,8 @@ Return nil when if buffer has never been displayed."
         (ignore-errors
           (let ((kill-buffer-query-functions '()))
             (kill-buffer buffer)))
+        (buffer-terminator--debug-message "Terminated the buffer: '%s'"
+                                          buffer-name)
         (when buffer-terminator-verbose
           (buffer-terminator--message "Terminated the buffer: '%s'"
                                       buffer-name))
