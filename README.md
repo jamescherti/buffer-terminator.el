@@ -141,6 +141,8 @@ Here is an example:
         (return . :keep)))
 ```
 
+Here is another [example by gavv, one of the first buffer-terminator users.](https://github.com/jamescherti/buffer-terminator.el/issues/2#issuecomment-2526372129)
+
 ## Frequently asked questions
 
 ### Why? What problem is this aiming to solve?
