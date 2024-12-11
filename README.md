@@ -9,7 +9,7 @@ The **buffer-terminator** package automatically kills buffers to help maintain a
 Activating `(buffer-terminator-mode)` terminates all buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (default: 30 minutes). It checks every `buffer-terminator-interval` (default: 10 minutes) to determine if a buffer should be terminated.
 
 The following buffers are not terminated by default:
-- Special buffers (buffers non-file buffers that: start with a space, or start and end with `*`, or whose major mode is derived from `special-mode`).
+- Special buffers (These buffers are non-file buffers that: start with a space, or start and end with `*`, or whose major mode is derived from `special-mode`, or they serve as the Minibuffer).
 - Modified file-visiting buffers that have not been saved; the user must save them first.
 - Buffers currently displayed in any visible window.
 - Buffers associated with running processes.

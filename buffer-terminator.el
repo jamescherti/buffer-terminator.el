@@ -101,7 +101,7 @@ Default: 30 minutes."
   (setq buffer-terminator--kill-inactive-buffers-timer
         (run-with-timer seconds
                         seconds
-                        'buffer-terminator--execute-rules)))
+                        'buffer-terminator-execute-rules)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -292,7 +292,8 @@ The messages are displayed in the *buffer-terminator* buffer."
       (and (or (string-prefix-p " " buffer-name)
                (and (string-prefix-p "*" buffer-name)
                     (string-suffix-p "*" buffer-name))
-               (derived-mode-p 'special-mode))
+               (derived-mode-p 'special-mode)
+               (minibufferp (current-buffer)))
            (not (buffer-file-name (buffer-base-buffer)))))))
 
 (defun buffer-terminator--match-buffer-inactive-p ()
@@ -525,15 +526,6 @@ Return nil when if buffer has never been displayed."
                                       buffer-name))
         t))))
 
-(defun buffer-terminator--execute-rules ()
-  "Evaluate rules to determine whether to kill or retain buffers."
-  (let ((result nil))
-    (dolist (buffer (buffer-list))
-      (let ((buffer-name (buffer-terminator--kill-buffer-maybe buffer)))
-        (when buffer-name
-          (push buffer-name result))))
-    result))
-
 (defvar buffer-terminator-display-warnings t)
 
 (defun buffer-terminator--warn-obsolete-vars ()
@@ -564,6 +556,15 @@ Return nil when if buffer has never been displayed."
                  "Use `buffer-terminator-rules-alist` instead. "
                  "(The obsolete variable will be removed in future versions.)")
          var)))))
+
+(defun buffer-terminator-execute-rules ()
+  "Evaluate rules to determine whether to kill or retain buffers."
+  (let ((result nil))
+    (dolist (buffer (buffer-list))
+      (let ((buffer-name (buffer-terminator--kill-buffer-maybe buffer)))
+        (when buffer-name
+          (push buffer-name result))))
+    result))
 
 ;;; Obsolete functions
 
