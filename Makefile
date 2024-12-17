@@ -28,7 +28,7 @@ cask: $(CASK_DIR)
 
 .PHONY: compile
 compile: cask
-	cask emacs -batch -L . -L test \
+	cask emacs -batch -L . -L tests \
           --eval "(setq byte-compile-error-on-warn t)" \
 	  -f batch-byte-compile $$(cask files); \
 	  (ret=$$? ; cask clean-elc && exit $$ret)

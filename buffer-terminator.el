@@ -101,7 +101,7 @@ Default: 30 minutes."
   (setq buffer-terminator--kill-inactive-buffers-timer
         (run-with-timer seconds
                         seconds
-                        'buffer-terminator-execute-rules)))
+                        'buffer-terminator-apply-rules)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -434,11 +434,14 @@ MAJOR-MODES is a list of major mode symbols."
      "Invalid buffer-terminator-rules-alist entry: '%s' -> '%s'" rule value)
     nil)))
 
-(defun buffer-terminator--process-buffer-rules ()
-  "Process `buffer-terminator-rules-alist'.
+(defun buffer-terminator--process-buffer-rules (rules)
+  "Process RULES.
+RULES should be a list of conditions formatted similarly to
+`buffer-terminator-rules-alist'. If RULES is nil, the default rules defined in
+`buffer-terminator-rules-alist' are used.
 Return :kill or :keep or nil."
   (catch 'result
-    (dolist (rule buffer-terminator-rules-alist)
+    (dolist (rule rules)
       (let ((key (car rule))
             (value (cdr rule)))
         (let ((result (buffer-terminator--process-rule key value)))
@@ -485,47 +488,6 @@ Return nil when if buffer has never been displayed."
      (built-in-buffer-display-time
       built-in-buffer-display-time))))
 
-(defun buffer-terminator--kill-buffer-maybe (buffer)
-  "Kill BUFFER if it is supposed to be killed."
-  (when (buffer-live-p buffer)
-    (when (let ((decision nil))
-            (with-current-buffer buffer
-              ;; When debug is enabled, always keep the buffer
-              (when (and buffer-terminator-debug
-                         (string= (buffer-name) "*buffer-terminator:debug*"))
-                (setq decision :keep))
-
-              ;; Pre-flight checks (safety)
-              (unless decision
-                (let ((base-buffer (or (buffer-base-buffer) (current-buffer))))
-                  (when (and (buffer-file-name base-buffer)
-                             (buffer-modified-p base-buffer))
-                    (setq decision :keep))))
-
-              (unless decision
-                (when (eq (window-buffer) buffer)
-                  (setq decision :keep)))
-
-              ;; Rules
-              (when (and buffer-terminator-rules-alist
-                         (not decision))
-                (setq decision (buffer-terminator--process-buffer-rules)))
-
-              ;; Final decision
-              (if (eq decision :kill)
-                  t
-                nil)))
-      (let ((buffer-name (buffer-name buffer)))
-        (ignore-errors
-          (let ((kill-buffer-query-functions '()))
-            (kill-buffer buffer)))
-        (buffer-terminator--debug-message "Terminated the buffer: '%s'"
-                                          buffer-name)
-        (when buffer-terminator-verbose
-          (buffer-terminator--message "Terminated the buffer: '%s'"
-                                      buffer-name))
-        t))))
-
 (defvar buffer-terminator-display-warnings t)
 
 (defun buffer-terminator--warn-obsolete-vars ()
@@ -557,14 +519,83 @@ Return nil when if buffer has never been displayed."
                  "(The obsolete variable will be removed in future versions.)")
          var)))))
 
-(defun buffer-terminator-execute-rules ()
-  "Evaluate rules to determine whether to kill or retain buffers."
-  (let ((result nil))
-    (dolist (buffer (buffer-list))
-      (let ((buffer-name (buffer-terminator--kill-buffer-maybe buffer)))
-        (when buffer-name
-          (push buffer-name result))))
+(defun buffer-terminator-apply-rules (&optional rules buffers)
+  "Evaluate buffer termination rules and apply them to all buffers.
+
+The function iterates over all existing buffers, evaluating each against the
+specified RULES. Buffers matching the conditions in RULES are killed or
+retained.
+
+RULES should be a list of conditions formatted similarly to
+`buffer-terminator-rules-alist'. If RULES is nil, the default rules defined in
+`buffer-terminator-rules-alist' are used.
+
+BUFFERS is a list of buffers or a single buffer to process. If BUFFERS is nil,
+all buffers are processed by default.
+
+Returns the count of buffers that were killed during execution.
+Returns nil if no buffer has been killed."
+  (unless rules
+    (setq rules buffer-terminator-rules-alist))
+  (if (not buffers)
+      (setq buffers (buffer-list))
+    (cond
+     ((bufferp buffers)
+      (setq buffers (list buffers)))
+
+     ((not (listp buffers))
+      (error "The BUFFERS parameter must be a list of buffers or a single buffer"))))
+  (let ((result 0))
+    (dolist (buffer buffers)
+      (when buffer
+        (if (progn
+              (when (buffer-live-p buffer)
+                (when (let ((decision nil))
+                        (with-current-buffer buffer
+                          ;; When debug is enabled, always keep the buffer
+                          (when (and buffer-terminator-debug
+                                     (string= (buffer-name)
+                                              "*buffer-terminator:debug*"))
+                            (setq decision :keep))
+
+                          ;; Pre-flight checks (safety)
+                          (unless decision
+                            (let ((base-buffer (or (buffer-base-buffer)
+                                                   (current-buffer))))
+                              (when (and (buffer-file-name base-buffer)
+                                         (buffer-modified-p base-buffer))
+                                (setq decision :keep))))
+
+                          (unless decision
+                            (when (eq (window-buffer) buffer)
+                              (setq decision :keep)))
+
+                          ;; Rules
+                          (when (and rules (not decision))
+                            (setq decision
+                                  (buffer-terminator--process-buffer-rules rules)))
+
+                          ;; Final decision
+                          (if (eq decision :kill)
+                              t
+                            nil)))
+                  (let ((buffer-name (buffer-name buffer)))
+                    (ignore-errors
+                      (let ((kill-buffer-query-functions '()))
+                        (kill-buffer buffer)))
+                    (buffer-terminator--debug-message
+                     "Terminated the buffer: '%s'" buffer-name)
+                    (when buffer-terminator-verbose
+                      (buffer-terminator--message
+                       "Terminated the buffer: '%s'" buffer-name))
+                    t))))
+            (setq result (+ 1 result)))))
     result))
+
+(defalias 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
+  "Obsolete. Renamed to `buffer-terminator-apply-rules'.")
+(make-obsolete 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
+               "1.1.1")
 
 ;;; Obsolete functions
 
