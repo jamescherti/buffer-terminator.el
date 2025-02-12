@@ -150,6 +150,16 @@ This displays a lot of messages."
   :type 'boolean
   :group 'buffer-terminator)
 
+(defvar buffer-terminator-before-hook nil
+  "Hook run before applying `buffer-terminator' rules.
+This hook is executed before evaluating the rules that determine which buffers
+should be killed or retained.")
+
+(defvar buffer-terminator-after-hook nil
+  "Hook run after applying `buffer-terminator' rules.
+This hook is executed after evaluating the rules that determine which buffers
+should be killed or retained.")
+
 ;;; Obsolete variables
 
 (defcustom buffer-terminator-predicate nil
@@ -259,15 +269,15 @@ The message is formatted with the provided arguments ARGS."
   (apply #'message (concat "[buffer-terminator] " (car args)) (cdr args)))
 
 (defun buffer-terminator--insert-message (buffer-name msg &rest args)
-"Insert formatted MSG with ARGS into BUFFER-NAME buffer."
-(with-current-buffer (get-buffer-create buffer-name)
-  (save-excursion
-    (unwind-protect
-        (progn
-          (read-only-mode -1)
-          (goto-char (point-max))
-          (insert (apply 'format msg args) "\n"))
-      (read-only-mode 1)))))
+  "Insert formatted MSG with ARGS into BUFFER-NAME buffer."
+  (with-current-buffer (get-buffer-create buffer-name)
+    (save-excursion
+      (unwind-protect
+          (progn
+            (read-only-mode -1)
+            (goto-char (point-max))
+            (insert (apply 'format msg args) "\n"))
+        (read-only-mode 1)))))
 
 (defmacro buffer-terminator--debug-message (&rest args)
   "Display a debug message with the same ARGS arguments as `message'.
@@ -519,6 +529,29 @@ Return nil when if buffer has never been displayed."
                  "(The obsolete variable will be removed in future versions.)")
          var)))))
 
+(defun buffer-terminator--kill-buffer (buffer)
+  "Kill BUFFER if it is live.
+
+BUFFER is the buffer to be terminated. If BUFFER is live, it is killed without
+prompting the user. If the buffer is successfully killed, a debug message is
+logged. If `buffer-terminator-verbose' is non-nil, an additional message is
+displayed to the user.
+
+Returns non-nil if the buffer was successfully killed, otherwise nil."
+  (when (buffer-live-p buffer)
+    (let ((buffer-name (buffer-name buffer))
+          (kill-buffer-query-functions nil)
+          result)
+      (setq result (kill-buffer buffer))
+
+      (when result
+        (buffer-terminator--debug-message "Terminated the buffer: '%s'"
+                                          buffer-name)
+        (when buffer-terminator-verbose
+          (buffer-terminator--message "Terminated the buffer: '%s'"
+                                      buffer-name)))
+      result)))
+
 (defun buffer-terminator-apply-rules (&optional rules buffers)
   "Evaluate buffer termination rules and apply them to all buffers.
 
@@ -535,8 +568,10 @@ all buffers are processed by default.
 
 Returns the count of buffers that were killed during execution.
 Returns nil if no buffer has been killed."
+  (run-hooks 'buffer-terminator-before-hook)
   (unless rules
     (setq rules buffer-terminator-rules-alist))
+
   (if (not buffers)
       (setq buffers (buffer-list))
     (cond
@@ -545,51 +580,43 @@ Returns nil if no buffer has been killed."
 
      ((not (listp buffers))
       (error "The BUFFERS parameter must be a list of buffers or a single buffer"))))
+
   (let ((result 0))
     (dolist (buffer buffers)
       (when buffer
-        (if (progn
-              (when (buffer-live-p buffer)
-                (when (let ((decision nil))
-                        (with-current-buffer buffer
-                          ;; When debug is enabled, always keep the buffer
-                          (when (and buffer-terminator-debug
-                                     (string= (buffer-name)
-                                              "*buffer-terminator:debug*"))
-                            (setq decision :keep))
+        (when (buffer-live-p buffer)
+          (let ((kill-buffer
+                 (let ((decision nil))
+                   (with-current-buffer buffer
+                     ;; When debug is enabled, always keep the debug buffer
+                     (when (and buffer-terminator-debug
+                                (string= (buffer-name)
+                                         "*buffer-terminator:debug*"))
+                       (setq decision :keep))
 
-                          ;; Pre-flight checks (safety)
-                          (unless decision
-                            (let ((base-buffer (or (buffer-base-buffer)
-                                                   (current-buffer))))
-                              (when (and (buffer-file-name base-buffer)
-                                         (buffer-modified-p base-buffer))
-                                (setq decision :keep))))
+                     ;; Pre-flight checks (safety)
+                     (unless decision
+                       (let ((base-buffer (or (buffer-base-buffer)
+                                              (current-buffer))))
+                         (when (and (buffer-file-name base-buffer)
+                                    (buffer-modified-p base-buffer))
+                           (setq decision :keep))))
 
-                          (unless decision
-                            (when (eq (window-buffer) buffer)
-                              (setq decision :keep)))
+                     (unless decision
+                       (when (eq (window-buffer) buffer)
+                         (setq decision :keep)))
 
-                          ;; Rules
-                          (when (and rules (not decision))
-                            (setq decision
-                                  (buffer-terminator--process-buffer-rules rules)))
+                     ;; Rules
+                     (when (and rules (not decision))
+                       (setq decision
+                             (buffer-terminator--process-buffer-rules rules)))
 
-                          ;; Final decision
-                          (if (eq decision :kill)
-                              t
-                            nil)))
-                  (let ((buffer-name (buffer-name buffer)))
-                    (ignore-errors
-                      (let ((kill-buffer-query-functions '()))
-                        (kill-buffer buffer)))
-                    (buffer-terminator--debug-message
-                     "Terminated the buffer: '%s'" buffer-name)
-                    (when buffer-terminator-verbose
-                      (buffer-terminator--message
-                       "Terminated the buffer: '%s'" buffer-name))
-                    t))))
-            (setq result (+ 1 result)))))
+                     ;; Final decision
+                     (eq decision :kill)))))
+            (when kill-buffer
+              (buffer-terminator--kill-buffer buffer)
+              (setq result (+ 1 result)))))))
+    (run-hooks 'buffer-terminator-after-hook)
     result))
 
 (defalias 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
