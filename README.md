@@ -4,14 +4,14 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-The **buffer-terminator** package automatically kills buffers to help maintain a clean and efficient workspace, while also improving Emacs' performance by reducing the number of open buffers, thereby decreasing the number of active modes, timers, and other processes associated with those buffers.
+The **buffer-terminator** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, and related processes.
 
-Activating `(buffer-terminator-mode)` terminates all buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (default: 30 minutes). It checks every `buffer-terminator-interval` (default: 10 minutes) to determine if a buffer should be terminated.
+Activating `(buffer-terminator-mode)` safely terminates all buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (default: 30 minutes). It checks every `buffer-terminator-interval` (default: 10 minutes) to determine if a buffer should be terminated.
 
 The following buffers are not terminated by default:
 - Special buffers (These buffers are non-file buffers that: start with a space, or start and end with `*`, or whose major mode is derived from `special-mode`, or they serve as the Minibuffer).
 - Modified file-visiting buffers that have not been saved; the user must save them first.
-- Buffers currently displayed in any visible window.
+- Buffers currently displayed in any visible window or tab-bar tab.
 - Buffers associated with running processes.
 
 (The default rules above are fully customizable. Users can define specific rules for keeping or terminating certain buffers by specifying a set of rules using `buffer-terminator-rules-alist`. These rules can include buffer name patterns or regular expressions, major-modes, buffer properties, etc.)
@@ -27,7 +27,7 @@ The following buffers are not terminated by default:
     - [Cleanup Interval](#cleanup-interval)
     - [Rules](#rules)
   - [Frequently asked questions](#frequently-asked-questions)
-    - [Why? What problem is this aiming to solve?](#why-what-problem-is-this-aiming-to-solve)
+    - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
   - [Author and License](#author-and-license)
   - [Links](#links)
@@ -145,7 +145,7 @@ Here is another [example by gavv, one of the first buffer-terminator users.](htt
 
 ## Frequently asked questions
 
-### Why? What problem is this aiming to solve?
+### What problem is buffer-terminator aiming to solve?
 
 - Some users prefer terminating inactive buffers to improve Emacs' performance by reducing the number of open buffers. This, in turn, decreases the load from active modes, timers, and other processes associated with those buffers. Buffer-local modes and their timers consume both CPU and memory. Why keep them alive when they can be safely removed?
 - Some users prefer to keep only the buffers they actively need open, helping to declutter the buffer list. Decluttering the buffer list can also improve the performance of other packages. For example, saving and loading an [easysession](https://github.com/jamescherti/easysession.el) or desktop.el is much faster when the buffer list is reduced.
