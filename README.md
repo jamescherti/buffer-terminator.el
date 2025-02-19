@@ -1,4 +1,4 @@
-# buffer-terminator.el - Safely Terminate Emacs Buffers Automatically
+# buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance
 [![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
@@ -19,7 +19,7 @@ The following buffers are not terminated by default:
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically)
+- [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically-to-enhance-emacs-performance)
   - [Installation from MELPA](#installation-from-melpa)
   - [Configuration](#configuration)
     - [Verbose Mode](#verbose-mode)
