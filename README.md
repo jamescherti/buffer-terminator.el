@@ -4,7 +4,7 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
-The **buffer-terminator** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, and related processes.
+The **buffer-terminator** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, processes...
 
 Activating `(buffer-terminator-mode)` safely terminates all buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (default: 30 minutes). It checks every `buffer-terminator-interval` (default: 10 minutes) to determine if a buffer should be terminated.
 
