@@ -88,15 +88,21 @@ The `buffer-terminator-rules-alist` variable holds instructions for keeping or t
 Here is an example:
 ```elisp
 (setq buffer-terminator-rules-alist
+      ;; kill-buffer-name: Always kill buffers whose names match important-buffer-name1 and important-buffer-name2
       '((kill-buffer-name . ("temporary-buffer-name1"
                              "temporary-buffer-name2"))
 
+        ;; keep-buffer-name: Always keep buffers whose names match important-buffer-name1 and important-buffer-name2
         (keep-buffer-name . ("important-buffer-name1"
                              "important-buffer-name2"))
 
+        ;; kill-buffer-name: Always kill buffers whose names match temporary-buffer-name3
         (kill-buffer-name . "temporary-buffer-name3")
 
+        ;; keep-buffer-name-regexp: Always keep buffers matching a regular expression
         (keep-buffer-name-regexp . ("\\` \\*Minibuf-[0-9]+\\*\\'"))
+
+        ;; kill-buffer-name-regexp: Always kill buffers matching a regular expression
         (kill-buffer-name-regexp . "compile-angel")
 
         ;; Retain special buffers (DO NOT REMOVE).
