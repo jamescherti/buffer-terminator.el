@@ -101,7 +101,7 @@ Default: 30 minutes."
   (setq buffer-terminator--kill-inactive-buffers-timer
         (run-with-timer seconds
                         seconds
-                        'buffer-terminator-apply-rules)))
+                        'buffer-terminator--timer-apply-rules)))
 
 (defcustom buffer-terminator-interval (* 10 60)
   "Frequency in seconds to repeat the buffer cleanup process.
@@ -270,14 +270,13 @@ The message is formatted with the provided arguments ARGS."
 
 (defun buffer-terminator--insert-message (buffer-name msg &rest args)
   "Insert formatted MSG with ARGS into BUFFER-NAME buffer."
-  (with-current-buffer (get-buffer-create buffer-name)
-    (save-excursion
-      (unwind-protect
-          (progn
-            (read-only-mode -1)
+  (let ((buffer (get-buffer-create buffer-name)))
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (save-excursion
+          (let ((inhibit-read-only t))
             (goto-char (point-max))
-            (insert (apply 'format msg args) "\n"))
-        (read-only-mode 1)))))
+            (insert (apply 'format msg args) "\n")))))))
 
 (defmacro buffer-terminator--debug-message (&rest args)
   "Display a debug message with the same ARGS arguments as `message'.
@@ -564,11 +563,7 @@ RULES should be a list of conditions formatted similarly to
 `buffer-terminator-rules-alist' are used.
 
 BUFFERS is a list of buffers or a single buffer to process. If BUFFERS is nil,
-all buffers are processed by default.
-
-Returns the count of buffers that were killed during execution.
-Returns nil if no buffer has been killed."
-  (run-hooks 'buffer-terminator-before-hook)
+all buffers are processed by default."
   (unless rules
     (setq rules buffer-terminator-rules-alist))
 
@@ -581,43 +576,60 @@ Returns nil if no buffer has been killed."
      ((not (listp buffers))
       (error "The BUFFERS parameter must be a list of buffers or a single buffer"))))
 
-  (let ((result 0))
+  (let ((result nil))
     (dolist (buffer buffers)
-      (when buffer
-        (when (buffer-live-p buffer)
-          (let ((kill-buffer
-                 (let ((decision nil))
-                   (with-current-buffer buffer
-                     ;; When debug is enabled, always keep the debug buffer
-                     (when (and buffer-terminator-debug
-                                (string= (buffer-name)
-                                         "*buffer-terminator:debug*"))
-                       (setq decision :keep))
+      (when (buffer-live-p buffer)
+        (let* ((buffer-name (buffer-name buffer))
+               (buffer-info (list (cons 'buffer-name buffer-name)))
+               (kill-buffer
+                (let ((decision nil))
+                  (with-current-buffer buffer
+                    (push (cons 'major-mode major-mode) buffer-info)
 
-                     ;; Pre-flight checks (safety)
-                     (unless decision
-                       (let ((base-buffer (or (buffer-base-buffer)
-                                              (current-buffer))))
-                         (when (and (buffer-file-name base-buffer)
-                                    (buffer-modified-p base-buffer))
-                           (setq decision :keep))))
+                    ;; When debug is enabled, always keep the debug buffer
+                    (when (and buffer-terminator-debug
+                               (string= buffer-name
+                                        "*buffer-terminator:debug*"))
+                      (setq decision :keep))
 
-                     (unless decision
-                       (when (eq (window-buffer) buffer)
-                         (setq decision :keep)))
+                    ;; Pre-flight checks: Modified buffers
+                    (unless decision
+                      (let* ((base-buffer (or (buffer-base-buffer)
+                                              (current-buffer)))
+                             (file-name (buffer-file-name base-buffer)))
+                        (when (and (not file-name)
+                                   (fboundp 'dired-current-directory)
+                                   (derived-mode-p 'dired-mode))
+                          (setq file-name (dired-current-directory)))
 
-                     ;; Rules
-                     (when (and rules (not decision))
-                       (setq decision
-                             (buffer-terminator--process-buffer-rules rules)))
+                        (when file-name
+                          (push (cons 'file-name file-name) buffer-info))
 
-                     ;; Final decision
-                     (eq decision :kill)))))
-            (when kill-buffer
-              (buffer-terminator--kill-buffer buffer)
-              (setq result (+ 1 result)))))))
-    (run-hooks 'buffer-terminator-after-hook)
+                        (when (and file-name (buffer-modified-p buffer))
+                          (setq decision :keep))))
+
+                    ;; Pre-flight checks: Current buffer
+                    (unless decision
+                      (when (eq (window-buffer) buffer)
+                        (setq decision :keep)))
+
+                    ;; Rules
+                    (when (and (not decision) rules)
+                      (setq decision
+                            (buffer-terminator--process-buffer-rules rules)))
+
+                    ;; Final decision
+                    (eq decision :kill)))))
+          (when kill-buffer
+            (buffer-terminator--kill-buffer buffer)
+            (push buffer-info result)))))
     result))
+
+(defun buffer-terminator--timer-apply-rules ()
+  "Apply `buffer-terminator' rules at a specific interval."
+  (run-hooks 'buffer-terminator-before-hook)
+  (buffer-terminator-apply-rules)
+  (run-hooks 'buffer-terminator-after-hook))
 
 (defalias 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
   "Obsolete. Renamed to `buffer-terminator-apply-rules'.")
@@ -656,11 +668,6 @@ and not visible based on a defined timeout."
       (progn
         (buffer-terminator--debug-message "Start: buffer-terminator-mode")
         (buffer-terminator--warn-obsolete-vars)
-        ;; Initialize the last view time for all buffers
-        (dolist (buffer (buffer-list))
-          (with-current-buffer buffer
-            (unless buffer-terminator--buffer-activity-time
-              (buffer-terminator--update-buffer-last-view-time))))
         ;; Add hooks and timers
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)

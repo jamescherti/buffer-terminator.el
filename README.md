@@ -6,6 +6,8 @@
 
 The **buffer-terminator** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, processes...
 
+Beyond performance, *buffer-terminator* provides other benefits. For instance, if you occasionally need to close annoying or unused buffers, *buffer-terminator* can handle this automatically, eliminating the need for manual intervention. (The default configuration is suitable for most users. However, the *buffer-terminator* package is highly customizable. You can define specific rules for retaining or terminating buffers by modifying the `buffer-terminator-rules-alist` with your preferred set of rules.)
+
 Activating `(buffer-terminator-mode)` safely terminates all buffers that have been inactive for longer than the duration specified by `buffer-terminator-inactivity-timeout` (default: 30 minutes). It checks every `buffer-terminator-interval` (default: 10 minutes) to determine if a buffer should be terminated.
 
 The following buffers are not terminated by default:
@@ -13,8 +15,6 @@ The following buffers are not terminated by default:
 - Modified file-visiting buffers that have not been saved; the user must save them first.
 - Buffers currently displayed in any visible window or tab-bar tab.
 - Buffers associated with running processes.
-
-(The default rules above are fully customizable. Users can define specific rules for keeping or terminating certain buffers by specifying a set of rules using `buffer-terminator-rules-alist`. These rules can include buffer name patterns or regular expressions, major-modes, buffer properties, etc.)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
@@ -28,6 +28,8 @@ The following buffers are not terminated by default:
     - [Rules](#rules)
   - [Frequently asked questions](#frequently-asked-questions)
     - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
+    - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
+    - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
   - [Author and License](#author-and-license)
   - [Links](#links)
@@ -156,7 +158,20 @@ Here is another [example by gavv, one of the first buffer-terminator users.](htt
 - Some users prefer terminating inactive buffers to improve Emacs' performance by reducing the number of open buffers. This, in turn, decreases the load from active modes, timers, and other processes associated with those buffers. Buffer-local modes and their timers consume both CPU and memory. Why keep them alive when they can be safely removed?
 - Some users prefer to keep only the buffers they actively need open, helping to declutter the buffer list. Decluttering the buffer list can also improve the performance of other packages. For example, saving and loading an [easysession](https://github.com/jamescherti/easysession.el) or desktop.el is much faster when the buffer list is reduced.
 - Some users prefer that buffers not part of an active window be automatically closed, as they are not actively needed.
+- *Buffer-terminator* helps users by automatically closing unnecessary buffers, eliminating the need for manual cleanup.
 - Some Emacs packages continue interacting with open buffers, even when they are buried ([Reddit post: A function to periodically wipe buffers not recently shown; thoughts?](https://www.reddit.com/r/emacs/comments/1h15mni/a_function_to_periodically_wipe_buffers_not/)).
+
+### If this actually improves performance, I’d love to see some benchmarks or real-world numbers
+
+Because each Emacs user's configuration is unique, the performance benefits of using the *buffer-terminator* Emacs package depend on the number of enabled modes and active timers in that specific setup.
+
+Leaving buffers open keeps their associated timers active, and the number of timers grows with the number of Emacs packages in use. Timers are responsible for scheduling functions to run at specific intervals or after a delay, often managing background tasks like updating buffers, fetching data, or performing periodic checks. Since each active timer triggers a function, an excessive number of timers can increase CPU usage, potentially leading to performance degradation in Emacs' single-threaded environment.
+
+Additionally, using *buffer-terminator* to reduce the buffer list can improve the performance of packages that iterate over the `buffer-list` function to operate on buffers. Since these packages iterate over open buffers, a shorter buffer list allows for faster execution of their operations. (For example, the built-in *desktop.el* package or the [easysession](https://github.com/jamescherti/easysession.el) package, which save and restore open buffers/frames, can be affected by buffer list length. If `buffer-list` is too long, Emacs startup may slow down, as it needs to restore a larger set of buffers.)
+
+### I prefer keeping buffers open because it is easier for me to reopen them
+
+There is little benefit in leaving unused buffers open on the off-chance they might be needed later. If needed again, these buffers can be quickly reopened using *recentf*, *project.el*, *dired*, or similar tools.
 
 ### How is this different from the builtin midnight-mode?
 
