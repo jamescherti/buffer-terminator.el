@@ -273,6 +273,7 @@ The message is formatted with the provided arguments ARGS."
   (let ((buffer (get-buffer-create buffer-name)))
     (when (buffer-live-p buffer)
       (with-current-buffer buffer
+        (setq-local buffer-read-only t)
         (save-excursion
           (let ((inhibit-read-only t))
             (goto-char (point-max))
