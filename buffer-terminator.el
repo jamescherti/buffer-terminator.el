@@ -542,7 +542,8 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
     (let ((buffer-name (buffer-name buffer))
           (kill-buffer-query-functions nil)
           result)
-      (setq result (kill-buffer buffer))
+      (setq result (let ((inhibit-message (not buffer-terminator-verbose)))
+                     (kill-buffer buffer)))
 
       (when result
         (buffer-terminator--debug-message "Terminated the buffer: '%s'"
