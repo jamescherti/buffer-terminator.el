@@ -1,6 +1,7 @@
 # buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance
-[![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
+[![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
+[![MELPA Stable](https://stable.melpa.org/packages/buffer-terminator-badge.svg)](https://stable.melpa.org/#/buffer-terminator)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
 
