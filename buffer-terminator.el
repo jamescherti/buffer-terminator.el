@@ -600,9 +600,8 @@ all buffers are processed by default."
                                               (current-buffer)))
                              (file-name (buffer-file-name base-buffer)))
                         (when (and (not file-name)
-                                   (fboundp 'dired-current-directory)
                                    (derived-mode-p 'dired-mode))
-                          (setq file-name (dired-current-directory)))
+                          (setq file-name default-directory))
 
                         (when file-name
                           (push (cons 'file-name file-name) buffer-info))
