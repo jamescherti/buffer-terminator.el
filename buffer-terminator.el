@@ -160,6 +160,11 @@ should be killed or retained.")
 This hook is executed after evaluating the rules that determine which buffers
 should be killed or retained.")
 
+;;; Internal variables
+
+(defvar-local buffer-terminator--buffer-activity-time nil)
+(defvar-local buffer-terminator--associated-buffers nil)
+
 ;;; Obsolete variables
 
 (defcustom buffer-terminator-predicate nil
@@ -287,13 +292,32 @@ The messages are displayed in the *buffer-terminator* buffer."
                                         ,(car args) ,@(cdr args))))
 
 (defun buffer-terminator--buffer-visible-p ()
-  "Return non-nil if the current buffer is visible in any window on any frame."
-  (let ((buffer (current-buffer)))
-    (or (get-buffer-window buffer t)
-        ;; Tab-bar
-        (and (bound-and-true-p tab-bar-mode)
-             (fboundp 'tab-bar-get-buffer-tab)
-             (funcall 'tab-bar-get-buffer-tab buffer t nil)))))
+  "Return non-nil if the current buffer or any associated buffer is visible.
+
+This includes visibility in any window on any frame or presence in a tab-bar
+tab, so that indirect buffers and associated buffers count as visible if their
+base or related buffer is visible."
+  (let (result)
+    (catch 'visible
+      (dolist (buffer (delete-dups
+                       (append (list (current-buffer))
+                               ;; When the current buffer is a base buffer:
+                               ;; include indirect buffers, ensuring visibility
+                               ;; checks also consider the indirect buffers'
+                               ;; visible states.
+                               (unless (buffer-base-buffer)
+                                 (seq-filter
+                                  (lambda(buf)
+                                    (buffer-live-p buf))
+                                  buffer-terminator--associated-buffers)))))
+        (when (or (get-buffer-window buffer t)
+                  ;; Tab-bar
+                  (and (bound-and-true-p tab-bar-mode)
+                       (fboundp 'tab-bar-get-buffer-tab)
+                       (funcall 'tab-bar-get-buffer-tab buffer t nil)))
+          (setq result t)
+          (throw 'visible t))))
+    result))
 
 (defun buffer-terminator--special-buffer-p ()
   "Return non-nil if the current buffer is a special buffer."
@@ -463,8 +487,6 @@ Return :kill or :keep or nil."
     ;; Return nil if no rule produces a result
     nil))
 
-(defvar-local buffer-terminator--buffer-activity-time nil)
-
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
   (setq-local buffer-terminator--buffer-activity-time (current-time)))
@@ -578,52 +600,74 @@ all buffers are processed by default."
      ((not (listp buffers))
       (error "The BUFFERS parameter must be a list of buffers or a single buffer"))))
 
-  (let ((result nil))
+  (setq buffers (let (result)
+                  (dolist (buffer buffers)
+                    (when (buffer-live-p buffer)
+                      (with-current-buffer buffer
+                        (setq buffer-terminator--associated-buffers nil))
+                      (push buffer result)))
+                  result))
+
+  (let ((result nil)
+        (window-buffer (window-buffer)))
+    ;; Generate associated buffers
     (dolist (buffer buffers)
-      (when (buffer-live-p buffer)
-        (let* ((buffer-name (buffer-name buffer))
-               (buffer-info (list (cons 'buffer-name buffer-name)))
-               (kill-buffer
-                (let ((decision nil))
-                  (with-current-buffer buffer
-                    (push (cons 'major-mode major-mode) buffer-info)
+      (let ((base-buffer (buffer-base-buffer buffer)))
+        (when (and base-buffer
+                   (buffer-live-p base-buffer))
+          ;; Indirect buffer
+          (with-current-buffer buffer
+            (setq buffer-terminator--associated-buffers (list base-buffer)))
 
-                    ;; When debug is enabled, always keep the debug buffer
-                    (when (and buffer-terminator-debug
-                               (string= buffer-name
-                                        "*buffer-terminator:debug*"))
-                      (setq decision :keep))
+          ;; Original buffer
+          (with-current-buffer base-buffer
+            (push buffer buffer-terminator--associated-buffers)))))
 
-                    ;; Pre-flight checks: Modified buffers
-                    (unless decision
-                      (let* ((base-buffer (or (buffer-base-buffer)
-                                              (current-buffer)))
-                             (file-name (buffer-file-name base-buffer)))
-                        (when (and (not file-name)
-                                   (derived-mode-p 'dired-mode))
-                          (setq file-name default-directory))
+    ;; Apply rules
+    (dolist (buffer buffers)
+      (let* ((buffer-name (buffer-name buffer))
+             (buffer-info (list (cons 'buffer-name buffer-name)))
+             (kill-buffer
+              (let ((decision nil))
+                (with-current-buffer buffer
+                  (push (cons 'major-mode major-mode) buffer-info)
 
-                        (when file-name
-                          (push (cons 'file-name file-name) buffer-info))
+                  ;; When debug is enabled, always keep the debug buffer
+                  (when (and buffer-terminator-debug
+                             (string= buffer-name
+                                      "*buffer-terminator:debug*"))
+                    (setq decision :keep))
 
-                        (when (and file-name (buffer-modified-p buffer))
-                          (setq decision :keep))))
+                  ;; Pre-flight checks: Modified buffers
+                  (unless decision
+                    (let* ((base-buffer (or (buffer-base-buffer)
+                                            (current-buffer)))
+                           (file-name (buffer-file-name base-buffer)))
+                      (when (and (not file-name)
+                                 (derived-mode-p 'dired-mode))
+                        (setq file-name default-directory))
 
-                    ;; Pre-flight checks: Current buffer
-                    (unless decision
-                      (when (eq (window-buffer) buffer)
-                        (setq decision :keep)))
+                      (when file-name
+                        (push (cons 'file-name file-name) buffer-info))
 
-                    ;; Rules
-                    (when (and (not decision) rules)
-                      (setq decision
-                            (buffer-terminator--process-buffer-rules rules)))
+                      (when (and file-name (buffer-modified-p buffer))
+                        (setq decision :keep))))
 
-                    ;; Final decision
-                    (eq decision :kill)))))
-          (when kill-buffer
-            (buffer-terminator--kill-buffer buffer)
-            (push buffer-info result)))))
+                  ;; Pre-flight checks: Current buffer
+                  (unless decision
+                    (when (eq window-buffer buffer)
+                      (setq decision :keep)))
+
+                  ;; Rules
+                  (when (and (not decision) rules)
+                    (setq decision
+                          (buffer-terminator--process-buffer-rules rules)))
+
+                  ;; Final decision
+                  (eq decision :kill)))))
+        (when kill-buffer
+          (buffer-terminator--kill-buffer buffer)
+          (push buffer-info result))))
     result))
 
 (defun buffer-terminator--timer-apply-rules ()
