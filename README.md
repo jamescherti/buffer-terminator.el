@@ -14,7 +14,7 @@ Activating `(buffer-terminator-mode)` safely terminates all buffers that have be
 The following buffers are not terminated by default:
 - Special buffers (These buffers are non-file buffers that: start with a space, or start and end with `*`, or whose major mode is derived from `special-mode`, or they serve as the Minibuffer).
 - Modified file-visiting buffers that have not been saved; the user must save them first.
-- Buffers currently displayed in any visible window or tab-bar tab.
+- Buffers currently displayed in any visible window or tab-bar tab. (This also includes buffers indirectly made visible, such as `org-src` source edit buffers, which cause their originating buffers to be considered visible, or `markdown-mode` edit-indirect buffers that reference the original Markdown file.)
 - Buffers associated with running processes.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
