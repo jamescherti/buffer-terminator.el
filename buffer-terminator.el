@@ -600,7 +600,7 @@ all buffers are processed by default."
      ((not (listp buffers))
       (error "The BUFFERS parameter must be a list of buffers or a single buffer"))))
 
-  (setq buffers (let (result)
+  (setq buffers (let ((result nil))
                   (dolist (buffer buffers)
                     (when (buffer-live-p buffer)
                       (with-current-buffer buffer
@@ -612,16 +612,34 @@ all buffers are processed by default."
         (window-buffer (window-buffer)))
     ;; Generate associated buffers
     (dolist (buffer buffers)
-      (let ((base-buffer (buffer-base-buffer buffer)))
-        (when (and base-buffer
-                   (buffer-live-p base-buffer))
-          ;; Indirect buffer
-          (with-current-buffer buffer
-            (setq buffer-terminator--associated-buffers (list base-buffer)))
+      (when buffer
+        (with-current-buffer buffer
+          (let ((overlay-buffer
+                 (cond ((bound-and-true-p edit-indirect--overlay)
+                        (overlay-buffer edit-indirect--overlay))
 
-          ;; Original buffer
-          (with-current-buffer base-buffer
-            (push buffer buffer-terminator--associated-buffers)))))
+                       ((bound-and-true-p org-src--overlay)
+                        (overlay-buffer org-src--overlay)))))
+
+            (cond
+             ;; Overlay buffers (Org-src or markdown-mode edit-indirect)
+             (overlay-buffer
+              (when (buffer-live-p overlay-buffer)
+                (push overlay-buffer buffer-terminator--associated-buffers)
+                (with-current-buffer overlay-buffer
+                  (push buffer buffer-terminator--associated-buffers))))
+
+             ;; Indirect buffers
+             (t
+              (let ((base-buffer (buffer-base-buffer buffer)))
+                (when (and base-buffer
+                           (buffer-live-p base-buffer))
+                  ;; Indirect buffer
+                  (setq buffer-terminator--associated-buffers (list base-buffer))
+
+                  ;; Original buffer
+                  (with-current-buffer base-buffer
+                    (push buffer buffer-terminator--associated-buffers))))))))))
 
     ;; Apply rules
     (dolist (buffer buffers)
