@@ -643,49 +643,50 @@ all buffers are processed by default."
 
     ;; Apply rules
     (dolist (buffer buffers)
-      (let* ((buffer-name (buffer-name buffer))
-             (buffer-info (list (cons 'buffer-name buffer-name)))
-             (kill-buffer
-              (let ((decision nil))
-                (with-current-buffer buffer
-                  (push (cons 'major-mode major-mode) buffer-info)
+      (when (buffer-live-p buffer)  ; Always check because buffers can be killed
+        (let* ((buffer-name (buffer-name buffer))
+               (buffer-info (list (cons 'buffer-name buffer-name)))
+               (kill-buffer
+                (let ((decision nil))
+                  (with-current-buffer buffer
+                    (push (cons 'major-mode major-mode) buffer-info)
 
-                  ;; When debug is enabled, always keep the debug buffer
-                  (when (and buffer-terminator-debug
-                             (string= buffer-name
-                                      "*buffer-terminator:debug*"))
-                    (setq decision :keep))
+                    ;; When debug is enabled, always keep the debug buffer
+                    (when (and buffer-terminator-debug
+                               (string= buffer-name
+                                        "*buffer-terminator:debug*"))
+                      (setq decision :keep))
 
-                  ;; Pre-flight checks: Modified buffers
-                  (unless decision
-                    (let* ((base-buffer (or (buffer-base-buffer)
-                                            (current-buffer)))
-                           (file-name (buffer-file-name base-buffer)))
-                      (when (and (not file-name)
-                                 (derived-mode-p 'dired-mode))
-                        (setq file-name default-directory))
+                    ;; Pre-flight checks: Modified buffers
+                    (unless decision
+                      (let* ((base-buffer (or (buffer-base-buffer)
+                                              (current-buffer)))
+                             (file-name (buffer-file-name base-buffer)))
+                        (when (and (not file-name)
+                                   (derived-mode-p 'dired-mode))
+                          (setq file-name default-directory))
 
-                      (when file-name
-                        (push (cons 'file-name file-name) buffer-info))
+                        (when file-name
+                          (push (cons 'file-name file-name) buffer-info))
 
-                      (when (and file-name (buffer-modified-p buffer))
-                        (setq decision :keep))))
+                        (when (and file-name (buffer-modified-p buffer))
+                          (setq decision :keep))))
 
-                  ;; Pre-flight checks: Current buffer
-                  (unless decision
-                    (when (eq window-buffer buffer)
-                      (setq decision :keep)))
+                    ;; Pre-flight checks: Current buffer
+                    (unless decision
+                      (when (eq window-buffer buffer)
+                        (setq decision :keep)))
 
-                  ;; Rules
-                  (when (and (not decision) rules)
-                    (setq decision
-                          (buffer-terminator--process-buffer-rules rules)))
+                    ;; Rules
+                    (when (and (not decision) rules)
+                      (setq decision
+                            (buffer-terminator--process-buffer-rules rules)))
 
-                  ;; Final decision
-                  (eq decision :kill)))))
-        (when kill-buffer
-          (buffer-terminator--kill-buffer buffer)
-          (push buffer-info result))))
+                    ;; Final decision
+                    (eq decision :kill)))))
+          (when kill-buffer
+            (buffer-terminator--kill-buffer buffer)
+            (push buffer-info result)))))
     result))
 
 (defun buffer-terminator--timer-apply-rules ()
