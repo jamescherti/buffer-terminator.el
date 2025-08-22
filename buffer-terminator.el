@@ -287,6 +287,7 @@ The message is formatted with the provided arguments ARGS."
 (defmacro buffer-terminator--debug-message (&rest args)
   "Display a debug message with the same ARGS arguments as `message'.
 The messages are displayed in the *buffer-terminator* buffer."
+  (declare (indent 0) (debug t))
   `(when buffer-terminator-debug
      (buffer-terminator--insert-message "*buffer-terminator:debug*"
                                         ,(car args) ,@(cdr args))))
