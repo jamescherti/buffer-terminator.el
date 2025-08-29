@@ -17,6 +17,8 @@ The following buffers are not terminated by default:
 - Buffers currently displayed in any visible window or tab-bar tab. (This also includes buffers indirectly made visible, such as `org-src` source edit buffers, which cause their originating buffers to be considered visible, or `markdown-mode` edit-indirect buffers that reference the original Markdown file.)
 - Buffers associated with running processes.
 
+If this package enhances your productivity, please show your support by ⭐ starring buffer-terminator on GitHub to help more users discover its benefits.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
@@ -32,6 +34,7 @@ The following buffers are not terminated by default:
     - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
     - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
+  - [Testimonials from users](#testimonials-from-users)
   - [Author and License](#author-and-license)
   - [Links](#links)
 
@@ -198,6 +201,10 @@ Buffer-terminator provides the option to choose whether to keep or kill specific
 - Buffer-terminator avoids relying on `buffer-display-time`, which is not always updated reliably. For instance, `buffer-display-time` may not reflect activity when switching to a window or tab displaying a specific buffer.
 - Buffer-terminator does not kill special buffers by default, whereas Midnight kills all special buffers by default unless the user tells Midnight to ignore them. Midnight's behavior can disrupt packages like Corfu, Cape, Consult, Eglot, Flymake, and others that rely on special buffers to store data.
 - Buffer-terminator can also kill specific special buffers. It is useful, for example, if the user want to keep special buffers, but with a few exceptions: The user still want to kill *Help* and *helpful ...* buffers (and maybe some other buffers related to documentation) if they weren't used for a while.
+
+## Testimonials from users
+
+- [ouboub](https://github.com/jamescherti/buffer-terminator.el/issues/10#issuecomment-3190700326): "I just did, thanks for nice package, wish I have known about it earlier..."
 
 ## Author and License
 
