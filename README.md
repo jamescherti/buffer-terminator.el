@@ -1,4 +1,4 @@
-# buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance
+# buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance and Reduce Clutter in the Buffer List
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 [![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 [![MELPA Stable](https://stable.melpa.org/packages/buffer-terminator-badge.svg)](https://stable.melpa.org/#/buffer-terminator)
@@ -22,21 +22,21 @@ If this package enhances your productivity, please show your support by ⭐ star
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically-to-enhance-emacs-performance)
-  - [Installation from MELPA](#installation-from-melpa)
-  - [Configuration](#configuration)
-    - [Verbose Mode](#verbose-mode)
-    - [Timeout for Inactivity](#timeout-for-inactivity)
-    - [Cleanup Interval](#cleanup-interval)
-    - [Rules](#rules)
-  - [Frequently asked questions](#frequently-asked-questions)
-    - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
-    - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
-    - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
-    - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
-  - [Testimonials from users](#testimonials-from-users)
-  - [Author and License](#author-and-license)
-  - [Links](#links)
+- [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance and Reduce Clutter in the Buffer List](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically-to-enhance-emacs-performance-and-reduce-clutter-in-the-buffer-list)
+    - [Installation from MELPA](#installation-from-melpa)
+    - [Configuration](#configuration)
+        - [Verbose Mode](#verbose-mode)
+        - [Timeout for Inactivity](#timeout-for-inactivity)
+        - [Cleanup Interval](#cleanup-interval)
+        - [Rules](#rules)
+    - [Frequently asked questions](#frequently-asked-questions)
+        - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
+        - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
+        - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
+        - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
+    - [Testimonials from users](#testimonials-from-users)
+    - [Author and License](#author-and-license)
+    - [Links](#links)
 
 <!-- markdown-toc end -->
 
