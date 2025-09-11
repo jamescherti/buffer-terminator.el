@@ -160,6 +160,16 @@ should be killed or retained.")
 This hook is executed after evaluating the rules that determine which buffers
 should be killed or retained.")
 
+(defvar buffer-terminator-protect-unsaved-file-buffers t
+  "Non-nil prevents killing unsaved buffers (DANGEROUS).
+Do not set this to nil unless fully aware of the consequences.
+Setting this to nil may result in data loss if modified buffers are killed.")
+
+(defvar buffer-terminator-protect-current-buffer t
+  "Non-nil prevents killing the current buffer (DANGEROUS).
+Do not set this to nil unless fully aware of the consequences.
+Setting this to nil allows the current buffer to be terminated.")
+
 ;;; Internal variables
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
@@ -659,7 +669,8 @@ all buffers are processed by default."
                       (setq decision :keep))
 
                     ;; Pre-flight checks: Modified buffers
-                    (unless decision
+                    (when (and (not decision)
+                               buffer-terminator-protect-unsaved-file-buffers)
                       (let* ((base-buffer (or (buffer-base-buffer)
                                               (current-buffer)))
                              (file-name (buffer-file-name base-buffer)))
@@ -670,11 +681,13 @@ all buffers are processed by default."
                         (when file-name
                           (push (cons 'file-name file-name) buffer-info))
 
-                        (when (and file-name (buffer-modified-p buffer))
+                        (when (and file-name
+                                   (buffer-modified-p buffer))
                           (setq decision :keep))))
 
                     ;; Pre-flight checks: Current buffer
-                    (unless decision
+                    (when (and (not decision)
+                               buffer-terminator-protect-current-buffer)
                       (when (eq window-buffer buffer)
                         (setq decision :keep)))
 
