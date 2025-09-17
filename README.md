@@ -31,6 +31,7 @@ If this package enhances your productivity, please show your support by ⭐ star
         - [Rules](#rules)
     - [Frequently asked questions](#frequently-asked-questions)
         - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
+        - [How about modifying the quit-window function to kill buffers as soon as they are closed, instead of using buffer-terminator?](#how-about-modifying-the-quit-window-function-to-kill-buffers-as-soon-as-they-are-closed-instead-of-using-buffer-terminator)
         - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
         - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
         - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
@@ -173,6 +174,14 @@ Here is another [example by gavv, one of the first buffer-terminator users.](htt
 - Some users prefer that buffers not part of an active window be automatically closed, as they are not actively needed.
 - *Buffer-terminator* helps users by automatically closing unnecessary buffers, eliminating the need for manual cleanup.
 - Some Emacs packages continue interacting with open buffers, even when they are buried ([Reddit post: A function to periodically wipe buffers not recently shown; thoughts?](https://www.reddit.com/r/emacs/comments/1h15mni/a_function_to_periodically_wipe_buffers_not/)).
+
+### How about modifying the quit-window function to kill buffers as soon as they are closed, instead of using buffer-terminator?
+
+Using quit-window works if the goal is to immediately kill buffers upon closing a window, but it can lead to unintended consequences.
+
+For instance, if a buffer is displayed in another tab or window, it will still be closed simply because one window showing it was closed. Additionally, killing buffers immediately is not always desirable. Delaying the closure preserves the state of file buffers and Dired buffers, including opened or closed headings, folds, and other buffer-specific context.
+
+**Buffer Terminator addresses these issues by performing additional checks before killing a buffer.** By default, it verifies whether the buffer is visible in any other window or tab-bar tab, ensuring that buffers are only closed when truly no longer needed. Moreover, buffer-terminator does not terminate buffers immediately; a configurable delay is applied to provide a grace period, allowing users to continue working with a buffer if it is still required.
 
 ### If this actually improves performance, I’d love to see some benchmarks or real-world numbers
 
