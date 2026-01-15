@@ -23,21 +23,21 @@ If this package enhances your productivity, please show your support by ⭐ star
 ## Table of Contents
 
 - [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance and Reduce Clutter in the Buffer List](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically-to-enhance-emacs-performance-and-reduce-clutter-in-the-buffer-list)
-    - [Installation from MELPA](#installation-from-melpa)
-    - [Configuration](#configuration)
-        - [Verbose Mode](#verbose-mode)
-        - [Timeout for Inactivity](#timeout-for-inactivity)
-        - [Cleanup Interval](#cleanup-interval)
-        - [Rules](#rules)
-    - [Frequently asked questions](#frequently-asked-questions)
-        - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
-        - [How about modifying the quit-window function to kill buffers as soon as they are closed, instead of using buffer-terminator?](#how-about-modifying-the-quit-window-function-to-kill-buffers-as-soon-as-they-are-closed-instead-of-using-buffer-terminator)
-        - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
-        - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
-        - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
-    - [Testimonials from users](#testimonials-from-users)
-    - [Author and License](#author-and-license)
-    - [Links](#links)
+  - [Installation from MELPA](#installation-from-melpa)
+  - [Configuration](#configuration)
+    - [Verbose Mode](#verbose-mode)
+    - [Timeout for Inactivity](#timeout-for-inactivity)
+    - [Cleanup Interval](#cleanup-interval)
+    - [Rules](#rules)
+  - [Frequently asked questions](#frequently-asked-questions)
+    - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
+    - [How about modifying the quit-window function to kill buffers as soon as they are closed, instead of using buffer-terminator?](#how-about-modifying-the-quit-window-function-to-kill-buffers-as-soon-as-they-are-closed-instead-of-using-buffer-terminator)
+    - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
+    - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
+    - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
+  - [Testimonials from users](#testimonials-from-users)
+  - [Author and License](#author-and-license)
+  - [Links](#links)
 
 <!-- markdown-toc end -->
 
@@ -214,6 +214,7 @@ Buffer-terminator provides the option to choose whether to keep or kill specific
 ## Testimonials from users
 
 - [ouboub](https://github.com/jamescherti/buffer-terminator.el/issues/10#issuecomment-3190700326): "I just did, thanks for nice package, wish I have known about it earlier..."
+- [2ck](https://github.com/jamescherti/buffer-terminator.el/issues/11#issue-3729240100) "thank you for this package which managed to actually kill my old buffers, which midnight-mode couldn't."
 
 ## Author and License
 
