@@ -214,7 +214,7 @@ Buffer-terminator provides the option to choose whether to keep or kill specific
 ## Testimonials from users
 
 - [ouboub](https://github.com/jamescherti/buffer-terminator.el/issues/10#issuecomment-3190700326): "I just did, thanks for nice package, wish I have known about it earlier..."
-- [2ck](https://github.com/jamescherti/buffer-terminator.el/issues/11#issue-3729240100) "thank you for this package which managed to actually kill my old buffers, which midnight-mode couldn't."
+- [2ck](https://github.com/jamescherti/buffer-terminator.el/issues/11#issue-3729240100): "thank you for this package which managed to actually kill my old buffers, which midnight-mode couldn't."
 
 ## Author and License
 
