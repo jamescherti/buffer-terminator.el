@@ -3,7 +3,7 @@
 [![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 [![MELPA Stable](https://stable.melpa.org/packages/buffer-terminator-badge.svg)](https://stable.melpa.org/#/buffer-terminator)
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
-![](https://raw.githubusercontent.com/jamescherti/buffer-terminator.el/main/.images/made-for-gnu-emacs.svg)
+![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
 The **buffer-terminator** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, processes...
 
