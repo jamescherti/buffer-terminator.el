@@ -174,6 +174,7 @@ Setting this to nil allows the current buffer to be terminated.")
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
 (defvar-local buffer-terminator--associated-buffers nil)
+(defvar uniquify-after-kill-buffer-p)
 
 ;;; Obsolete variables
 
@@ -620,7 +621,8 @@ all buffers are processed by default."
                   result))
 
   (let ((result nil)
-        (window-buffer (window-buffer)))
+        (window-buffer (window-buffer))
+        (uniquify-after-kill-buffer-p nil))
     ;; Generate associated buffers
     (dolist (buffer buffers)
       (when buffer
