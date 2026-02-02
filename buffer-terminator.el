@@ -625,7 +625,8 @@ all buffers are processed by default."
              (not (bound-and-true-p easysession-save-in-progress)))
     (let ((result nil)
           (window-buffer (window-buffer))
-          (uniquify-after-kill-buffer-p nil))
+          (uniquify-after-kill-buffer-p nil)
+          (uniquify-buffer-name-style nil))
       ;; Generate associated buffers
       (dolist (buffer buffers)
         (when buffer
