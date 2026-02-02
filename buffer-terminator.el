@@ -620,90 +620,93 @@ all buffers are processed by default."
                       (push buffer result)))
                   result))
 
-  (let ((result nil)
-        (window-buffer (window-buffer))
-        (uniquify-after-kill-buffer-p nil))
-    ;; Generate associated buffers
-    (dolist (buffer buffers)
-      (when buffer
-        (with-current-buffer buffer
-          (let ((overlay-buffer
-                 (cond ((bound-and-true-p edit-indirect--overlay)
-                        (overlay-buffer edit-indirect--overlay))
+  ;;; TODO Add predicate function to inhibit buffer-terminator in certain cases
+  (when (and (not (bound-and-true-p easysession-load-in-progress))
+             (not (bound-and-true-p easysession-save-in-progress)))
+    (let ((result nil)
+          (window-buffer (window-buffer))
+          (uniquify-after-kill-buffer-p nil))
+      ;; Generate associated buffers
+      (dolist (buffer buffers)
+        (when buffer
+          (with-current-buffer buffer
+            (let ((overlay-buffer
+                   (cond ((bound-and-true-p edit-indirect--overlay)
+                          (overlay-buffer edit-indirect--overlay))
 
-                       ((bound-and-true-p org-src--overlay)
-                        (overlay-buffer org-src--overlay)))))
+                         ((bound-and-true-p org-src--overlay)
+                          (overlay-buffer org-src--overlay)))))
 
-            (cond
-             ;; Overlay buffers (Org-src or markdown-mode edit-indirect)
-             (overlay-buffer
-              (when (buffer-live-p overlay-buffer)
-                (push overlay-buffer buffer-terminator--associated-buffers)
-                (with-current-buffer overlay-buffer
-                  (push buffer buffer-terminator--associated-buffers))))
+              (cond
+               ;; Overlay buffers (Org-src or markdown-mode edit-indirect)
+               (overlay-buffer
+                (when (buffer-live-p overlay-buffer)
+                  (push overlay-buffer buffer-terminator--associated-buffers)
+                  (with-current-buffer overlay-buffer
+                    (push buffer buffer-terminator--associated-buffers))))
 
-             ;; Indirect buffers
-             (t
-              (let ((base-buffer (buffer-base-buffer buffer)))
-                (when (and base-buffer
-                           (buffer-live-p base-buffer))
-                  ;; Indirect buffer
-                  (setq buffer-terminator--associated-buffers (list base-buffer))
+               ;; Indirect buffers
+               (t
+                (let ((base-buffer (buffer-base-buffer buffer)))
+                  (when (and base-buffer
+                             (buffer-live-p base-buffer))
+                    ;; Indirect buffer
+                    (setq buffer-terminator--associated-buffers (list base-buffer))
 
-                  ;; Original buffer
-                  (with-current-buffer base-buffer
-                    (push buffer buffer-terminator--associated-buffers))))))))))
+                    ;; Original buffer
+                    (with-current-buffer base-buffer
+                      (push buffer buffer-terminator--associated-buffers))))))))))
 
-    ;; Apply rules
-    (dolist (buffer buffers)
-      (when (buffer-live-p buffer)  ; Always check because buffers can be killed
-        (let* ((buffer-name (buffer-name buffer))
-               (buffer-info (list (cons 'buffer-name buffer-name)))
-               (kill-buffer
-                (let ((decision nil))
-                  (with-current-buffer buffer
-                    (push (cons 'major-mode major-mode) buffer-info)
+      ;; Apply rules
+      (dolist (buffer buffers)
+        (when (buffer-live-p buffer)  ; Always check because buffers can be killed
+          (let* ((buffer-name (buffer-name buffer))
+                 (buffer-info (list (cons 'buffer-name buffer-name)))
+                 (kill-buffer
+                  (let ((decision nil))
+                    (with-current-buffer buffer
+                      (push (cons 'major-mode major-mode) buffer-info)
 
-                    ;; When debug is enabled, always keep the debug buffer
-                    (when (and buffer-terminator-debug
-                               (string= buffer-name
-                                        "*buffer-terminator:debug*"))
-                      (setq decision :keep))
+                      ;; When debug is enabled, always keep the debug buffer
+                      (when (and buffer-terminator-debug
+                                 (string= buffer-name
+                                          "*buffer-terminator:debug*"))
+                        (setq decision :keep))
 
-                    ;; Pre-flight checks: Modified buffers
-                    (when (and (not decision)
-                               buffer-terminator-protect-unsaved-file-buffers)
-                      (let* ((base-buffer (or (buffer-base-buffer)
-                                              (current-buffer)))
-                             (file-name (buffer-file-name base-buffer)))
-                        (when (and (not file-name)
-                                   (derived-mode-p 'dired-mode))
-                          (setq file-name default-directory))
+                      ;; Pre-flight checks: Modified buffers
+                      (when (and (not decision)
+                                 buffer-terminator-protect-unsaved-file-buffers)
+                        (let* ((base-buffer (or (buffer-base-buffer)
+                                                (current-buffer)))
+                               (file-name (buffer-file-name base-buffer)))
+                          (when (and (not file-name)
+                                     (derived-mode-p 'dired-mode))
+                            (setq file-name default-directory))
 
-                        (when file-name
-                          (push (cons 'file-name file-name) buffer-info))
+                          (when file-name
+                            (push (cons 'file-name file-name) buffer-info))
 
-                        (when (and file-name
-                                   (buffer-modified-p buffer))
-                          (setq decision :keep))))
+                          (when (and file-name
+                                     (buffer-modified-p buffer))
+                            (setq decision :keep))))
 
-                    ;; Pre-flight checks: Current buffer
-                    (when (and (not decision)
-                               buffer-terminator-protect-current-buffer)
-                      (when (eq window-buffer buffer)
-                        (setq decision :keep)))
+                      ;; Pre-flight checks: Current buffer
+                      (when (and (not decision)
+                                 buffer-terminator-protect-current-buffer)
+                        (when (eq window-buffer buffer)
+                          (setq decision :keep)))
 
-                    ;; Rules
-                    (when (and (not decision) rules)
-                      (setq decision
-                            (buffer-terminator--process-buffer-rules rules)))
+                      ;; Rules
+                      (when (and (not decision) rules)
+                        (setq decision
+                              (buffer-terminator--process-buffer-rules rules)))
 
-                    ;; Final decision
-                    (eq decision :kill)))))
-          (when kill-buffer
-            (buffer-terminator--kill-buffer buffer)
-            (push buffer-info result)))))
-    result))
+                      ;; Final decision
+                      (eq decision :kill)))))
+            (when kill-buffer
+              (buffer-terminator--kill-buffer buffer)
+              (push buffer-info result)))))
+      result)))
 
 (defun buffer-terminator--timer-apply-rules ()
   "Apply `buffer-terminator' rules at a specific interval."
