@@ -174,7 +174,6 @@ Setting this to nil allows the current buffer to be terminated.")
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
 (defvar-local buffer-terminator--associated-buffers nil)
-(defvar uniquify-after-kill-buffer-p)
 
 ;;; Obsolete variables
 
@@ -322,7 +321,7 @@ base or related buffer is visible."
                                   (lambda(buf)
                                     (buffer-live-p buf))
                                   buffer-terminator--associated-buffers)))))
-        (when (or (get-buffer-window buffer t)
+        (when (or (get-buffer-window buffer 'visible)
                   ;; Tab-bar
                   (and (bound-and-true-p tab-bar-mode)
                        (fboundp 'tab-bar-get-buffer-tab)
@@ -624,9 +623,7 @@ all buffers are processed by default."
   (when (and (not (bound-and-true-p easysession-load-in-progress))
              (not (bound-and-true-p easysession-save-in-progress)))
     (let ((result nil)
-          (window-buffer (window-buffer))
-          (uniquify-after-kill-buffer-p nil)
-          (uniquify-buffer-name-style nil))
+          (window-buffer (window-buffer)))
       ;; Generate associated buffers
       (dolist (buffer buffers)
         (when buffer
