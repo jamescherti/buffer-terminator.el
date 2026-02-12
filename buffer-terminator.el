@@ -83,8 +83,12 @@ Default: 30 minutes."
   :group 'buffer-terminator)
 
 (defcustom buffer-terminator-verbose nil
-  "Enable verbose mode to log when a buffer is automatically killed."
-  :type 'boolean
+  "Non-nil means log a message when a buffer is automatically killed.
+If t, display the message in the echo area and the *Messages* buffer.
+If \='inhibit-message, log only to the *Messages* buffer."
+  :type '(choice (const :tag "Disabled" nil)
+                 (const :tag "Full Verbose (Echo Area and Log)" t)
+                 (const :tag "Log Only (Inhibit Echo Area)" inhibit-message))
   :group 'buffer-terminator)
 
 (defvar buffer-terminator--kill-inactive-buffers-timer nil
@@ -581,9 +585,13 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
       (when result
         (buffer-terminator--debug-message "Terminated the buffer: '%s'"
                                           buffer-name)
-        (when buffer-terminator-verbose
-          (buffer-terminator--message "Terminated the buffer: '%s'"
-                                      buffer-name)))
+        (let ((inhibit-message (if (eq buffer-terminator-verbose
+                                       'inhibit-message)
+                                   t
+                                 inhibit-message)))
+          (when buffer-terminator-verbose
+            (buffer-terminator--message "Terminated the buffer: '%s'"
+                                        buffer-name))))
       result)))
 
 (defun buffer-terminator-apply-rules (&optional rules buffers)
