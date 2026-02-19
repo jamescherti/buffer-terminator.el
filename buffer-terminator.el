@@ -306,7 +306,7 @@ The messages are displayed in the *buffer-terminator* buffer."
      (buffer-terminator--insert-message "*buffer-terminator:debug*"
                                         ,(car args) ,@(cdr args))))
 
-(defun buffer-terminator-buffer-visible-p ()
+(defun buffer-terminator--buffer-visible-p ()
   "Return non-nil if the current buffer or any associated buffer is visible.
 
 This includes visibility in any window on any frame or presence in a tab-bar
@@ -367,7 +367,7 @@ base or related buffer is visible."
       t))
 
    ((eq property 'visible)
-    (when (buffer-terminator-buffer-visible-p)
+    (when (buffer-terminator--buffer-visible-p)
       t))
 
    ((eq property 'active)
