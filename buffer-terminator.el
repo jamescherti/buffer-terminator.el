@@ -114,9 +114,10 @@ Default: 10 minutes."
   :type 'integer
   :group 'buffer-terminator
   :set (lambda (symbol value)
-         (buffer-terminator--cancel-timer)
          (set-default symbol value)
-         (buffer-terminator--start-timer value)))
+         (when (bound-and-true-p buffer-terminator-mode)
+           (buffer-terminator--cancel-timer)
+           (buffer-terminator--start-timer value))))
 
 (defvar buffer-terminator-rules-alist
   '(;; Retain special buffers (DO NOT REMOVE).
