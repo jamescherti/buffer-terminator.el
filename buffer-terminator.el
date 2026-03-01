@@ -179,6 +179,7 @@ Setting this to nil allows the current buffer to be terminated.")
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
 (defvar-local buffer-terminator--associated-buffers nil)
+(defvar buffer-terminator--refresh-tabs nil)
 
 ;;; Obsolete variables
 
@@ -313,6 +314,11 @@ The messages are displayed in the *buffer-terminator* buffer."
 This includes visibility in any window on any frame or presence in a tab-bar
 tab, so that indirect buffers and associated buffers count as visible if their
 base or related buffer is visible."
+  (when (and buffer-terminator--refresh-tabs
+             (bound-and-true-p tab-bar-mode))
+    (buffer-terminator--refresh-tabs-all-frames)
+    (setq buffer-terminator--refresh-tabs nil))
+
   (let (result)
     (catch 'visible
       (dolist (buffer (delete-dups
@@ -595,6 +601,50 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                                         buffer-name))))
       result)))
 
+(defun buffer-terminator--refresh-tabs-all-frames ()
+  "Cycle through all tabs on all frames to force a state and name refresh.
+
+When Emacs buffers are renamed automatically by packages like uniquify,
+background tabs in `tab-bar-mode' often retain the old buffer names because they
+store window configurations as static data.
+
+This creates a confusing interface where the visible tab titles fail to match
+the actual active buffers. Cycling through all tabs across every frame forces
+Emacs to deserialize the window states and update its internal tracking
+information. Consequently, the workspace always displays accurate tab names,
+which prevents navigation errors and ensures the visual layout reflects the
+exact state of your open files."
+  (interactive)
+  (when (and (fboundp 'tab-bar--current-tab-index)
+             (fboundp 'tab-bar-select-tab)
+             (boundp 'tab-bar-tabs-function)
+             (bound-and-true-p tab-bar-mode))
+    (let ((inhibit-redisplay t)
+          (inhibit-message t)
+          (window-configuration-change-hook nil)
+          (window-selection-change-functions nil)
+          (tab-bar-tab-post-select-functions nil))
+      (ignore tab-bar-tab-post-select-functions)
+      (ignore window-selection-change-functions)
+      (ignore window-configuration-change-hook)
+      ;; Iterate through every active frame in the Emacs session
+      (dolist (frame (frame-list))
+        (with-selected-frame frame
+          (let ((original-index (tab-bar--current-tab-index))
+                (tab-count (length (funcall tab-bar-tabs-function))))
+            (when (> tab-count 1)
+              ;; Loop through every tab on the current frame to force
+              ;; deserialization
+              (dotimes (i tab-count)
+                (unless (eq i original-index)
+                  (tab-bar-select-tab (1+ i))))
+              ;; Return to the originally selected tab for this specific frame
+              (when original-index
+                (tab-bar-select-tab (1+ original-index)))))))
+      ;; Force the visual tab bar to redraw globally
+      ;; (force-mode-line-update t)
+      )))
+
 (defun buffer-terminator-apply-rules (&optional rules buffers)
   "Evaluate buffer termination rules and apply them to all buffers.
 
@@ -632,6 +682,7 @@ all buffers are processed by default."
   (when (and (not (bound-and-true-p easysession-load-in-progress))
              (not (bound-and-true-p easysession-save-in-progress)))
     (let ((result nil)
+          (buffer-terminator--refresh-tabs t)
           (window-buffer (window-buffer)))
       ;; Generate associated buffers
       (dolist (buffer buffers)
@@ -769,4 +820,5 @@ and not visible based on a defined timeout."
     (buffer-terminator--cancel-timer)))
 
 (provide 'buffer-terminator)
+
 ;;; buffer-terminator.el ends here
