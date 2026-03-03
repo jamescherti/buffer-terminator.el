@@ -584,6 +584,7 @@ displayed to the user.
 Returns non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
     (let ((buffer-name (buffer-name buffer))
+          ;; TODO replace this with (set-process-query-on-exit-flag process nil)
           (kill-buffer-query-functions nil)
           result)
       (setq result (let ((inhibit-message (not buffer-terminator-verbose)))
@@ -621,6 +622,7 @@ exact state of your open files."
              (bound-and-true-p tab-bar-mode))
     (let ((inhibit-redisplay t)
           (inhibit-message t)
+          ;; Fix infinite loop
           (window-configuration-change-hook nil)
           (window-selection-change-functions nil)
           (tab-bar-tab-post-select-functions nil))
