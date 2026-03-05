@@ -175,6 +175,14 @@ Setting this to nil may result in data loss if modified buffers are killed.")
 Do not set this to nil unless fully aware of the consequences.
 Setting this to nil allows the current buffer to be terminated.")
 
+(defvar buffer-terminator-refresh-tab-bar nil
+  "Non-nil means force a state and name refresh of all tabs.
+This experimental feature cycles through all tabs on all frames to accurately
+detect visible buffers that are located in other tabs.
+It ensures that background tabs update their internal records when packages like
+`uniquify' rename buffers, preventing the accidental termination of visible
+buffers.")
+
 ;;; Internal variables
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
@@ -314,10 +322,11 @@ The messages are displayed in the *buffer-terminator* buffer."
 This includes visibility in any window on any frame or presence in a tab-bar
 tab, so that indirect buffers and associated buffers count as visible if their
 base or related buffer is visible."
-  (when (and buffer-terminator--refresh-tabs
+  (when (and buffer-terminator-refresh-tab-bar
+             buffer-terminator--refresh-tabs
              (bound-and-true-p tab-bar-mode))
-    (buffer-terminator--refresh-tabs-all-frames)
-    (setq buffer-terminator--refresh-tabs nil))
+    (setq buffer-terminator--refresh-tabs nil)
+    (buffer-terminator--refresh-tabs-all-frames))
 
   (let (result)
     (catch 'visible
