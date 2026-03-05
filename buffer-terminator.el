@@ -584,11 +584,13 @@ displayed to the user.
 Returns non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
     (let ((buffer-name (buffer-name buffer))
-          ;; TODO replace this with (set-process-query-on-exit-flag process nil)
-          (kill-buffer-query-functions nil)
           result)
-      (setq result (let ((inhibit-message (not buffer-terminator-verbose)))
-                     (kill-buffer buffer)))
+      (setq result
+            (let ((inhibit-message (not buffer-terminator-verbose)))
+              (let ((process (get-buffer-process buffer)))
+                (when process
+                  (set-process-query-on-exit-flag process nil)))
+              (kill-buffer buffer)))
 
       (when result
         (buffer-terminator--debug-message "Terminated the buffer: '%s'"
