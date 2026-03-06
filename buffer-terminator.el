@@ -63,8 +63,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-
 ;;; Customizations
 
 (defgroup buffer-terminator nil
@@ -414,7 +412,7 @@ Returns non-nil if the buffer name matches any of the names."
         (string-equal buffer-name match-names))
 
        ((listp match-names)
-        (cl-find buffer-name match-names :test #'string-equal))
+        (member buffer-name match-names))
 
        (t
         (error "Invalid buffer-terminator-rules-alist value: '%s' -> '%s'"
@@ -431,10 +429,10 @@ Returns non-nil if BUFFER-NAME matches any of the regexps."
         (string-match match-names-regexp buffer-name))
 
        ((listp match-names-regexp)
-        (cl-find buffer-name
-                 match-names-regexp
-                 :test (lambda (buffer-name regex)
-                         (string-match regex buffer-name))))
+        (catch 'found
+          (dolist (regex match-names-regexp)
+            (when (string-match regex buffer-name)
+              (throw 'found regex)))))
 
        (t
         (error "Invalid buffer-terminator-rules-alist value: '%s'"
@@ -448,7 +446,7 @@ MAJOR-MODES is a list of major mode symbols."
     (eq major-mode major-modes))
 
    ((listp major-modes)
-    (when (cl-find major-mode major-modes :test #'eq)
+    (when (memq major-mode major-modes)
       t))
 
    (t
