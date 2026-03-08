@@ -591,24 +591,22 @@ displayed to the user.
 Returns non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
     (let ((buffer-name (buffer-name buffer))
-          result)
-      (setq result
-            (let ((inhibit-message (not buffer-terminator-verbose)))
-              (let ((process (get-buffer-process buffer)))
-                (when process
-                  (set-process-query-on-exit-flag process nil)))
-              (kill-buffer buffer)))
-
+          (inhibit-message (if (eq buffer-terminator-verbose 'inhibit-message)
+                               t
+                             inhibit-message))
+          (result (progn
+                    (let ((process (get-buffer-process buffer)))
+                      (when process
+                        (set-process-query-on-exit-flag process nil)))
+                    (with-current-buffer buffer
+                      (set-buffer-modified-p nil))
+                    (kill-buffer buffer))))
       (when result
         (buffer-terminator--debug-message "Terminated the buffer: '%s'"
                                           buffer-name)
-        (let ((inhibit-message (if (eq buffer-terminator-verbose
-                                       'inhibit-message)
-                                   t
-                                 inhibit-message)))
-          (when buffer-terminator-verbose
-            (buffer-terminator--message "Terminated the buffer: '%s'"
-                                        buffer-name))))
+        (when buffer-terminator-verbose
+          (buffer-terminator--message "Terminated the buffer: '%s'"
+                                      buffer-name)))
       result)))
 
 (defun buffer-terminator--refresh-tabs-all-frames ()
