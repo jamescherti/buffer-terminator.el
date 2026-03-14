@@ -50,7 +50,6 @@
 ;; Installation from MELPA:
 ;; ------------------------
 ;; (use-package buffer-terminator
-;;   :ensure t
 ;;   :custom
 ;;   (buffer-terminator-verbose nil)
 ;;   :config

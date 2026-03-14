@@ -49,7 +49,6 @@ To install *buffer-terminator* from MELPA:
 2. Add the following code to the Emacs init file:
 ```emacs-lisp
 (use-package buffer-terminator
-  :ensure t
   :custom
   (buffer-terminator-verbose nil)
 
