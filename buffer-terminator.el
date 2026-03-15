@@ -320,8 +320,7 @@ This includes visibility in any window on any frame or presence in a tab-bar
 tab, so that indirect buffers and associated buffers count as visible if their
 base or related buffer is visible."
   (when (and buffer-terminator-refresh-tab-bar
-             buffer-terminator--refresh-tabs
-             (bound-and-true-p tab-bar-mode))
+             buffer-terminator--refresh-tabs)
     (setq buffer-terminator--refresh-tabs nil)
     (buffer-terminator--refresh-tabs-all-frames))
 
