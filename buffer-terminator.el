@@ -589,21 +589,35 @@ displayed to the user.
 
 Returns non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
-    (let ((buffer-name (buffer-name buffer))
-          (inhibit-message (if (eq buffer-terminator-verbose 'inhibit-message)
-                               t
-                             inhibit-message))
-          (result (progn
-                    (let ((process (get-buffer-process buffer)))
-                      (when process
-                        (set-process-query-on-exit-flag process nil)))
-                    (with-current-buffer buffer
-                      (set-buffer-modified-p nil))
-                    (kill-buffer buffer))))
+    (let* ((buffer-name (buffer-name buffer))
+           (inhibit-message (if (eq buffer-terminator-verbose 'inhibit-message)
+                                t
+                              inhibit-message))
+           (result (condition-case nil
+                       (let ((inhibit-interaction t))
+                         (ignore inhibit-interaction)
+                         (let ((process (get-buffer-process buffer)))
+                           (when process
+                             (set-process-query-on-exit-flag process nil)))
+                         (with-current-buffer buffer
+                           (set-buffer-modified-p nil))
+                         (kill-buffer buffer)
+                         ;; Return t
+                         t)
+                     (inhibited-interaction
+                      (when buffer-terminator-verbose
+                        (buffer-terminator--message
+                         (concat "Warning: 'kill-buffer' attempted an "
+                                 "interactive prompt in buffer '%s'. "
+                                 "Please report this issue to "
+                                 "the `buffer-terminator' author.")
+                         buffer-name))
+                      ;; Explicitly return nil so 'result' reflects the failure
+                      nil))))
       (when result
         (buffer-terminator--debug-message "Terminated the buffer: '%s'"
                                           buffer-name)
-        (when buffer-terminator-verbose
+        (when (eq buffer-terminator-verbose t)
           (buffer-terminator--message "Terminated the buffer: '%s'"
                                       buffer-name)))
       result)))
