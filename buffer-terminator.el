@@ -3,7 +3,7 @@
 ;; Copyright (C) 2024-2026 James Cherti | https://www.jamescherti.com/contact/
 
 ;; Author: James Cherti <https://www.jamescherti.com/contact/>
-;; Version: 1.2.0
+;; Version: 1.2.1
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "25.1"))
@@ -796,7 +796,7 @@ all buffers are processed by default."
 (defalias 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
   "Obsolete. Renamed to `buffer-terminator-apply-rules'.")
 (make-obsolete 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
-               "1.2.0")
+               "1.2.1")
 
 ;;; Obsolete functions
 
