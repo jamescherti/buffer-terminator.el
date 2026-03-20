@@ -1,4 +1,4 @@
-# buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance and Reduce Clutter in the Buffer List
+# buffer-terminator.el - Safely Auto Kill Emacs Buffers to Enhance Emacs' Performance and Reduce Clutter in the Buffer List
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 [![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 [![MELPA Stable](https://stable.melpa.org/packages/buffer-terminator-badge.svg)](https://stable.melpa.org/#/buffer-terminator)
@@ -22,7 +22,7 @@ If this package enhances your productivity, please show your support by ⭐ star
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 ## Table of Contents
 
-- [buffer-terminator.el - Safely Terminate Emacs Buffers Automatically to Enhance Emacs' Performance and Reduce Clutter in the Buffer List](#buffer-terminatorel---safely-terminate-emacs-buffers-automatically-to-enhance-emacs-performance-and-reduce-clutter-in-the-buffer-list)
+- [buffer-terminator.el - Safely Auto Kill Emacs Buffers to Enhance Emacs' Performance and Reduce Clutter in the Buffer List](#buffer-terminatorel---safely-auto-kill-emacs-buffers-to-enhance-emacs-performance-and-reduce-clutter-in-the-buffer-list)
   - [Installation from MELPA](#installation-from-melpa)
   - [Configuration](#configuration)
     - [Verbose Mode](#verbose-mode)
