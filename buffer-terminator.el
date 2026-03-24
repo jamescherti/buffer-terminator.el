@@ -172,7 +172,7 @@ Setting this to nil may result in data loss if modified buffers are killed.")
 Do not set this to nil unless fully aware of the consequences.
 Setting this to nil allows the current buffer to be terminated.")
 
-(defvar buffer-terminator-refresh-tab-bar nil
+(defvar buffer-terminator-refresh-tab-bar t
   "Non-nil means force a state and name refresh of all tabs.
 This experimental feature cycles through all tabs on all frames to accurately
 detect visible buffers that are located in other tabs.
