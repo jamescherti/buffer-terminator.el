@@ -785,6 +785,13 @@ all buffers are processed by default."
             (when kill-buffer
               (buffer-terminator--kill-buffer buffer)
               (push buffer-info result)))))
+
+      ;; Refresh tabs after killing buffers, as packages such as uniquify may
+      ;; alter buffer names
+      (when (and buffer-terminator-refresh-tab-bar
+                 result)
+        (buffer-terminator--refresh-tabs-all-frames))
+
       result)))
 
 (defun buffer-terminator--timer-apply-rules ()
