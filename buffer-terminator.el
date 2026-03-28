@@ -172,7 +172,7 @@ Setting this to nil may result in data loss if modified buffers are killed.")
 Do not set this to nil unless fully aware of the consequences.
 Setting this to nil allows the current buffer to be terminated.")
 
-(defvar buffer-terminator-refresh-tab-bar t
+(defvar buffer-terminator-refresh-tab-bar nil
   "Non-nil means force a state and name refresh of all tabs.
 This experimental feature cycles through all tabs on all frames to accurately
 detect visible buffers that are located in other tabs.
@@ -644,26 +644,34 @@ exact state of your open files."
       (let ((inhibit-redisplay t)
             (inhibit-message t)
             ;; Fix infinite loop
+            (window-state-change-hook nil)
+            (window-state-change-functions nil)
+            (buffer-list-update-hook nil)
             (window-configuration-change-hook nil)
             (window-selection-change-functions nil)
             (tab-bar-tab-post-select-functions nil))
+        (ignore window-state-change-hook)
+        (ignore window-state-change-functions)
+        (ignore buffer-list-update-hook)
         (ignore tab-bar-tab-post-select-functions)
         (ignore window-selection-change-functions)
         (ignore window-configuration-change-hook)
         ;; Iterate through every active frame in the Emacs session
         (dolist (frame (frame-list))
           (with-selected-frame frame
-            (let ((original-index (tab-bar--current-tab-index))
-                  (tab-count (length (funcall tab-bar-tabs-function))))
-              (when (> tab-count 1)
-                ;; Loop through every tab on the current frame to force
-                ;; deserialization
-                (dotimes (i tab-count)
-                  (unless (eq i original-index)
-                    (tab-bar-select-tab (1+ i))))
-                ;; Return to the originally selected tab for this specific frame
-                (when original-index
-                  (tab-bar-select-tab (1+ original-index)))))))
+            (save-window-excursion
+              (let ((original-index (tab-bar--current-tab-index))
+                    (tab-count (length (funcall tab-bar-tabs-function))))
+                (when (> tab-count 1)
+                  ;; Loop through every tab on the current frame to force
+                  ;; deserialization
+                  (dotimes (i tab-count)
+                    (unless (eq i original-index)
+                      (tab-bar-select-tab (1+ i))))
+                  ;; Return to the originally selected tab for this specific
+                  ;; frame
+                  (when original-index
+                    (tab-bar-select-tab (1+ original-index))))))))
         ;; Force the visual tab bar to redraw globally
         ;; (force-mode-line-update t)
         ))))
