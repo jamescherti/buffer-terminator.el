@@ -337,7 +337,7 @@ base or related buffer is visible."
                                   (lambda(buf)
                                     (buffer-live-p buf))
                                   buffer-terminator--associated-buffers)))))
-        (when (or (get-buffer-window buffer 'visible)
+        (when (or (get-buffer-window buffer 0)
                   ;; Tab-bar
                   (and (bound-and-true-p tab-bar-mode)
                        (fboundp 'tab-bar-get-buffer-tab)
