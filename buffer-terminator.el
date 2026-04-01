@@ -741,7 +741,6 @@ all buffers are processed by default."
              (not (bound-and-true-p easysession-save-in-progress)))
     (let ((result nil)
           (uniquify-buffer-name-style nil)
-          (window-buffer (window-buffer))
           (buffer-terminator--cached-tab-buffers
            (buffer-terminator--get-all-tabs-buffers)))
       (ignore uniquify-buffer-name-style)
@@ -812,7 +811,7 @@ all buffers are processed by default."
                       ;; Pre-flight checks: Current buffer
                       (when (and (not decision)
                                  buffer-terminator-protect-current-buffer)
-                        (when (eq window-buffer buffer)
+                        (when (eq (window-buffer) buffer)
                           (setq decision :keep)))
 
                       ;; Rules
