@@ -172,11 +172,16 @@ Setting this to nil may result in data loss if modified buffers are killed.")
 Do not set this to nil unless fully aware of the consequences.
 Setting this to nil allows the current buffer to be terminated.")
 
+(defvar buffer-terminator-track-tab-bar-buffers nil
+  "EXPERIMENTAL. Non-nil means check inactive tabs for visible buffers.
+When `tab-bar-mode' and this option is enabled, `buffer-terminator' temporarily
+parses window configurations in the background to protect buffers inside
+inactive tabs from being killed. Set this to nil to disable the feature.")
+
 ;;; Internal variables
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
 (defvar-local buffer-terminator--associated-buffers nil)
-(defvar buffer-terminator--refresh-tabs nil)
 (defvar buffer-terminator--cached-tab-buffers nil
   "List of buffers currently active in all tabs during rule application.")
 
@@ -322,13 +327,14 @@ base or related buffer is visible."
                                ;; visible states.
                                (unless (buffer-base-buffer)
                                  (seq-filter
-                                  (lambda(buf)
+                                  (lambda (buf)
                                     (buffer-live-p buf))
                                   buffer-terminator--associated-buffers)))))
         (when (or (get-buffer-window buffer 0)
                   ;; Tab-bar
                   (when (bound-and-true-p tab-bar-mode)
-                    (if buffer-terminator--cached-tab-buffers
+                    (if (and buffer-terminator-track-tab-bar-buffers
+                             buffer-terminator--cached-tab-buffers)
                         (memq buffer buffer-terminator--cached-tab-buffers)
                       (and (fboundp 'tab-bar-get-buffer-tab)
                            (funcall 'tab-bar-get-buffer-tab buffer t nil)))))
@@ -348,7 +354,7 @@ base or related buffer is visible."
            (not (buffer-file-name (buffer-base-buffer)))))))
 
 (defun buffer-terminator--match-buffer-inactive-p ()
-  "Return non-nil when BUFFER is inactive."
+  "Return non-nil when the current buffer is inactive."
   (let ((last-display-time (buffer-terminator--last-display-time)))
     (cond
      ((not last-display-time)
@@ -734,7 +740,6 @@ all buffers are processed by default."
   (when (and (not (bound-and-true-p easysession-load-in-progress))
              (not (bound-and-true-p easysession-save-in-progress)))
     (let ((result nil)
-          (buffer-terminator--refresh-tabs t)
           (window-buffer (window-buffer))
           (buffer-terminator--cached-tab-buffers
            (buffer-terminator--get-all-tabs-buffers)))
