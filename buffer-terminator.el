@@ -591,11 +591,10 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
            (result (condition-case nil
                        (let ((inhibit-interaction t))
                          (ignore inhibit-interaction)
-                         (let ((process (get-buffer-process buffer)))
-                           (when process
-                             (set-process-query-on-exit-flag process nil)))
                          (with-current-buffer buffer
-                           (set-buffer-modified-p nil))
+                           (let ((process (get-buffer-process buffer)))
+                             (when process
+                               (set-process-query-on-exit-flag process nil))))
                          (kill-buffer buffer)
                          ;; Return t
                          t)
@@ -742,7 +741,8 @@ all buffers are processed by default."
     (let ((result nil)
           (uniquify-buffer-name-style nil)
           (buffer-terminator--cached-tab-buffers
-           (buffer-terminator--get-all-tabs-buffers)))
+           (when buffer-terminator-track-tab-bar-buffers
+             (buffer-terminator--get-all-tabs-buffers))))
       (ignore uniquify-buffer-name-style)
       ;; Generate associated buffers
       (dolist (buffer buffers)
