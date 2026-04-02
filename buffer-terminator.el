@@ -152,15 +152,19 @@ This displays a lot of messages."
   :type 'boolean
   :group 'buffer-terminator)
 
-(defvar buffer-terminator-before-hook nil
+(defcustom buffer-terminator-before-hook nil
   "Hook run before applying `buffer-terminator' rules.
 This hook is executed before evaluating the rules that determine which buffers
-should be killed or retained.")
+should be killed or retained."
+  :type 'hook
+  :group 'buffer-terminator)
 
-(defvar buffer-terminator-after-hook nil
+(defcustom buffer-terminator-after-hook nil
   "Hook run after applying `buffer-terminator' rules.
 This hook is executed after evaluating the rules that determine which buffers
-should be killed or retained.")
+should be killed or retained."
+  :type 'hook
+  :group 'buffer-terminator)
 
 (defvar buffer-terminator-protect-unsaved-file-buffers t
   "Non-nil prevents killing unsaved buffers (DANGEROUS).
@@ -452,8 +456,9 @@ MAJOR-MODES is a list of major mode symbols."
 
   (cond
    ((not (symbolp rule))
-    (error "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
-           rule value)
+    (buffer-terminator--message
+     "Warning: Invalid buffer-terminator-rules-alist entry ignored: '%s' -> '%s'"
+     rule value)
     nil)
 
    ((and (eq rule 'call-function) (functionp value))
