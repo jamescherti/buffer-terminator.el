@@ -453,7 +453,6 @@ MAJOR-MODES is a list of major mode symbols."
 
 (defun buffer-terminator--process-rule (rule value)
   "Run the rule RULE with the value VALUE."
-
   (cond
    ((not (symbolp rule))
     (buffer-terminator--message
