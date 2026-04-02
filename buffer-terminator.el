@@ -455,9 +455,12 @@ MAJOR-MODES is a list of major mode symbols."
   "Run the rule RULE with the value VALUE."
   (cond
    ((not (symbolp rule))
-    (buffer-terminator--message
-     "Warning: Invalid buffer-terminator-rules-alist entry ignored: '%s' -> '%s'"
-     rule value)
+    ;; TODO Change it to warning?
+    ;; (buffer-terminator--message
+    ;;  "Warning: Invalid buffer-terminator-rules-alist entry ignored: '%s' -> '%s'"
+    ;;  rule value)
+    (error "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
+           rule value)
     nil)
 
    ((and (eq rule 'call-function) (functionp value))
