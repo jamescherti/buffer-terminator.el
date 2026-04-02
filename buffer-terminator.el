@@ -750,7 +750,7 @@ all buffers are processed by default."
       (ignore uniquify-buffer-name-style)
       ;; Generate associated buffers
       (dolist (buffer buffers)
-        (when buffer
+        (when (buffer-live-p buffer)
           (with-current-buffer buffer
             (let ((overlay-buffer
                    (cond ((bound-and-true-p edit-indirect--overlay)
