@@ -746,11 +746,9 @@ all buffers are processed by default."
   (when (and (not (bound-and-true-p easysession-load-in-progress))
              (not (bound-and-true-p easysession-save-in-progress)))
     (let ((result nil)
-          (uniquify-buffer-name-style nil)
           (buffer-terminator--cached-tab-buffers
            (when buffer-terminator-track-tab-bar-buffers
              (buffer-terminator--get-all-tabs-buffers))))
-      (ignore uniquify-buffer-name-style)
       ;; Generate associated buffers
       (dolist (buffer buffers)
         (when (buffer-live-p buffer)
