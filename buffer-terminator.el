@@ -595,7 +595,7 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
            (inhibit-message (if (eq buffer-terminator-verbose 'inhibit-message)
                                 t
                               inhibit-message))
-           (result (condition-case nil
+           (result (condition-case err
                        (let ((inhibit-interaction t))
                          (ignore inhibit-interaction)
                          (with-current-buffer buffer
@@ -613,6 +613,14 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                                  "Please report this issue to "
                                  "the `buffer-terminator' author.")
                          buffer-name))
+                      ;; Explicitly return nil so 'result' reflects the failure
+                      nil)
+                     (error
+                      (when buffer-terminator-verbose
+                        (buffer-terminator--message
+                         "Error killing buffer '%s': %s"
+                         buffer-name
+                         (error-message-string err)))
                       ;; Explicitly return nil so 'result' reflects the failure
                       nil))))
       (when result
