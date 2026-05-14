@@ -176,7 +176,7 @@ Setting this to nil may result in data loss if modified buffers are killed.")
 Do not set this to nil unless fully aware of the consequences.
 Setting this to nil allows the current buffer to be terminated.")
 
-(defvar buffer-terminator-track-tab-bar-buffers nil
+(defvar buffer-terminator-track-tab-bar-buffers t
   "EXPERIMENTAL. Non-nil means check inactive tabs for visible buffers.
 When `tab-bar-mode' and this option is enabled, `buffer-terminator' temporarily
 parses window configurations in the background to protect buffers inside
