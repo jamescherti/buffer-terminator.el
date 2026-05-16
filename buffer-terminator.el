@@ -700,12 +700,7 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
 
                         (setq bufs (append (mapcar #'window-buffer
                                                    (window-list frame))
-                                           bufs))
-
-                        ;; TODO remove this comment
-                        ;; (dolist (win (window-list frame))
-                        ;;   (push (window-buffer win) bufs))
-                        ))
+                                           bufs))))
                   ;; Fallback to 'ws' if 'wc' is invalid or missing (e.g., if
                   ;; you restore a session from desktop.el)
                   (let ((state (alist-get 'ws tab)))
