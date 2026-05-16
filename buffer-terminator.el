@@ -177,7 +177,7 @@ Do not set this to nil unless fully aware of the consequences.
 Setting this to nil allows the current buffer to be terminated.")
 
 (defvar buffer-terminator-track-tab-bar-buffers t
-  "EXPERIMENTAL. Non-nil means check inactive tabs for visible buffers.
+  "Non-nil means check inactive tabs for visible buffers.
 When `tab-bar-mode' and this option is enabled, `buffer-terminator' temporarily
 parses window configurations in the background to protect buffers inside
 inactive tabs from being killed. Set this to nil to disable the feature.")
