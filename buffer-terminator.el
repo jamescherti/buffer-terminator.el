@@ -592,6 +592,7 @@ displayed to the user.
 Returns non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
     (let* ((buffer-name (buffer-name buffer))
+           (buffer-mode (buffer-local-value 'major-mode buffer))
            (inhibit-message (if (eq buffer-terminator-verbose 'inhibit-message)
                                 t
                               inhibit-message))
@@ -624,11 +625,11 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                       ;; Explicitly return nil so 'result' reflects the failure
                       nil))))
       (when result
-        (buffer-terminator--debug-message "Terminated the buffer: '%s'"
-                                          buffer-name)
+        (buffer-terminator--debug-message "Terminated the buffer: '%s' (%S)"
+                                          buffer-name buffer-mode)
         (when (eq buffer-terminator-verbose t)
-          (buffer-terminator--message "Terminated the buffer: '%s'"
-                                      buffer-name)))
+          (buffer-terminator--message "Terminated the buffer: '%s' (%S)"
+                                      buffer-name buffer-mode)))
       result)))
 
 (defun buffer-terminator--get-all-tabs-buffers ()
