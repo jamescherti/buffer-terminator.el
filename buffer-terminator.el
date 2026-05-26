@@ -62,6 +62,8 @@
 
 ;;; Code:
 
+(require 'seq)
+
 ;;; Customizations
 
 (defgroup buffer-terminator nil
@@ -291,6 +293,12 @@ This variable is obsolete.")
 
 ;;; Functions
 
+(defmacro buffer-terminator--verbose-message (&rest args)
+  "Display a verbose message with the same ARGS arguments as `message'."
+  (declare (indent 0) (debug t))
+  `(when buffer-terminator-verbose
+     (message (concat "[buffer-terminator] " (format ,@args)))))
+
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
 The message is formatted with the provided arguments ARGS."
@@ -305,7 +313,7 @@ The message is formatted with the provided arguments ARGS."
         (save-excursion
           (let ((inhibit-read-only t))
             (goto-char (point-max))
-            (insert (apply 'format msg args) "\n")))))))
+            (insert (apply #'format msg args) "\n")))))))
 
 (defmacro buffer-terminator--debug-message (&rest args)
   "Display a debug message with the same ARGS arguments as `message'.
@@ -313,7 +321,7 @@ The messages are displayed in the *buffer-terminator* buffer."
   (declare (indent 0) (debug t))
   `(when buffer-terminator-debug
      (buffer-terminator--insert-message "*buffer-terminator:debug*"
-                                        ,(car args) ,@(cdr args))))
+                                        ,@args)))
 
 (defun buffer-terminator--buffer-visible-p ()
   "Return non-nil if the current buffer or any associated buffer is visible.
@@ -593,11 +601,12 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
     (let* ((buffer-name (buffer-name buffer))
            (buffer-mode (buffer-local-value 'major-mode buffer))
-           (inhibit-message (if (eq buffer-terminator-verbose 'inhibit-message)
-                                t
-                              inhibit-message))
            (result (condition-case err
-                       (let ((inhibit-interaction t))
+                       (let ((inhibit-interaction t)
+                             (inhibit-message (if (eq buffer-terminator-verbose
+                                                      'inhibit-message)
+                                                  t
+                                                inhibit-message)))
                          (ignore inhibit-interaction)
                          (with-current-buffer buffer
                            (let ((process (get-buffer-process buffer)))
@@ -607,29 +616,26 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                          ;; Return t
                          t)
                      (inhibited-interaction
-                      (when buffer-terminator-verbose
-                        (buffer-terminator--message
-                         (concat "Warning: 'kill-buffer' attempted an "
-                                 "interactive prompt in buffer '%s'. "
-                                 "Please report this issue to "
-                                 "the `buffer-terminator' author.")
-                         buffer-name))
+                      (buffer-terminator--verbose-message
+                        (concat "Warning: 'kill-buffer' attempted an "
+                                "interactive prompt in buffer '%s'. "
+                                "Please report this issue to "
+                                "the `buffer-terminator' author.")
+                        buffer-name)
                       ;; Explicitly return nil so 'result' reflects the failure
                       nil)
                      (error
-                      (when buffer-terminator-verbose
-                        (buffer-terminator--message
-                         "Error killing buffer '%s': %s"
-                         buffer-name
-                         (error-message-string err)))
+                      (buffer-terminator--verbose-message
+                        "Error killing buffer '%s': %s"
+                        buffer-name
+                        (error-message-string err))
                       ;; Explicitly return nil so 'result' reflects the failure
                       nil))))
       (when result
         (buffer-terminator--debug-message "Terminated the buffer: '%s' (%S)"
                                           buffer-name buffer-mode)
-        (when (eq buffer-terminator-verbose t)
-          (buffer-terminator--message "Terminated the buffer: '%s' (%S)"
-                                      buffer-name buffer-mode)))
+        (buffer-terminator--verbose-message "Terminated the buffer: '%s' (%S)"
+                                            buffer-name buffer-mode))
       result)))
 
 (defun buffer-terminator--get-all-tabs-buffers ()
