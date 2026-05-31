@@ -32,7 +32,7 @@ If this package enhances your productivity, please show your support by ⭐ star
   - [Frequently asked questions](#frequently-asked-questions)
     - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
     - [How about modifying the quit-window function to kill buffers as soon as they are closed, instead of using buffer-terminator?](#how-about-modifying-the-quit-window-function-to-kill-buffers-as-soon-as-they-are-closed-instead-of-using-buffer-terminator)
-    - [If this actually improves performance, I’d love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
+    - [If this actually improves performance, I'd love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
     - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
     - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
   - [Testimonials from users](#testimonials-from-users)
@@ -182,7 +182,7 @@ For instance, if a buffer is displayed in another tab or window, it will still b
 
 **Buffer Terminator addresses these issues by performing additional checks before killing a buffer.** By default, it verifies whether the buffer is visible in any other window or tab-bar tab, ensuring that buffers are only closed when truly no longer needed. Moreover, buffer-terminator does not terminate buffers immediately; a configurable delay is applied to provide a grace period, allowing users to continue working with a buffer if it is still required.
 
-### If this actually improves performance, I’d love to see some benchmarks or real-world numbers
+### If this actually improves performance, I'd love to see some benchmarks or real-world numbers
 
 Because each Emacs user's configuration is unique, the performance benefits of using the *buffer-terminator* Emacs package depend on the number of enabled modes and active timers in that specific setup.
 
@@ -232,7 +232,7 @@ Other Emacs packages by the same author:
 - [compile-angel.el](https://github.com/jamescherti/compile-angel.el): **Speed up Emacs!** This package guarantees that all .el files are both byte-compiled and native-compiled, which significantly speeds up Emacs.
 - [outline-indent.el](https://github.com/jamescherti/outline-indent.el): An Emacs package that provides a minor mode that enables code folding and outlining based on indentation levels for various indentation-based text files, such as YAML, Python, and other indented text files.
 - [easysession.el](https://github.com/jamescherti/easysession.el): Easysession is lightweight Emacs session manager that can persist and restore file editing buffers, indirect buffers/clones, Dired buffers, the tab-bar, and the Emacs frames (with or without the Emacs frames size, width, and height).
-- [vim-tab-bar.el](https://github.com/jamescherti/vim-tab-bar.el): Make the Emacs tab-bar Look Like Vim’s Tab Bar.
+- [vim-tab-bar.el](https://github.com/jamescherti/vim-tab-bar.el): Make the Emacs tab-bar Look Like Vim's Tab Bar.
 - [elispcomp](https://github.com/jamescherti/elispcomp): A command line tool that allows compiling Elisp code directly from the terminal or from a shell script. It facilitates the generation of optimized .elc (byte-compiled) and .eln (native-compiled) files.
 - [tomorrow-night-deepblue-theme.el](https://github.com/jamescherti/tomorrow-night-deepblue-theme.el): The Tomorrow Night Deepblue Emacs theme is a beautiful deep blue variant of the Tomorrow Night theme, which is renowned for its elegant color palette that is pleasing to the eyes. It features a deep blue background color that creates a calming atmosphere. The theme is also a great choice for those who miss the blue themes that were trendy a few years ago.
 - [Ultyas](https://github.com/jamescherti/ultyas/): A command-line tool designed to simplify the process of converting code snippets from UltiSnips to YASnippet format.
