@@ -1,4 +1,4 @@
-# buffer-terminator.el - Safely Auto Kill Emacs Buffers to Enhance Emacs' Performance and Reduce Clutter in the Buffer List
+# buffer-terminator.el - Safely Kill Emacs Buffers Automatically to Enhance Emacs' Performance and Reduce Clutter in the Buffer List
 ![Build Status](https://github.com/jamescherti/buffer-terminator.el/actions/workflows/ci.yml/badge.svg)
 [![MELPA](https://melpa.org/packages/buffer-terminator-badge.svg)](https://melpa.org/#/buffer-terminator)
 [![MELPA Stable](https://stable.melpa.org/packages/buffer-terminator-badge.svg)](https://stable.melpa.org/#/buffer-terminator)
