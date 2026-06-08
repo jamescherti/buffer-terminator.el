@@ -214,6 +214,7 @@ Buffer-terminator provides the option to choose whether to keep or kill specific
 
 - [ouboub](https://github.com/jamescherti/buffer-terminator.el/issues/10#issuecomment-3190700326): "I just did, thanks for nice package, wish I have known about it earlier..."
 - [2ck](https://github.com/jamescherti/buffer-terminator.el/issues/11#issue-3729240100): "thank you for this package which managed to actually kill my old buffers, which midnight-mode couldn't."
+- [JamesBrickley](https://www.reddit.com/r/emacs/comments/1tzfbsq/comment/oqds13q/): "I'm really enjoying James Cherti's Minimal-Emacs.d, Compile-Angle, Easy-Session, and Buffer-Terminator packages."
 
 ## Author and License
 
