@@ -19,28 +19,6 @@ The following buffers are not terminated by default:
 
 If this package enhances your productivity, please show your support by ⭐ starring buffer-terminator on GitHub to help more users discover its benefits.
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
-## Table of Contents
-
-- [buffer-terminator.el - Safely Auto Kill Emacs Buffers to Enhance Emacs' Performance and Reduce Clutter in the Buffer List](#buffer-terminatorel---safely-auto-kill-emacs-buffers-to-enhance-emacs-performance-and-reduce-clutter-in-the-buffer-list)
-  - [Installation from MELPA](#installation-from-melpa)
-  - [Configuration](#configuration)
-    - [Verbose Mode](#verbose-mode)
-    - [Timeout for Inactivity](#timeout-for-inactivity)
-    - [Cleanup Interval](#cleanup-interval)
-    - [Rules](#rules)
-  - [Frequently asked questions](#frequently-asked-questions)
-    - [What problem is buffer-terminator aiming to solve?](#what-problem-is-buffer-terminator-aiming-to-solve)
-    - [How about modifying the quit-window function to kill buffers as soon as they are closed, instead of using buffer-terminator?](#how-about-modifying-the-quit-window-function-to-kill-buffers-as-soon-as-they-are-closed-instead-of-using-buffer-terminator)
-    - [If this actually improves performance, I'd love to see some benchmarks or real-world numbers](#if-this-actually-improves-performance-id-love-to-see-some-benchmarks-or-real-world-numbers)
-    - [I prefer keeping buffers open because it is easier for me to reopen them](#i-prefer-keeping-buffers-open-because-it-is-easier-for-me-to-reopen-them)
-    - [How is this different from the builtin midnight-mode?](#how-is-this-different-from-the-builtin-midnight-mode)
-  - [Testimonials from users](#testimonials-from-users)
-  - [Author and License](#author-and-license)
-  - [Links](#links)
-
-<!-- markdown-toc end -->
-
 ## Installation from MELPA
 
 To install *buffer-terminator* from MELPA:
