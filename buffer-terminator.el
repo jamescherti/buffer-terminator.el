@@ -297,7 +297,11 @@ This variable is obsolete.")
   "Display a verbose message with the same ARGS arguments as `message'."
   (declare (indent 0) (debug t))
   `(when buffer-terminator-verbose
-     (message (concat "[buffer-terminator] " (format ,@args)))))
+     (let ((inhibit-message (if (eq buffer-terminator-verbose
+                                    'inhibit-message)
+                                t
+                              inhibit-message)))
+       (message (concat "[buffer-terminator] " (format ,@args))))))
 
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
