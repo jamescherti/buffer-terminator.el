@@ -38,7 +38,7 @@ To install *buffer-terminator* from MELPA:
   ;; minutes):
   (buffer-terminator-interval (* 10 60)) ; 10 minutes
 
-  :config
+  :init
   (buffer-terminator-mode 1))
 ```
 
