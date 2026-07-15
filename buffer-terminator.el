@@ -593,6 +593,8 @@ Return nil when if buffer has never been displayed."
                  "(The obsolete variable will be removed in future versions.)")
          var)))))
 
+(defvar inhibit-interaction)
+
 (defun buffer-terminator--kill-buffer (buffer)
   "Kill BUFFER if it is live.
 
@@ -611,7 +613,6 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                                                       'inhibit-message)
                                                   t
                                                 inhibit-message)))
-                         (ignore inhibit-interaction)
                          (with-current-buffer buffer
                            (let ((process (get-buffer-process buffer)))
                              (when process
@@ -641,6 +642,14 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
         (buffer-terminator--verbose-message "Terminated the buffer: '%s' (%S)"
                                             buffer-name buffer-mode))
       result)))
+
+(defvar buffer-list-update-hook)
+(defvar window-buffer-change-functions)
+(defvar window-configuration-change-hook)
+(defvar window-state-change-functions)
+(defvar window-size-change-functions)
+(defvar window-selection-change-functions)
+(defvar window-state-change-hook)
 
 (defun buffer-terminator--get-all-tabs-buffers ()
   "Iterate through tabs and use the native `wc' object to collect buffers."
