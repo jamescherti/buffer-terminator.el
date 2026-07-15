@@ -696,14 +696,6 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                             (window-size-change-functions nil)
                             (window-selection-change-functions nil)
                             (window-state-change-hook nil))
-                        (ignore buffer-list-update-hook)
-                        (ignore window-buffer-change-functions)
-                        (ignore window-configuration-change-hook)
-                        (ignore window-state-change-functions)
-                        (ignore window-size-change-functions)
-                        (ignore window-selection-change-functions)
-                        (ignore window-state-change-hook)
-
                         ;; A `window-configuration' object is essentially a
                         ;; C-level snapshot of pointers to buffer objects. When
                         ;; you call `set-window-configuration', Emacs isn't
