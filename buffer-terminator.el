@@ -468,10 +468,6 @@ MAJOR-MODES is a list of major mode symbols."
   "Run the rule RULE with the value VALUE."
   (cond
    ((not (symbolp rule))
-    ;; TODO Change it to warning?
-    ;; (buffer-terminator--message
-    ;;  "Warning: Invalid buffer-terminator-rules-alist entry ignored: '%s' -> '%s'"
-    ;;  rule value)
     (error "Invalid buffer-terminator-rules-alist key: '%s' -> '%s'"
            rule value)
     nil)
@@ -759,7 +755,6 @@ all buffers are processed by default."
                       (push buffer result)))
                   result))
 
-  ;;; TODO Add predicate function to inhibit buffer-terminator in certain cases
   (let ((result nil)
         (buffer-terminator--cached-tab-buffers
          (when buffer-terminator-track-tab-bar-buffers
