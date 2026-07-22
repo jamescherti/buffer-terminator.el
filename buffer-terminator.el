@@ -188,6 +188,7 @@ inactive tabs from being killed. Set this to nil to disable the feature.")
 
 (defvar-local buffer-terminator--buffer-activity-time nil)
 (defvar-local buffer-terminator--associated-buffers nil)
+(defvar-local buffer-terminator--has-live-children nil)
 (defvar buffer-terminator--cached-tab-buffers nil
   "List of buffers currently active in all tabs during rule application.")
 
@@ -753,7 +754,8 @@ all buffers are processed by default."
                   (dolist (buffer buffers)
                     (when (buffer-live-p buffer)
                       (with-current-buffer buffer
-                        (setq buffer-terminator--associated-buffers nil))
+                        (setq buffer-terminator--associated-buffers nil)
+                        (setq buffer-terminator--has-live-children nil))
                       (push buffer result)))
                   result))
 
@@ -769,29 +771,48 @@ all buffers are processed by default."
           (let ((overlay-buffer
                  (cond ((bound-and-true-p edit-indirect--overlay)
                         (overlay-buffer edit-indirect--overlay))
-
                        ((bound-and-true-p org-src--overlay)
-                        (overlay-buffer org-src--overlay)))))
+                        (overlay-buffer org-src--overlay))))
+                (archive-superior (bound-and-true-p archive-superior-buffer))
+                (tar-superior (bound-and-true-p tar-superior-buffer))
+                (base-buffer (buffer-base-buffer buffer)))
 
             (cond
-             ;; Overlay buffers (Org-src or markdown-mode edit-indirect)
+             ;; Overlay buffers (`org-src' or `edit-indirect')
              (overlay-buffer
               (when (buffer-live-p overlay-buffer)
                 (push overlay-buffer buffer-terminator--associated-buffers)
                 (with-current-buffer overlay-buffer
-                  (push buffer buffer-terminator--associated-buffers))))
+                  (push buffer buffer-terminator--associated-buffers)
+                  (setq buffer-terminator--has-live-children t))))
+
+             ;; Archive mode superior buffers
+             (archive-superior
+              (when (buffer-live-p archive-superior)
+                (push archive-superior buffer-terminator--associated-buffers)
+                (with-current-buffer archive-superior
+                  (push buffer buffer-terminator--associated-buffers)
+                  (setq buffer-terminator--has-live-children t))))
+
+             ;; Tar mode superior buffers
+             (tar-superior
+              (when (buffer-live-p tar-superior)
+                (push tar-superior buffer-terminator--associated-buffers)
+                (with-current-buffer tar-superior
+                  (push buffer buffer-terminator--associated-buffers)
+                  (setq buffer-terminator--has-live-children t))))
 
              ;; Indirect buffers
              (t
-              (let ((base-buffer (buffer-base-buffer buffer)))
-                (when (and base-buffer
-                           (buffer-live-p base-buffer))
-                  ;; Indirect buffer
-                  (setq buffer-terminator--associated-buffers (list base-buffer))
+              (when (and base-buffer
+                         (buffer-live-p base-buffer))
+                ;; Indirect buffer
+                (push base-buffer buffer-terminator--associated-buffers)
 
-                  ;; Original buffer
-                  (with-current-buffer base-buffer
-                    (push buffer buffer-terminator--associated-buffers))))))))))
+                ;; Original buffer
+                (with-current-buffer base-buffer
+                  (push buffer buffer-terminator--associated-buffers)
+                  (setq buffer-terminator--has-live-children t)))))))))
 
     ;; Apply rules
     (dolist (buffer buffers)
@@ -831,6 +852,11 @@ all buffers are processed by default."
                                buffer-terminator-protect-current-buffer)
                       (when (eq (window-buffer) buffer)
                         (setq decision :keep)))
+
+                    ;; Pre-flight checks: Superior buffers with live children
+                    (when (and (not decision)
+                               buffer-terminator--has-live-children)
+                      (setq decision :keep))
 
                     ;; Rules
                     (when (and (not decision) rules)

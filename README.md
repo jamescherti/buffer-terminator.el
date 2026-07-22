@@ -14,7 +14,8 @@ Activating `(buffer-terminator-mode)` safely terminates all buffers that have be
 The following buffers are not terminated by default:
 - Special buffers (These buffers are non-file buffers that: start with a space, or start and end with `*`, or whose major mode is derived from `special-mode`, or they serve as the Minibuffer).
 - Modified file-visiting buffers that have not been saved; the user must save them first.
-- Buffers currently displayed in any visible window or tab-bar tab. (This also includes buffers indirectly made visible, such as `org-src` source edit buffers, which cause their originating buffers to be considered visible, or `markdown-mode` edit-indirect buffers that reference the original Markdown file.)
+- Superior buffers (such as zip or tar archive buffers) and base buffers that have active children or open indirect buffers (such as `org-src` and `edit-indirect` for `markdown-mode`).
+- Buffers currently displayed in any visible window or tab-bar tab.
 - Buffers associated with running processes.
 
 If this package enhances your productivity, please show your support by ⭐ starring buffer-terminator on GitHub to help more users discover its benefits.
