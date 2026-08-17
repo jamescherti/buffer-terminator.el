@@ -182,6 +182,7 @@ Midnight mode and `clean-buffer-list` are for killing buffers once a day. The Mi
 In contrast, `buffer-terminator` allows specifying the timeout interval in seconds (Default: 30 minutes), enabling more frequent termination of inactive buffers.
 
 The `buffer-terminator` package offers additional features that are not supported by midnight and `clean-buffer-list`, including:
+
 - The *buffer-terminator* package is more customizable than Midnight Mode. It allows users to specify a customized list of rules using `buffer-terminator-rules-alist`, enabling them to determine which buffers should be killed based on factors such as inactivity, visibility, buffer name, whether it's a file or process buffer, and other conditions.
 - Buffer-terminator does not kill visible buffers in other tabs, even if they exceed the timeout. This prevents disruptions to editing workflows.
 Buffer-terminator provides the option to choose whether to keep or kill specific types of buffers, such as those associated with processes or file-visiting buffers.
