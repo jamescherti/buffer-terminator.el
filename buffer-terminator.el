@@ -68,7 +68,7 @@
 
 (defgroup buffer-terminator nil
   "Safely terminate buffers automatically."
-  :group 'buffer-terminator
+  :group 'calendar
   :prefix "buffer-terminator-"
   :link '(url-link
           :tag "Github"
