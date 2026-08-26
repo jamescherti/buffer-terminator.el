@@ -5,7 +5,7 @@
 ;; Author: James Cherti <https://www.jamescherti.com/contact/>
 ;; Version: 1.2.5
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
-;; Keywords: convenience
+;; Keywords: convenience, files
 ;; Package-Requires: ((emacs "27.1"))
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
