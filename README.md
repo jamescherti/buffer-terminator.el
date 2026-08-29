@@ -82,7 +82,7 @@ The `buffer-terminator-rules-alist` variable holds instructions for keeping or t
 Here is an example:
 ```elisp
 (setq buffer-terminator-rules-alist
-      ;; kill-buffer-name: Always kill buffers whose names match important-buffer-name1 and important-buffer-name2
+      ;; kill-buffer-name: Always kill buffers whose names match temporary-buffer-name1 and temporary-buffer-name2
       '((kill-buffer-name . ("temporary-buffer-name1"
                              "temporary-buffer-name2"))
 
