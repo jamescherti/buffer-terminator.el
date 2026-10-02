@@ -590,8 +590,6 @@ Return nil when if buffer has never been displayed."
                  "(The obsolete variable will be removed in future versions.)")
          var)))))
 
-(defvar inhibit-interaction)
-
 (defun buffer-terminator--kill-buffer (buffer)
   "Kill BUFFER if it is live.
 
@@ -605,7 +603,7 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
     (let* ((buffer-name (buffer-name buffer))
            (buffer-mode (buffer-local-value 'major-mode buffer))
            (result (condition-case err
-                       (let ((inhibit-interaction t)
+                       (let ((kill-buffer-query-functions nil)
                              (inhibit-message (if (eq buffer-terminator-verbose
                                                       'inhibit-message)
                                                   t
@@ -617,15 +615,6 @@ Returns non-nil if the buffer was successfully killed, otherwise nil."
                          (kill-buffer buffer)
                          ;; Return t
                          t)
-                     (inhibited-interaction
-                      (buffer-terminator--verbose-message
-                        (concat "Warning: 'kill-buffer' attempted an "
-                                "interactive prompt in buffer '%s'. "
-                                "Please report this issue to "
-                                "the `buffer-terminator' author.")
-                        buffer-name)
-                      ;; Explicitly return nil so 'result' reflects the failure
-                      nil)
                      (error
                       (buffer-terminator--verbose-message
                         "Error killing buffer '%s': %s"
