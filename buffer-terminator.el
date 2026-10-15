@@ -275,7 +275,8 @@ base or related buffer is visible."
   (let ((last-display-time (buffer-terminator--last-display-time)))
     (cond
      ((not last-display-time)
-      t)
+      (setq-local buffer-terminator--buffer-activity-time (current-time))
+      nil)
 
      ((>= last-display-time buffer-terminator-inactivity-timeout)
       t))))
