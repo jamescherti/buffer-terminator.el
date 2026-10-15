@@ -206,7 +206,7 @@ inactive tabs from being killed. Set this to nil to disable the feature.")
                                     'inhibit-message)
                                 t
                               inhibit-message)))
-       (message (concat "[buffer-terminator] " (format ,@args))))))
+       (message "[buffer-terminator] %s" (format ,@args)))))
 
 (defun buffer-terminator--message (&rest args)
   "Display a message with '[buffer-terminator]' prepended.
