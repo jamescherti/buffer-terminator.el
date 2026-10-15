@@ -68,7 +68,7 @@
 
 (defgroup buffer-terminator nil
   "Safely terminate buffers automatically."
-  :group 'calendar
+  :group 'convenience
   :prefix "buffer-terminator-"
   :link '(url-link
           :tag "Github"
@@ -186,7 +186,11 @@ inactive tabs from being killed. Set this to nil to disable the feature.")
 
 ;;; Internal variables
 
+;; Mark `buffer-terminator--buffer-activity-time' as permanent-local to prevent
+;; major mode change from wiping the timestamp back to nil.
 (defvar-local buffer-terminator--buffer-activity-time nil)
+(put 'buffer-terminator--buffer-activity-time 'permanent-local t)
+
 (defvar-local buffer-terminator--associated-buffers nil)
 (defvar-local buffer-terminator--has-live-children nil)
 (defvar buffer-terminator--cached-tab-buffers nil
