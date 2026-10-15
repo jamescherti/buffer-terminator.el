@@ -696,8 +696,7 @@ all buffers are processed by default."
                       (setq decision :keep))
 
                     ;; Pre-flight checks: Modified buffers
-                    (when (and (not decision)
-                               buffer-terminator-protect-unsaved-file-buffers)
+                    (unless decision
                       (let* ((base-buffer (or (buffer-base-buffer)
                                               (current-buffer)))
                              (file-name (buffer-file-name base-buffer)))
@@ -708,7 +707,8 @@ all buffers are processed by default."
                         (when file-name
                           (push (cons 'file-name file-name) buffer-info))
 
-                        (when (and file-name
+                        (when (and buffer-terminator-protect-unsaved-file-buffers
+                                   file-name
                                    (buffer-modified-p buffer))
                           (setq decision :keep))))
 
