@@ -208,11 +208,6 @@ inactive tabs from being killed. Set this to nil to disable the feature.")
                               inhibit-message)))
        (message "[buffer-terminator] %s" (format ,@args)))))
 
-(defun buffer-terminator--message (&rest args)
-  "Display a message with '[buffer-terminator]' prepended.
-The message is formatted with the provided arguments ARGS."
-  (apply #'message (concat "[buffer-terminator] " (car args)) (cdr args)))
-
 (defun buffer-terminator--insert-message (buffer-name msg &rest args)
   "Insert formatted MSG with ARGS into BUFFER-NAME buffer."
   (let ((buffer (get-buffer-create buffer-name)))
