@@ -728,8 +728,8 @@ all buffers are processed by default."
 
                     ;; Final decision
                     (eq decision :kill)))))
-          (when kill-buffer
-            (buffer-terminator--kill-buffer buffer)
+          (when (and kill-buffer
+                     (buffer-terminator--kill-buffer buffer))
             (push buffer-info result)))))
     result))
 
