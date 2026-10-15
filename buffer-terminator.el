@@ -428,7 +428,14 @@ Return :kill or :keep or nil."
 
 (defun buffer-terminator--update-buffer-last-view-time ()
   "Update the last view time for the current buffer."
-  (setq-local buffer-terminator--buffer-activity-time (current-time)))
+  (setq-local buffer-terminator--buffer-activity-time (current-time))
+  (dolist (frame (frame-list))
+    (dolist (win (window-list frame 'no-minibuf))
+      (let ((buf (window-buffer win)))
+        (when (buffer-live-p buf)
+          (with-current-buffer buf
+            (setq-local buffer-terminator--buffer-activity-time
+                        (current-time))))))))
 
 (defun buffer-terminator--last-display-time ()
   "Return the time in seconds since current buffer was last displayed.
@@ -748,7 +755,14 @@ and not visible based on a defined timeout."
       ;; Enable
       (progn
         (buffer-terminator--debug-message "Start: buffer-terminator-mode")
-        ;; Add hooks and timers
+
+        ;; Ensure visible buffers in non-selected windows do not get activity
+        ;; time updated This updates `buffer-terminator--buffer-activity-time'
+        ;; for all buffers visible in any window across all frames, and call
+        ;; `buffer-terminator--update-buffer-last-view-time' immediately when
+        ;; enabling `buffer-terminator-mode'.
+        (buffer-terminator--update-buffer-last-view-time)
+
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)
         (buffer-terminator--cancel-timer)
