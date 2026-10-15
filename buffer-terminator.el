@@ -625,6 +625,7 @@ all buffers are processed by default."
                   result))
 
   (let ((result nil)
+        (caller-buffer (current-buffer))
         (buffer-terminator--cached-tab-buffers
          (when buffer-terminator-track-tab-bar-buffers
            (buffer-terminator--get-all-tabs-buffers))))
@@ -714,7 +715,14 @@ all buffers are processed by default."
                     ;; Pre-flight checks: Current buffer
                     (when (and (not decision)
                                buffer-terminator-protect-current-buffer)
-                      (when (eq (window-buffer) buffer)
+                      ;; The pre-flight check runs inside with-current-buffer
+                      ;; buffer. (window-buffer) is not enough as only returns
+                      ;; the buffer in the selected window of the selected
+                      ;; frame. If `buffer-terminator-apply-rules' is invoked
+                      ;; while another buffer is temporarily current via
+                      ;; `with-current-buffer', that buffer is not protected.
+                      (when (or (eq caller-buffer buffer)
+                                (eq (window-buffer) buffer))
                         (setq decision :keep)))
 
                     ;; Pre-flight checks: Superior buffers with live children
