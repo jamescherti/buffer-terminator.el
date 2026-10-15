@@ -488,9 +488,8 @@ Return non-nil if the buffer was successfully killed, otherwise nil."
                            (let ((process (get-buffer-process buffer)))
                              (when process
                                (set-process-query-on-exit-flag process nil))))
-                         (kill-buffer buffer)
                          ;; Return t
-                         t)
+                         (kill-buffer buffer))
                      (error
                       (buffer-terminator--verbose-message
                         "Error killing buffer '%s': %s"
