@@ -238,15 +238,13 @@ base or related buffer is visible."
     (catch 'visible
       (dolist (buffer (delete-dups
                        (append (list (current-buffer))
-                               ;; When the current buffer is a base buffer:
-                               ;; include indirect buffers, ensuring visibility
-                               ;; checks also consider the indirect buffers'
-                               ;; visible states.
-                               (unless (buffer-base-buffer)
-                                 (seq-filter
-                                  (lambda (buf)
-                                    (buffer-live-p buf))
-                                  buffer-terminator--associated-buffers)))))
+                               ;; Ensure visibility checks consider the indirect
+                               ;; buffers and other associated buffers visible
+                               ;; states.
+                               (seq-filter
+                                (lambda (buf)
+                                  (buffer-live-p buf))
+                                buffer-terminator--associated-buffers))))
         (when (or (get-buffer-window buffer 0)
                   ;; Tab-bar
                   (when (bound-and-true-p tab-bar-mode)
