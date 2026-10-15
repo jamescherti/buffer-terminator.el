@@ -213,6 +213,7 @@ inactive tabs from being killed. Set this to nil to disable the feature.")
   (let ((buffer (get-buffer-create buffer-name)))
     (when (buffer-live-p buffer)
       (with-current-buffer buffer
+        (buffer-disable-undo)
         (setq-local buffer-read-only t)
         (save-excursion
           (let ((inhibit-read-only t))
