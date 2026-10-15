@@ -337,7 +337,11 @@ Return non-nil if the buffer name matches any of the regexps."
     (when buffer-name
       (cond
        ((stringp match-names-regexp)
-        (string-match match-names-regexp buffer-name))
+        ;; `string-match' modifies global `match-data'. Because
+        ;; `buffer-terminator--timer-apply-rules' runs asynchronously on a
+        ;; timer, evaluating regexp rules in the background can clobber active
+        ;; `match-data' in the middle of another command or search.
+        (string-match-p match-names-regexp buffer-name))
 
        ((listp match-names-regexp)
         (catch 'found
