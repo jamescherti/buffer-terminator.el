@@ -615,14 +615,11 @@ all buffers are processed by default."
      ((not (listp buffers))
       (error "The BUFFERS parameter must be a list of buffers or a single buffer"))))
 
-  (setq buffers (let ((result nil))
-                  (dolist (buffer buffers)
-                    (when (buffer-live-p buffer)
-                      (with-current-buffer buffer
-                        (setq buffer-terminator--associated-buffers nil)
-                        (setq buffer-terminator--has-live-children nil))
-                      (push buffer result)))
-                  result))
+  (dolist (buffer (buffer-list))
+    (when (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (setq buffer-terminator--associated-buffers nil)
+        (setq buffer-terminator--has-live-children nil))))
 
   (let ((result nil)
         (caller-buffer (current-buffer))
@@ -630,7 +627,7 @@ all buffers are processed by default."
          (when buffer-terminator-track-tab-bar-buffers
            (buffer-terminator--get-all-tabs-buffers))))
     ;; Generate associated buffers
-    (dolist (buffer buffers)
+    (dolist (buffer (buffer-list))
       (when (buffer-live-p buffer)
         (with-current-buffer buffer
           (let ((overlay-buffer
