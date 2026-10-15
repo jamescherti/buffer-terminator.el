@@ -192,106 +192,6 @@ inactive tabs from being killed. Set this to nil to disable the feature.")
 (defvar buffer-terminator--cached-tab-buffers nil
   "List of buffers currently active in all tabs during rule application.")
 
-;;; Obsolete variables
-
-(defcustom buffer-terminator-predicate nil
-  "This variable is obsolete.
-Use `buffer-terminator-rules-alist' instead."
-  :group 'buffer-terminator
-  :type '(choice (const nil) (function)))
-
-(make-obsolete-variable 'buffer-terminator-predicate
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-buffers-with-process t
-  "When non-nil, do not kill buffers associated with running processes.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-buffers-with-process
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-major-modes nil
-  "List of major-modes. Buffers with these major mode are never killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-major-modes
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-visible-buffers t
-  "When non-nil, `buffer-terminator' will not kill visible buffers.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-visible-buffers
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-file-visiting-buffers nil
-  "When non-nil, `buffer-terminator' will not kill buffers visiting files.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-file-visiting-buffers
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-special-buffers t
-  "If non-nil, `buffer-terminator' will never kill special buffers.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-special-buffers
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-buffer-names nil
-  "List of buffer names that will never be killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-buffer-names
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-keep-buffer-names-regexps nil
-  "List of regexps that match buffer names that will never be killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-keep-buffer-names-regexps
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-kill-buffer-names nil
-  "List of buffer names that can be killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-kill-buffer-names
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-kill-buffer-names-regexps nil
-  "List of regex patterns matching buffer names that can be killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-kill-buffer-names-regexps
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-kill-special-buffer-names nil
-  "List of special buffer names that can be killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-kill-special-buffer-names
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
-(defvar buffer-terminator-kill-special-buffer-names-regexps nil
-  "List of regex patterns matching special buffer names that can be killed.
-This variable is obsolete.")
-
-(make-obsolete-variable 'buffer-terminator-kill-special-buffer-names-regexps
-                        'buffer-terminator-rules-alist
-                        "1.1.0")
-
 ;;; Functions
 
 (defmacro buffer-terminator--verbose-message (&rest args)
@@ -415,7 +315,7 @@ base or related buffer is visible."
 (defun buffer-terminator--match-buffer-p (match-names)
   "Check if the name if the current buffer matches MATCH-NAMES.
 MATCH-NAMES can be a string for a single exact match or a list of strings.
-Returns non-nil if the buffer name matches any of the names."
+Return non-nil if the buffer name matches any of the names."
   (let ((buffer-name (buffer-name)))
     (when buffer-name
       (cond
@@ -432,7 +332,7 @@ Returns non-nil if the buffer name matches any of the names."
 (defun buffer-terminator--match-buffer-regexp-p (match-names-regexp)
   "Check if the name of the current buffer matches one of MATCH-NAMES-REGEXP.
 MATCH-NAMES-REGEXP can be a string for a single regexp or a list of regexps.
-Returns non-nil if BUFFER-NAME matches any of the regexps."
+Return non-nil if the buffer name matches any of the regexps."
   (let ((buffer-name (buffer-name)))
     (when buffer-name
       (cond
@@ -559,37 +459,6 @@ Return nil when if buffer has never been displayed."
      (built-in-buffer-display-time
       built-in-buffer-display-time))))
 
-(defvar buffer-terminator-display-warnings t)
-
-(defun buffer-terminator--warn-obsolete-vars ()
-  "Warn the user if any obsolete `buffer-terminator' variables are non-nil."
-  (when buffer-terminator-display-warnings
-    (dolist (var '(buffer-terminator-keep-buffers-with-process
-                   buffer-terminator-keep-special-buffers
-                   buffer-terminator-keep-visible-buffers))
-      (when (and (boundp var) (not (symbol-value var)))
-        (buffer-terminator--message
-         (concat "WARNING: The variable `%s` is obsolete. "
-                 "Use `buffer-terminator-rules-alist` instead. "
-                 "(The obsolete variable will be removed in future versions.)")
-         var))))
-  (when buffer-terminator-display-warnings
-    (dolist (var '(buffer-terminator-keep-buffer-names
-                   buffer-terminator-keep-buffer-names-regexps
-                   buffer-terminator-keep-file-visiting-buffers
-                   buffer-terminator-predicate
-                   buffer-terminator-keep-major-modes
-                   buffer-terminator-kill-buffer-names
-                   buffer-terminator-kill-buffer-names-regexps
-                   buffer-terminator-kill-special-buffer-names
-                   buffer-terminator-kill-special-buffer-names-regexps))
-      (when (and (boundp var) (symbol-value var))
-        (buffer-terminator--message
-         (concat "WARNING: The variable `%s` is obsolete. "
-                 "Use `buffer-terminator-rules-alist` instead. "
-                 "(The obsolete variable will be removed in future versions.)")
-         var)))))
-
 (defun buffer-terminator--kill-buffer (buffer)
   "Kill BUFFER if it is live.
 
@@ -598,7 +467,7 @@ prompting the user. If the buffer is successfully killed, a debug message is
 logged. If `buffer-terminator-verbose' is non-nil, an additional message is
 displayed to the user.
 
-Returns non-nil if the buffer was successfully killed, otherwise nil."
+Return non-nil if the buffer was successfully killed, otherwise nil."
   (when (buffer-live-p buffer)
     (let* ((buffer-name (buffer-name buffer))
            (buffer-mode (buffer-local-value 'major-mode buffer))
@@ -753,10 +622,10 @@ all buffers are processed by default."
       (when (buffer-live-p buffer)
         (with-current-buffer buffer
           (let ((overlay-buffer
-                 (cond ((bound-and-true-p edit-indirect--overlay)
-                        (overlay-buffer edit-indirect--overlay))
-                       ((bound-and-true-p org-src--overlay)
-                        (overlay-buffer org-src--overlay))))
+                 (let ((ov (or (bound-and-true-p edit-indirect--overlay)
+                               (bound-and-true-p org-src--overlay))))
+                   (when ov
+                     (overlay-buffer ov))))
                 (archive-superior (bound-and-true-p archive-superior-buffer))
                 (tar-superior (bound-and-true-p tar-superior-buffer))
                 (base-buffer (buffer-base-buffer buffer)))
@@ -865,23 +734,6 @@ all buffers are processed by default."
 (make-obsolete 'buffer-terminator-execute-rules 'buffer-terminator-apply-rules
                "1.2.4")
 
-;;; Obsolete functions
-
-(defun buffer-terminator-find-dired-parent (&optional _kill-buffer)
-  "This function is obsolete."
-  t)
-(make-obsolete 'buffer-terminator-find-dired-parent 'ignore "1.1.0")
-
-(defun buffer-terminator-find-dired-parent-kill-buffer ()
-  "This function is obsolete."
-  t)
-(make-obsolete 'buffer-terminator-find-dired-parent-kill-buffer 'ignore "1.1.0")
-
-(defun buffer-terminator-kill-non-visible-buffers ()
-  "This function is obsolete."
-  t)
-(make-obsolete 'buffer-terminator-kill-non-visible-buffers 'ignore "1.1.0")
-
 ;;; Mode
 
 ;;;###autoload
@@ -896,7 +748,6 @@ and not visible based on a defined timeout."
       ;; Enable
       (progn
         (buffer-terminator--debug-message "Start: buffer-terminator-mode")
-        (buffer-terminator--warn-obsolete-vars)
         ;; Add hooks and timers
         (add-hook 'window-state-change-hook
                   #'buffer-terminator--update-buffer-last-view-time)
