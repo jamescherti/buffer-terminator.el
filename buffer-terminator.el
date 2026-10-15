@@ -347,7 +347,7 @@ Return non-nil if the buffer name matches any of the regexps."
        ((listp match-names-regexp)
         (catch 'found
           (dolist (regex match-names-regexp)
-            (when (string-match regex buffer-name)
+            (when (string-match-p regex buffer-name)
               (throw 'found regex)))))
 
        (t
