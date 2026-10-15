@@ -430,15 +430,19 @@ Return :kill or :keep or nil."
     nil))
 
 (defun buffer-terminator--update-buffer-last-view-time ()
-  "Update the last view time for the current buffer."
+  "Update the last view time for the current buffer and all visible buffers."
   (setq-local buffer-terminator--buffer-activity-time (current-time))
-  (dolist (frame (frame-list))
-    (dolist (win (window-list frame 'no-minibuf))
-      (let ((buf (window-buffer win)))
-        (when (buffer-live-p buf)
-          (with-current-buffer buf
-            (setq-local buffer-terminator--buffer-activity-time
-                        (current-time))))))))
+  (walk-windows
+   (lambda (window)
+     (let ((buf (window-buffer window)))
+       (when (buffer-live-p buf)
+         (with-current-buffer buf
+           (setq-local buffer-terminator--buffer-activity-time
+                       (current-time))))))
+   ;; Exclude the minibuffer
+   nil
+   ;; Apply to all frames
+   t))
 
 (defun buffer-terminator--last-display-time ()
   "Return the time in seconds since current buffer was last displayed.
