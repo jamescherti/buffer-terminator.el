@@ -5,7 +5,10 @@
 ![License](https://img.shields.io/github/license/jamescherti/buffer-terminator.el)
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
-The **buffer-terminator** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, processes...
+- Author: James Cherti <[https://www.jamescherti.com/](https://www.jamescherti.com/)>
+- License: GPL
+
+The **[buffer-terminator.el](https://github.com/jamescherti/buffer-terminator.el)** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, processes...
 
 Beyond performance, *buffer-terminator* provides other benefits. For instance, if you occasionally need to close annoying or unused buffers, *buffer-terminator* can handle this automatically, eliminating the need for manual intervention. (The default configuration is suitable for most users. However, the *buffer-terminator* package is highly customizable. You can define specific rules for retaining or terminating buffers by modifying the `buffer-terminator-rules-alist` with your preferred set of rules.)
 
