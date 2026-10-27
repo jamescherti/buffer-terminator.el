@@ -3,7 +3,7 @@
 ;; Copyright (C) 2024-2026 James Cherti | https://www.jamescherti.com/contact/
 
 ;; Author: James Cherti <https://www.jamescherti.com/contact/>
-;; Version: 1.2.7
+;; Version: 1.2.8
 ;; URL: https://github.com/jamescherti/buffer-terminator.el
 ;; Keywords: convenience
 ;; Package-Requires: ((emacs "27.1"))
