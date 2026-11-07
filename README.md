@@ -6,7 +6,7 @@
 ![](https://jamescherti.com/misc/made-for-gnu-emacs.svg)
 
 - Author: James Cherti <[https://www.jamescherti.com/](https://www.jamescherti.com/)>
-- License: GPL
+- License: GPL 3.0 or later
 
 The **[buffer-terminator.el](https://github.com/jamescherti/buffer-terminator.el)** Emacs package *automatically and safely kills buffers*, ensuring a clean and efficient workspace while *enhancing the performance of Emacs* by reducing open buffers, which minimizes active modes, timers, processes...
 
